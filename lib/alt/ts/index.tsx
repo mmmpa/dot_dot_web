@@ -1,3 +1,5 @@
+/// <reference path="./typings/browser.d.ts" />
+
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import {Route} from './constants/constants'
@@ -12,12 +14,12 @@ import EditorComponent from "./components/editor-component";
 class DotDot {
   static run(dom) {
     ReactDOM.render(
-      <article className="game-body">
+      <article className="dot-body">
         <MainContext>
           <SelectorContext route={Route.Selector}>
             <SelectorComponent/>
           </SelectorContext>
-          <EditorContext route={Route.Game}>
+          <EditorContext route={Route.Editor}>
             <EditorComponent/>
           </EditorContext>
         </MainContext>

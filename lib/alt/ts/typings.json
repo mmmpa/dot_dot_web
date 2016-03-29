@@ -1,6 +1,8 @@
 {
   "ambientDependencies": {
+    "createjs": "registry:dt/createjs#0.7.1+20140414154755",
     "lodash": "registry:dt/lodash#3.10.0+20160327004937",
+    "node": "registry:dt/node#4.0.0+20160319033040",
     "react": "registry:dt/react#0.14.0+20160319053454",
     "react-dom": "registry:dt/react-dom#0.14.0+20160316155526",
     "superagent": "registry:dt/superagent#1.4.0+20160317120654"

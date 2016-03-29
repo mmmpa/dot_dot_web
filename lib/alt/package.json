@@ -7,6 +7,12 @@
     "build": "watchify --extension=js ./built/index.js -o ./out/built.js -v",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "browser": {
+    "easeljs": "/home/ten/ruby_project/dot_dot/lib/alt/node_modules/easeljs/lib/easeljs-0.8.2.min.js"
+  },
+  "browserify-shim": {
+    "createjs": "easeljs"
+  },
   "keywords": [
     "note"
   ],
@@ -15,6 +21,8 @@
   "dependencies": {
     "bluebird": "^3.3.1",
     "codemirror": "^5.12.0",
+    "createjs": "0.0.0",
+    "easeljs": "^0.8.2",
     "history": "^1.17.0",
     "lodash": "^4.0.1",
     "marked": "^0.3.5",
