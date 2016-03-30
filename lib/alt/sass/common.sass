@@ -2,5 +2,94 @@
 @import './primer/primer.scss'
 @import './gfm/github-markdown'
 
+%normal-input
+  border: 0
+  border-bottom: 2px solid #ccc
+  border-radius: 0
+  box-shadow: 0 0 0
+
+%min-cell
+  white-space: nowrap
+  width: 1px
+
+body
+  margin: 0
+  padding: 0
+  overflow: hidden
+
 .editor-container
   margin: 100px
+
+.editor-area
+  position: relative
+
+.cell
+  position: absolute
+  display: inline-block
+  overflow: scroll
+  border: 1px solid #eee
+  border-width: 0 1px 1px 0
+  &.y
+    overflow: auto
+    overflow-x: hidden
+    overflow-y: scroll
+  &.canvas
+    overflow: hidden
+
+.cell-header
+  background: #eee
+  padding: 5px
+
+.cell-body
+  padding: 5px
+
+.color-controller
+  white-space: nowrap
+  .slider,
+  .selected
+    display: table-cell
+    vertical-align: middle
+
+.color-slider
+  .title,
+  .number,
+  .slider
+    display: table-cell
+    vertical-align: middle
+  .title,
+  .number
+    @extend %min-cell
+  .slider
+    input
+      width: 255px
+      height: 10px
+  .number
+    padding: 0 10px
+    input
+      @extend %normal-input
+      padding: 0
+      text-align: right
+      width: 60px
+      height: 15px
+.selected-color
+  width: 70px
+  height: 70px
+  position: relative
+  .tip
+    cursor: pointer
+    display: inline-block
+    width: 50px
+    height: 50px
+    overflow: hidden
+    position: absolute
+    .inner
+      width: 46px
+      height: 46px
+    &.selected
+      border: 2px solid #000
+      z-index: 10
+      .inner
+        border: 2px solid #fff
+    &.second
+      top: 20px
+      left: 20px

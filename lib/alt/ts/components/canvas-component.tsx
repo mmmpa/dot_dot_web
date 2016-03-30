@@ -2,7 +2,9 @@ import {Good} from "../libs/parcel";
 import * as React from "react";
 import * as ReactDOM from 'react-dom';
 import ImageEditor from "../models/image-editor";
+import Cell from "./cell-component";
 declare const createjs;
+
 
 interface P {
 }
@@ -12,7 +14,7 @@ enum CanvasState{
   Started
 }
 
-export default class CanvasComponent extends Good<P,{}> {
+export default class CanvasComponent extends Cell<P,{}> {
   private stage:any;
   private ie:ImageEditor;
   private commands:any = {};
@@ -90,7 +92,7 @@ export default class CanvasComponent extends Good<P,{}> {
   }
 
   render() {
-    return <div className="editor-container" ref="container">
+    return <div style={this.layoutStyle} className="cell canvas" ref="container">
       <canvas height="1000" width="1000" ref="canvas" onMouseDown={(e)=> this.onMouseDown(e)}>canvas</canvas>
     </div>
   }

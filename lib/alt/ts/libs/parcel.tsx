@@ -25,57 +25,76 @@ interface EventStore {
 }
 
 export abstract class Good<P, S> extends React.Component<P & GoodProps, S & GoodState> {
+  eventStore:any[] = [];
+
+  addEventSafety(target, ...args) {
+    this.eventStore.push([target].concat(args));
+    target.addEventListener(...args);
+  }
+
+  removeEventAll(){
+    this.eventStore.forEach(([target, ...args])=> target.removeEventListener(...args));
+  }
+
   dispatch(event:string, ...args:any[]):boolean {
     return this.props.emitter.emit(event, ...args);
   }
 
-  activate(){
+  activate() {
 
   }
 
-  deactivate(){
+  deactivate() {
 
   }
 
   private _myName:string;
-  get myName(){
-    if(this._myName){
+  get myName() {
+    if (this._myName) {
       return this._myName;
     }
     return this._myName = this.constructor.toString().match(/function[ ]+([a-zA-Z0-9_]+)/)[1]
   }
 
-  debug(...args){
+  debug(...args) {
     console.log(this.myName, ...args)
   }
 
   componentWillMount() {
     //this.debug('componentWillMount');
+    this.removeEventAll();
   }
 
   componentDidMount() {
     this.debug('componentWillMount');
   }
 
-  componentWillReceiveProps(nextProps){
+  componentWillReceiveProps(nextProps) {
     //this.debug('componentWillReceiveProps');
   }
 
-  shouldComponentUpdate(nextProps, nextState):boolean{
+  shouldComponentUpdate(nextProps, nextState):boolean {
     //this.debug('shouldComponentUpdate');
     return true
   }
 
-  componentWillUpdate(nextProps, nextState):void{
+  componentWillUpdate(nextProps, nextState):void {
     //this.debug('componentWillUpdate');
   }
 
-  componentDidUpdate(prevProps, prevState):void{
+  componentDidUpdate(prevProps, prevState):void {
     //this.debug('componentDidUpdate');
   }
 
   componentWillUnmount() {
     //this.debug('componentWillUnmount');
+  }
+
+  relay(children) {
+    let props:any = _.assign({emitter: this.emitter || this.props.emitter}, this.props, this.state);
+    delete props.children;
+
+    return children.map((child, key)=> React.cloneElement(child, _.assign(props, {key})));
   }
 }
 
@@ -120,11 +139,8 @@ export abstract class Parcel<P, S> extends Good<P & ParcelProps, S & ParcelState
   }
 
   render() {
-    let props:any = _.assign({emitter: this.emitter}, this.props, this.state);
-    delete props.children;
-
     return <div className="context-wrapper">
-      {this.children.map((child, key)=> React.cloneElement(child, _.assign(props, {key})))}
+      {this.relay(this.children)}
     </div>;
   }
 }
