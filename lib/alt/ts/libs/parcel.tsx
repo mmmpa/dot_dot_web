@@ -116,6 +116,7 @@ export abstract class Parcel<P, S> extends Good<P & ParcelProps, S & ParcelState
 
   componentWillMount() {
     this.listen((eventName:string, callback:Function) => {
+      console.log(eventName)
       this.addedOnStore.push({eventName, callback});
       this.emitter.on(eventName, callback);
     });
@@ -124,6 +125,7 @@ export abstract class Parcel<P, S> extends Good<P & ParcelProps, S & ParcelState
 
   constructor(props) {
     super(props);
+
     this.emitter = props.emitter
       ? props.emitter
       : new EventEmitter();

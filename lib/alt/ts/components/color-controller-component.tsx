@@ -10,44 +10,36 @@ export default class ColorControllerComponent extends Cell<{},{}> {
   componentWillMount() {
     super.componentWillMount();
 
-    this.setState(this.generateState());
+    let {a,r,g,b} = this.selectedColor(this.props);
+    this.setState({a, r, g, b});
   }
 
-  generateState(state?) {
-    let base = state || {
-        colors: [ARGB.number(0xff00ff00), ARGB.number(0xffff0000)],
-        selectedColor: 0
-      };
-
-    let argb = base.colors[base.selectedColor].toJson();
-
-    return _.assign(base, argb);
+  needUpdate(p, nextP) {
+    return this.selectedColor(p) !== this.selectedColor(nextP)
+      || p.layout !== nextP.layout
   }
 
-  changeColor({selectedColor, a, r, g, b}) {
-    if (_.isNumber(selectedColor)) {
-      let argb = this.state.colors[selectedColor].toJson();
-      this.setState(_.assign({selectedColor}, argb));
-      return
-    }
+  componentWillReceiveProps(props) {
+    super.componentWillReceiveProps(props);
 
-    let colors:ARGB[] = this.state.colors.concat();
-    let color:ARGB = colors[this.state.selectedColor];
-    if(_.isNumber(a)){
-      color.a = a;
+    if (this.needUpdate(this.props, props)) {
+      let {a,r,g,b} = this.selectedColor(props);
+      this.setState({a, r, g, b});
     }
-    if(_.isNumber(r)){
-      color.r = r;
-    }
-    if(_.isNumber(g)){
-      color.g = g;
-    }
-    if(_.isNumber(b)){
-      color.b = b;
-    }
-    let argb = color.toJson();
-    console.log(a,r,g,b,_.assign({colors}, argb))
-    this.setState(_.assign({colors}, argb));
+  }
+
+  shouldComponentUpdate(props, state) {
+    return this.needUpdate(this.props, props);
+  }
+
+  selectedColor(props) {
+    let {selectedColor} = props;
+    return selectedColor;
+  }
+
+  changeARGB({a, r, g, b}) {
+    let newState = _.clone(this.state);
+    this.dispatch('color:arrange', _.merge(newState, {a, r, b, g}));
   }
 
   componentWillUpdate(nextProps, nextState) {
@@ -55,20 +47,21 @@ export default class ColorControllerComponent extends Cell<{},{}> {
   }
 
   render() {
-    let {r,g,b,a, colors, selectedColor} = this.state;
+    let {r,g,b,a} = this.state;
+    let {colors, selectedColorNumber} = this.props;
     let that = this;
     return <div className="cell y color-controller" style={this.layoutStyle}>
       <header className="cell-header">{this.myName}</header>
       <section className="cell-body">
         <section className="selected">
-          <SelectedColor {...{colors, selectedColor}}
-            onSelect={(selectedColor)=> that.changeColor({selectedColor})}/>
+          <SelectedColor {...{colors, selectedColorNumber}}
+            onSelect={(n)=> that.dispatch('color:switch', n)}/>
         </section>
         <section className="slider">
-          <ColorSlider title="R" value={r} onChange={(e)=> that.changeColor({r: +e.target.value})}/>
-          <ColorSlider title="G" value={g} onChange={(e)=> that.changeColor({g: +e.target.value})}/>
-          <ColorSlider title="B" value={b} onChange={(e)=> that.changeColor({b: +e.target.value})}/>
-          <ColorSlider title="A" value={a} onChange={(e)=> that.changeColor({a: +e.target.value})}/>
+          <ColorSlider title="R" value={r} onChange={(e)=> that.changeARGB({r: +e.target.value})}/>
+          <ColorSlider title="G" value={g} onChange={(e)=> that.changeARGB({g: +e.target.value})}/>
+          <ColorSlider title="B" value={b} onChange={(e)=> that.changeARGB({b: +e.target.value})}/>
+          <ColorSlider title="A" value={a} onChange={(e)=> that.changeARGB({a: +e.target.value})}/>
         </section>
       </section>
     </div>
@@ -77,13 +70,13 @@ export default class ColorControllerComponent extends Cell<{},{}> {
 
 interface SelectedColorP {
   colors:ARGB[],
-  selectedColor:number,
+  selectedColorNumber:number,
   onSelect:(n:number)=>void
 }
 
 class SelectedColor extends React.Component<SelectedColorP,{}> {
   selectedStyle(n) {
-    return n === this.props.selectedColor ? ' selected' : ''
+    return n === this.props.selectedColorNumber ? ' selected' : ''
   }
 
   render() {

@@ -9,16 +9,16 @@ export default class ARGB {
   }
 
   static number(argb) {
-    let a = (argb >>> 24) & 0xff;
-    let r = (argb >>> 16) & 0xff;
-    let g = (argb >>> 8) & 0xff;
-    let b = (argb >>> 0) & 0xff;
+    let a = (argb >> 24) & 0xff;
+    let r = (argb >> 16) & 0xff;
+    let g = (argb >> 8) & 0xff;
+    let b = (argb >> 0) & 0xff;
 
     return new ARGB(a, r, g, b);
   }
 
   get number() {
-    return (this.a << 24) + (this.b << 16) + (this.g << 8) + this.r;
+    return (this.a << 24) + (this.r << 16) + (this.g << 8) + this.b;
   }
 
   get hex() {

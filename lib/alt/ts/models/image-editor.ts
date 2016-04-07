@@ -3,8 +3,12 @@ declare const createjs;
 
 export default class ImageEditor {
   private _scale:number = 1;
+  private _grid:boolean = false;
+  private _gridElement:any = null;
+  private _gridStore:any[] = [];
+  private _gridColor = 0xff000000;
 
-  constructor(public stage, public bitmap, public bitmapData:any) {
+  constructor(public stage, private _canvasElement, public bitmapData:any) {
     this.stage.onPress = (e)=> console.log(e)
   }
 
@@ -17,14 +21,49 @@ export default class ImageEditor {
     return store.historyGroup
   }
 
-  scaleStep(n) {
-    this.scale(this._scale + n);
-  }
-
   writeHistory(store) {
     return (...args)=> {
       store.historyGroup = args;
     }
+  }
+
+  switchGrid(bol:boolean) {
+    if (this._grid === bol) {
+      return;
+    }
+
+    this._grid = bol;
+    this.drawGrid();
+  }
+
+  drawGrid() {
+    this.stage.removeChild(this._gridElement);
+
+    if (!this._grid) {
+      return;
+    }
+
+    let scale = this._scale
+
+    if(this._gridElement = this._gridStore[scale]){
+      this.stage.addChild(this._gridElement);
+      this.stage.update();
+      return;
+    }
+
+    let {width, height} = this.bitmapData;
+    let bitmapData = new createjs.BitmapData(null, width * scale, height * scale, 0x01000000);
+    this._gridElement = new createjs.Bitmap(bitmapData.canvas);
+    this._gridStore[scale] = this._gridElement;
+
+    _.times(height, (h)=> {
+      _.times(width, (w)=> {
+        bitmapData.setPixel32(w * scale, h  * scale, this._gridColor)
+      });
+    });
+    bitmapData.updateContext();
+    this.stage.addChild(this._gridElement);
+    this.stage.update();
   }
 
   scale(n:number) {
@@ -32,12 +71,14 @@ export default class ImageEditor {
     if (this._scale < 1) {
       this._scale = 1;
     }
-    this.bitmap.scaleX = this.bitmap.scaleY = this._scale;
+    let {width, height} = this._canvasElement.image;
+
+    this._canvasElement.scaleX = this._canvasElement.scaleY = this._scale;
+    this.drawGrid();
     this.stage.update();
   }
 
   update() {
-    console.log('update')
     this.bitmapData.updateContext();
     this.stage.update();
   }

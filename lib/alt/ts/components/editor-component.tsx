@@ -29,6 +29,7 @@ export default class EditorComponent extends Good<P,{}> {
   }
 
   componentWillMount() {
+    super.componentWillMount();
     this.setState({
       layout: {}
     });

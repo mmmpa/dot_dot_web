@@ -2,6 +2,9 @@
 @import './primer/primer.scss'
 @import './gfm/github-markdown'
 
+div
+  box-sizing: border-box
+
 %normal-input
   border: 0
   border-bottom: 2px solid #ccc
@@ -71,6 +74,7 @@ body
       text-align: right
       width: 60px
       height: 15px
+
 .selected-color
   width: 70px
   height: 70px
@@ -82,14 +86,25 @@ body
     height: 50px
     overflow: hidden
     position: absolute
+    border: 2px solid #ccc
     .inner
+      box-sizing: border-box
+      padding-top: 44px
       width: 46px
       height: 46px
+      overflow: hidden
+      border: 1px solid #fff
     &.selected
       border: 2px solid #000
       z-index: 10
-      .inner
-        border: 2px solid #fff
     &.second
       top: 20px
       left: 20px
+
+.pixelated
+  image-rendering: -moz-crisp-edges
+  image-rendering: -o-crisp-edges
+  image-rendering: -webkit-optimize-contrast
+  -ms-interpolation-mode: nearest-neighbor
+  image-rendering: pixelated
+

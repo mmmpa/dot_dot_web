@@ -21,7 +21,9 @@ export default class CanvasComponent extends Cell<P,{}> {
 
   componentWillMount() {
     this.setState({
-      src: this.props.src || null
+      src: this.props.src || null,
+      width: 1000,
+      height: 1000
     })
   }
 
@@ -33,7 +35,8 @@ export default class CanvasComponent extends Cell<P,{}> {
     this.refs['container'].addEventListener('mousewheel', this.onMouseWheel.bind(this));
 
     if (!this.state.src) {
-      this.ie = ImageEditor.create(this.stage, 1000, 1000);
+      this.ie = ImageEditor.create(this.stage, 100, 100);
+      /*
       this.ie.once((wrapper, s)=> {
         wrapper(
           s.setPixel(1, 1, 0xff0000ff),
@@ -42,6 +45,25 @@ export default class CanvasComponent extends Cell<P,{}> {
           s.setPixel(2, 2, 0xff0000ff)
         )
       });
+      */
+    }
+
+    this.refreshCanvas(this.props);
+  }
+
+  componentWillReceiveProps(props) {
+    this.refreshCanvas(props, this.props)
+  }
+
+  refreshCanvas(props, oldProps?){
+    let {scale, grid} = props;
+
+    if(!oldProps || oldProps.scale !== scale){
+      this.ie.scale(scale)
+    }
+
+    if(!oldProps || oldProps.grid !== grid){
+      this.ie.switchGrid(grid);
     }
   }
 
@@ -67,11 +89,19 @@ export default class CanvasComponent extends Cell<P,{}> {
   }
 
   draw(x, y) {
-    this.ie.setPixel(x, y, 0xff0000ff, true);
+    this.ie.setPixel(x, y, this.props.selectedColor.number, true);
   }
 
   scaleStep(direction){
-    this.ie.scaleStep(direction);
+    let {scale} = this.props;
+    scale += direction
+    if (scale < 1) {
+      scale = 1;
+    }
+    let {width, height} = this.state
+
+    this.setState({width: width * scale, height: height * scale})
+    this.dispatch('canvas:scale', scale);
   }
 
   call(name) {
@@ -93,7 +123,7 @@ export default class CanvasComponent extends Cell<P,{}> {
 
   render() {
     return <div style={this.layoutStyle} className="cell canvas" ref="container">
-      <canvas height="1000" width="1000" ref="canvas" onMouseDown={(e)=> this.onMouseDown(e)}>canvas</canvas>
+      <canvas width="2000" height="2000" ref="canvas" onMouseDown={(e)=> this.onMouseDown(e)}>canvas</canvas>
     </div>
   }
 }
