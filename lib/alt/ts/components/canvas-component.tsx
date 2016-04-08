@@ -15,6 +15,7 @@ enum CanvasState{
 }
 
 export default class CanvasComponent extends Cell<P,{}> {
+  private scaleNumbers:number[] = [1, 2, 4, 8, 16, 32, 64];
   private stage:any;
   private ie:ImageEditor;
   private commands:any = {};
@@ -37,15 +38,15 @@ export default class CanvasComponent extends Cell<P,{}> {
     if (!this.state.src) {
       this.ie = ImageEditor.create(this.stage, 100, 100);
       /*
-      this.ie.once((wrapper, s)=> {
-        wrapper(
-          s.setPixel(1, 1, 0xff0000ff),
-          s.setPixel(2, 1, 0xff0000ff),
-          s.setPixel(1, 2, 0xff0000ff),
-          s.setPixel(2, 2, 0xff0000ff)
-        )
-      });
-      */
+       this.ie.once((wrapper, s)=> {
+       wrapper(
+       s.setPixel(1, 1, 0xff0000ff),
+       s.setPixel(2, 1, 0xff0000ff),
+       s.setPixel(1, 2, 0xff0000ff),
+       s.setPixel(2, 2, 0xff0000ff)
+       )
+       });
+       */
     }
 
     this.refreshCanvas(this.props);
@@ -55,14 +56,14 @@ export default class CanvasComponent extends Cell<P,{}> {
     this.refreshCanvas(props, this.props)
   }
 
-  refreshCanvas(props, oldProps?){
+  refreshCanvas(props, oldProps?) {
     let {scale, grid} = props;
 
-    if(!oldProps || oldProps.scale !== scale){
-      this.ie.scale(scale)
+    if (!oldProps || oldProps.scale !== scale) {
+      this.ie.scale(this.scaleNumbers[scale])
     }
 
-    if(!oldProps || oldProps.grid !== grid){
+    if (!oldProps || oldProps.grid !== grid) {
       this.ie.switchGrid(grid);
     }
   }
@@ -89,18 +90,37 @@ export default class CanvasComponent extends Cell<P,{}> {
   }
 
   draw(x, y) {
-    this.ie.setPixel(x, y, this.props.selectedColor.number, true);
+    switch (this.props.mode) {
+      case 'slide':
+        return this.startSlide(x, y);
+      default:
+        return this.ie.setPixel(x, y, this.props.selectedColor.number, true);
+    }
   }
 
-  scaleStep(direction){
+  startSlide(x, y) {
+    let slide = this.ie.startSlide();
+    let move = (e:JQueryMouseEventObject)=> {
+      var nowX = e.pageX - this.refs['canvas'].offsetLeft;
+      var nowY = e.pageY - this.refs['canvas'].offsetTop;
+      slide(nowX - x, nowY - y);
+      console.log(nowX - x, nowY - y)
+    };
+    $(window).on('mousemove', move);
+    $(window).on('mouseup', ()=> {
+      $(window).off('mousemove', move);
+    });
+  }
+
+  scaleStep(direction) {
     let {scale} = this.props;
     scale += direction
-    if (scale < 1) {
-      scale = 1;
+    if (scale < 0) {
+      scale = 0;
+    } else if (scale >= this.scaleNumbers.length) {
+      scale = this.scaleNumbers.length - 1;
     }
-    let {width, height} = this.state
 
-    this.setState({width: width * scale, height: height * scale})
     this.dispatch('canvas:scale', scale);
   }
 

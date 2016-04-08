@@ -6,7 +6,7 @@ import {Route} from './constants/constants'
 
 import MainContext from "./contexts/main-context";
 import EditorContext from "./contexts/editor-context";
-import SelectorContext from "./contexts/editor-context";
+import SelectorContext from "./contexts/selector-context";
 
 import SelectorComponent from "./components/selector-component";
 import EditorComponent from "./components/editor-component";

@@ -61,12 +61,12 @@ export abstract class Good<P, S> extends React.Component<P & GoodProps, S & Good
   }
 
   componentWillMount() {
-    //this.debug('componentWillMount');
+    this.debug('componentWillMount');
     this.removeEventAll();
   }
 
   componentDidMount() {
-    this.debug('componentWillMount');
+    this.debug('componentDidMount');
   }
 
   componentWillReceiveProps(nextProps) {
@@ -87,7 +87,7 @@ export abstract class Good<P, S> extends React.Component<P & GoodProps, S & Good
   }
 
   componentWillUnmount() {
-    //this.debug('componentWillUnmount');
+    this.debug('componentWillUnmount');
   }
 
   relay(children) {

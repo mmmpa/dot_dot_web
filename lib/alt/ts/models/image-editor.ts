@@ -8,8 +8,26 @@ export default class ImageEditor {
   private _gridStore:any[] = [];
   private _gridColor = 0xff000000;
 
-  constructor(public stage, private _canvasElement, public bitmapData:any) {
-    this.stage.onPress = (e)=> console.log(e)
+  private container:any;
+  private bg:any;
+  private canvas:any;
+
+  private bitmapData:any;
+
+  public mode:string;
+
+  constructor(public stage, public width, public height) {
+    this.container = new createjs.Container();
+
+    this.bg = new createjs.Bitmap(new createjs.BitmapData(null, stage.canvas.width, stage.canvas.height, 0xffeeeeee).canvas);
+
+    this.bitmapData = new createjs.BitmapData(null, width, height, 0xffffffff);
+    this.canvas = new createjs.Bitmap(this.bitmapData.canvas);
+
+    this.container.addChild(this.canvas);
+
+    stage.addChild(this.bg);
+    stage.addChild(this.container);
   }
 
   once(callback:(writeHistory, bitmapData)=>void):ActionHistory[] {
@@ -19,6 +37,17 @@ export default class ImageEditor {
     this.update();
 
     return store.historyGroup
+  }
+
+  startSlide() {
+    let startX = this.container.x;
+    let startY = this.container.y;
+
+    return (xRange, yRange)=> {
+      this.container.x = startX + xRange;
+      this.container.y = startY + yRange;
+      this.update();
+    }
   }
 
   writeHistory(store) {
@@ -37,16 +66,20 @@ export default class ImageEditor {
   }
 
   drawGrid() {
-    this.stage.removeChild(this._gridElement);
+    this.container.removeChild(this._gridElement);
 
     if (!this._grid) {
       return;
     }
 
-    let scale = this._scale
+    let scale = this._scale;
 
-    if(this._gridElement = this._gridStore[scale]){
-      this.stage.addChild(this._gridElement);
+    if (scale <= 2) {
+      return;
+    }
+
+    if (this._gridElement = this._gridStore[scale]) {
+      this.container.addChild(this._gridElement);
       this.stage.update();
       return;
     }
@@ -58,11 +91,11 @@ export default class ImageEditor {
 
     _.times(height, (h)=> {
       _.times(width, (w)=> {
-        bitmapData.setPixel32(w * scale, h  * scale, this._gridColor)
+        bitmapData.setPixel32(w * scale, h * scale, this._gridColor)
       });
     });
     bitmapData.updateContext();
-    this.stage.addChild(this._gridElement);
+    this.container.addChild(this._gridElement);
     this.stage.update();
   }
 
@@ -71,9 +104,9 @@ export default class ImageEditor {
     if (this._scale < 1) {
       this._scale = 1;
     }
-    let {width, height} = this._canvasElement.image;
+    let {width, height} = this.canvas.image;
 
-    this._canvasElement.scaleX = this._canvasElement.scaleY = this._scale;
+    this.canvas.scaleX = this.canvas.scaleY = this._scale;
     this.drawGrid();
     this.stage.update();
   }
@@ -83,9 +116,15 @@ export default class ImageEditor {
     this.stage.update();
   }
 
+  normalizePixel(rawX, rawY) {
+    let x = (rawX - this.container.x) / this._scale >> 0;
+    let y = (rawY - this.container.y) / this._scale >> 0;
+    
+    return {x, y};
+  }
+
   setPixel(rawX, rawY, color, update?:boolean) {
-    let x = rawX / this._scale >> 0;
-    let y = rawY / this._scale >> 0;
+    let {x, y} = this.normalizePixel(rawX, rawY);
 
     let old = this.bitmapData.getPixel32(x, y);
     this.bitmapData.setPixel32(x, y, color);
@@ -96,10 +135,6 @@ export default class ImageEditor {
   }
 
   static create(stage, w, h) {
-    let bitmapData = new createjs.BitmapData(null, w, h, 0xffffffff);
-    let bitmap = new createjs.Bitmap(bitmapData.canvas);
-    stage.addChild(bitmap);
-
-    return new ImageEditor(stage, bitmap, bitmapData);
+    return new ImageEditor(stage, w, h);
   }
 }

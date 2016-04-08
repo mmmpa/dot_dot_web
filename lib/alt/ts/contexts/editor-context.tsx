@@ -2,6 +2,7 @@ import {Parcel} from "../libs/parcel";
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import ARGB from "../models/argb";
+import KeyControl from "../models/key-control";
 
 interface P {
 }
@@ -9,15 +10,17 @@ interface P {
 interface S {
 }
 
-export default class Context extends Parcel<P,S> {
+export default class EditorContext extends Parcel<P,S> {
   componentWillMount() {
     super.componentWillMount();
     this.setState({
       colors: [ARGB.number(0xff000000), ARGB.number(0xffffffff)],
       selectedColorNumber: 0,
       selectedColor: ARGB.number(0xff000000),
-      scale: 10,
-      grid: true
+      scale: 4,
+      grid: true,
+      key: new KeyControl((mode)=> mode !== this.state.mode && this.setState({mode})),
+      mode: null
     });
   }
 
