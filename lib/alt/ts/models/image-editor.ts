@@ -85,12 +85,12 @@ export default class ImageEditor {
     }
 
     let {width, height} = this.bitmapData;
-    let bitmapData = new createjs.BitmapData(null, width * scale, height * scale, 0x01000000);
+    let bitmapData = new createjs.BitmapData(null, width * scale + 1, height * scale + 1, 0x01000000);
     this._gridElement = new createjs.Bitmap(bitmapData.canvas);
     this._gridStore[scale] = this._gridElement;
 
-    _.times(height, (h)=> {
-      _.times(width, (w)=> {
+    _.times(height + 1, (h)=> {
+      _.times(width + 1, (w)=> {
         bitmapData.setPixel32(w * scale, h * scale, this._gridColor)
       });
     });
@@ -99,12 +99,25 @@ export default class ImageEditor {
     this.stage.update();
   }
 
-  scale(n:number) {
+  center(displayWidth, displayHeight) {
+    let {width, height} = this;
+    width *= this._scale;
+    height *= this._scale;
+    this.container.x = (displayWidth - width) / 2;
+    this.container.y = (displayHeight - height) /2 ;
+    this.update();
+  }
+
+  scale(n:number, baseX, baseY) {
+    let prePosition = this.normalizePixel(baseX, baseY);
     this._scale = n;
-    if (this._scale < 1) {
-      this._scale = 1;
-    }
-    let {width, height} = this.canvas.image;
+    let nextPosition = this.normalizePixel(baseX, baseY);
+
+    let x = prePosition.x - nextPosition.x;
+    let y = prePosition.y - nextPosition.y;
+
+    this.container.x -= x * this._scale;
+    this.container.y -= y * this._scale;
 
     this.canvas.scaleX = this.canvas.scaleY = this._scale;
     this.drawGrid();
@@ -119,7 +132,7 @@ export default class ImageEditor {
   normalizePixel(rawX, rawY) {
     let x = (rawX - this.container.x) / this._scale >> 0;
     let y = (rawY - this.container.y) / this._scale >> 0;
-    
+
     return {x, y};
   }
 

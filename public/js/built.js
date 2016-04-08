@@ -21,17 +21,26 @@ var CanvasComponent = (function (_super) {
         this.commands = {};
     }
     CanvasComponent.prototype.componentWillMount = function () {
+        var _this = this;
         this.setState({
             src: this.props.src || null,
             width: 1000,
             height: 1000
         });
+        $(window).on('mousemove', function (e) { return _this.recordPosition(e); });
+    };
+    CanvasComponent.prototype.recordPosition = function (e) {
+        var _a = this.mousePosition(e), x = _a.x, y = _a.y;
+        this.nowX = x;
+        this.nowY = y;
     };
     CanvasComponent.prototype.componentDidMount = function () {
+        var _this = this;
         _super.prototype.componentDidMount.call(this);
         this.initializeCanvas();
         this.initializeCommand();
         this.refs['container'].addEventListener('mousewheel', this.onMouseWheel.bind(this));
+        $(this.refs['container']).on('dblclick', function (e) { return _this.call('onDoubleClick')(e); });
         if (!this.state.src) {
             this.ie = image_editor_1.default.create(this.stage, 100, 100);
         }
@@ -43,7 +52,7 @@ var CanvasComponent = (function (_super) {
     CanvasComponent.prototype.refreshCanvas = function (props, oldProps) {
         var scale = props.scale, grid = props.grid;
         if (!oldProps || oldProps.scale !== scale) {
-            this.ie.scale(this.scaleNumbers[scale]);
+            this.ie.scale(this.scaleNumbers[scale], this.nowX, this.nowY);
         }
         if (!oldProps || oldProps.grid !== grid) {
             this.ie.switchGrid(grid);
@@ -64,6 +73,7 @@ var CanvasComponent = (function (_super) {
         var _this = this;
         this.commands['onMouseDown'] = this.draw.bind(this);
         this.commands['onMouseWheel'] = function (x, y) { return y > 0 ? _this.scaleStep(-1) : _this.scaleStep(1); };
+        this.commands['onDoubleClick'] = this.drawDouble.bind(this);
     };
     CanvasComponent.prototype.bitmapData = function () {
     };
@@ -75,14 +85,21 @@ var CanvasComponent = (function (_super) {
                 return this.ie.setPixel(x, y, this.props.selectedColor.number, true);
         }
     };
-    CanvasComponent.prototype.startSlide = function (x, y) {
+    CanvasComponent.prototype.drawDouble = function (x, y) {
+        switch (this.props.mode) {
+            case 'slide':
+                var _a = this.layoutStyle, width = _a.width, height = _a.height;
+                return this.ie.center(parseInt(width), parseInt(height));
+            default:
+                return null;
+        }
+    };
+    CanvasComponent.prototype.startSlide = function (startX, startY) {
         var _this = this;
         var slide = this.ie.startSlide();
         var move = function (e) {
-            var nowX = e.pageX - _this.refs['canvas'].offsetLeft;
-            var nowY = e.pageY - _this.refs['canvas'].offsetTop;
-            slide(nowX - x, nowY - y);
-            console.log(nowX - x, nowY - y);
+            var _a = _this.mousePosition(e), x = _a.x, y = _a.y;
+            slide(x - startX, y - startY);
         };
         $(window).on('mousemove', move);
         $(window).on('mouseup', function () {
@@ -111,13 +128,18 @@ var CanvasComponent = (function (_super) {
     };
     CanvasComponent.prototype.onMouseWheel = function (e) {
         e.preventDefault();
+        var _a = this.mousePosition(e), x = _a.x, y = _a.y;
         this.call('onMouseWheel')(e.deltaX, e.deltaY);
     };
     CanvasComponent.prototype.onMouseDown = function (e) {
         e.preventDefault();
+        var _a = this.mousePosition(e), x = _a.x, y = _a.y;
+        this.call('onMouseDown')(x, y);
+    };
+    CanvasComponent.prototype.mousePosition = function (e) {
         var x = e.pageX - this.refs['canvas'].offsetLeft;
         var y = e.pageY - this.refs['canvas'].offsetTop;
-        this.call('onMouseDown')(x, y);
+        return { x: x, y: y };
     };
     CanvasComponent.prototype.render = function () {
         var _this = this;
@@ -829,11 +851,11 @@ var ImageEditor = (function () {
             return;
         }
         var _a = this.bitmapData, width = _a.width, height = _a.height;
-        var bitmapData = new createjs.BitmapData(null, width * scale, height * scale, 0x01000000);
+        var bitmapData = new createjs.BitmapData(null, width * scale + 1, height * scale + 1, 0x01000000);
         this._gridElement = new createjs.Bitmap(bitmapData.canvas);
         this._gridStore[scale] = this._gridElement;
-        _.times(height, function (h) {
-            _.times(width, function (w) {
+        _.times(height + 1, function (h) {
+            _.times(width + 1, function (w) {
                 bitmapData.setPixel32(w * scale, h * scale, _this._gridColor);
             });
         });
@@ -841,12 +863,22 @@ var ImageEditor = (function () {
         this.container.addChild(this._gridElement);
         this.stage.update();
     };
-    ImageEditor.prototype.scale = function (n) {
+    ImageEditor.prototype.center = function (displayWidth, displayHeight) {
+        var _a = this, width = _a.width, height = _a.height;
+        width *= this._scale;
+        height *= this._scale;
+        this.container.x = (displayWidth - width) / 2;
+        this.container.y = (displayHeight - height) / 2;
+        this.update();
+    };
+    ImageEditor.prototype.scale = function (n, baseX, baseY) {
+        var prePosition = this.normalizePixel(baseX, baseY);
         this._scale = n;
-        if (this._scale < 1) {
-            this._scale = 1;
-        }
-        var _a = this.canvas.image, width = _a.width, height = _a.height;
+        var nextPosition = this.normalizePixel(baseX, baseY);
+        var x = prePosition.x - nextPosition.x;
+        var y = prePosition.y - nextPosition.y;
+        this.container.x -= x * this._scale;
+        this.container.y -= y * this._scale;
         this.canvas.scaleX = this.canvas.scaleY = this._scale;
         this.drawGrid();
         this.stage.update();

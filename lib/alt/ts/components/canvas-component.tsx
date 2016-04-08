@@ -20,12 +20,23 @@ export default class CanvasComponent extends Cell<P,{}> {
   private ie:ImageEditor;
   private commands:any = {};
 
+  private nowX;
+  private nowY;
+
   componentWillMount() {
     this.setState({
       src: this.props.src || null,
       width: 1000,
       height: 1000
-    })
+    });
+
+    $(window).on('mousemove', (e)=> this.recordPosition(e));
+  }
+
+  recordPosition(e:JQueryMouseEventObject) {
+    let {x, y} = this.mousePosition(e);
+    this.nowX = x;
+    this.nowY = y;
   }
 
   componentDidMount() {
@@ -34,6 +45,7 @@ export default class CanvasComponent extends Cell<P,{}> {
     this.initializeCanvas();
     this.initializeCommand();
     this.refs['container'].addEventListener('mousewheel', this.onMouseWheel.bind(this));
+    $(this.refs['container']).on('dblclick', (e)=> this.call('onDoubleClick')(e));
 
     if (!this.state.src) {
       this.ie = ImageEditor.create(this.stage, 100, 100);
@@ -60,7 +72,7 @@ export default class CanvasComponent extends Cell<P,{}> {
     let {scale, grid} = props;
 
     if (!oldProps || oldProps.scale !== scale) {
-      this.ie.scale(this.scaleNumbers[scale])
+      this.ie.scale(this.scaleNumbers[scale], this.nowX, this.nowY)
     }
 
     if (!oldProps || oldProps.grid !== grid) {
@@ -84,6 +96,7 @@ export default class CanvasComponent extends Cell<P,{}> {
   initializeCommand() {
     this.commands['onMouseDown'] = this.draw.bind(this);
     this.commands['onMouseWheel'] = (x, y)=> y > 0 ? this.scaleStep(-1) : this.scaleStep(1);
+    this.commands['onDoubleClick'] = this.drawDouble.bind(this);
   }
 
   bitmapData() {
@@ -98,13 +111,21 @@ export default class CanvasComponent extends Cell<P,{}> {
     }
   }
 
-  startSlide(x, y) {
+  drawDouble(x, y) {
+    switch (this.props.mode) {
+      case 'slide':
+        let {width, height} = this.layoutStyle;
+        return this.ie.center(parseInt(width), parseInt(height));
+      default:
+        return null;
+    }
+  }
+
+  startSlide(startX, startY) {
     let slide = this.ie.startSlide();
     let move = (e:JQueryMouseEventObject)=> {
-      var nowX = e.pageX - this.refs['canvas'].offsetLeft;
-      var nowY = e.pageY - this.refs['canvas'].offsetTop;
-      slide(nowX - x, nowY - y);
-      console.log(nowX - x, nowY - y)
+      let {x, y} = this.mousePosition(e);
+      slide(x - startX, y - startY);
     };
     $(window).on('mousemove', move);
     $(window).on('mouseup', ()=> {
@@ -130,15 +151,22 @@ export default class CanvasComponent extends Cell<P,{}> {
 
   onMouseWheel(e:WheelEvent) {
     e.preventDefault();
+    let {x, y} = this.mousePosition(e);
     this.call('onMouseWheel')(e.deltaX, e.deltaY);
   }
 
   onMouseDown(e:MouseEvent) {
     e.preventDefault();
+    let {x, y} = this.mousePosition(e);
+
+    this.call('onMouseDown')(x, y);
+  }
+
+  mousePosition(e) {
     var x = e.pageX - this.refs['canvas'].offsetLeft;
     var y = e.pageY - this.refs['canvas'].offsetTop;
 
-    this.call('onMouseDown')(x, y);
+    return {x, y};
   }
 
   render() {
