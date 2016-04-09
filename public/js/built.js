@@ -28,6 +28,11 @@ var CanvasComponent = (function (_super) {
             height: 1000
         });
         $(window).on('mousemove', function (e) { return _this.recordPosition(e); });
+        console.log(this.props);
+        this.props.keyControl.hook = function (name, e) {
+            e.preventDefault();
+            _this.call(name)();
+        };
     };
     CanvasComponent.prototype.recordPosition = function (e) {
         var _a = this.mousePosition(e), x = _a.x, y = _a.y;
@@ -45,6 +50,7 @@ var CanvasComponent = (function (_super) {
             this.ie = image_editor_1.default.create(this.stage, 100, 100);
         }
         this.refreshCanvas(this.props);
+        this.center();
     };
     CanvasComponent.prototype.componentWillReceiveProps = function (props) {
         this.refreshCanvas(props, this.props);
@@ -74,8 +80,12 @@ var CanvasComponent = (function (_super) {
         this.commands['onMouseDown'] = this.draw.bind(this);
         this.commands['onMouseWheel'] = function (x, y) { return y > 0 ? _this.scaleStep(-1) : _this.scaleStep(1); };
         this.commands['onDoubleClick'] = this.drawDouble.bind(this);
+        this.commands['onControlS'] = function () { return _this.save(); };
     };
     CanvasComponent.prototype.bitmapData = function () {
+    };
+    CanvasComponent.prototype.save = function () {
+        this.dispatch('image:save', this.ie.exportPng());
     };
     CanvasComponent.prototype.draw = function (x, y) {
         switch (this.props.mode) {
@@ -88,11 +98,14 @@ var CanvasComponent = (function (_super) {
     CanvasComponent.prototype.drawDouble = function (x, y) {
         switch (this.props.mode) {
             case 'slide':
-                var _a = this.layoutStyle, width = _a.width, height = _a.height;
-                return this.ie.center(parseInt(width), parseInt(height));
+                return this.center();
             default:
                 return null;
         }
+    };
+    CanvasComponent.prototype.center = function () {
+        var _a = this.layoutStyle, width = _a.width, height = _a.height;
+        return this.ie.center(parseInt(width), parseInt(height));
     };
     CanvasComponent.prototype.startSlide = function (startX, startY) {
         var _this = this;
@@ -136,9 +149,16 @@ var CanvasComponent = (function (_super) {
         var _a = this.mousePosition(e), x = _a.x, y = _a.y;
         this.call('onMouseDown')(x, y);
     };
+    Object.defineProperty(CanvasComponent.prototype, "canvas", {
+        get: function () {
+            return this.refs['canvas'];
+        },
+        enumerable: true,
+        configurable: true
+    });
     CanvasComponent.prototype.mousePosition = function (e) {
-        var x = e.pageX - this.refs['canvas'].offsetLeft;
-        var y = e.pageY - this.refs['canvas'].offsetTop;
+        var x = e.pageX - this.canvas.offsetLeft;
+        var y = e.pageY - this.canvas.offsetTop;
         return { x: x, y: y };
     };
     CanvasComponent.prototype.render = function () {
@@ -330,14 +350,11 @@ var EditorComponent = (function (_super) {
     });
     EditorComponent.prototype.componentWillMount = function () {
         _super.prototype.componentWillMount.call(this);
-        this.setState({
-            layout: {}
-        });
+        this.onWindowResize();
     };
     EditorComponent.prototype.componentDidMount = function () {
         _super.prototype.componentDidMount.call(this);
         this.addEvent();
-        this.onWindowResize();
     };
     EditorComponent.prototype.onWindowResize = function (e) {
         var w = $(window).width();
@@ -489,9 +506,9 @@ var EditorContext = (function (_super) {
             colors: [argb_1.default.number(0xff000000), argb_1.default.number(0xffffffff)],
             selectedColorNumber: 0,
             selectedColor: argb_1.default.number(0xff000000),
-            scale: 4,
+            scale: 1,
             grid: true,
-            key: new key_control_1.default(function (mode) { return mode !== _this.state.mode && _this.setState({ mode: mode }); }),
+            keyControl: new key_control_1.default(function (mode) { return mode !== _this.state.mode && _this.setState({ mode: mode }); }),
             mode: null
         });
     };
@@ -509,6 +526,11 @@ var EditorContext = (function (_super) {
         to('color:switch', function (selectedColorNumber) { return _this.setState({ selectedColorNumber: selectedColorNumber, selectedColor: _this.state.colors[selectedColorNumber] }); });
         to('color:arrange', function (argb) { return _this.arrangeColor(argb); });
         to('canvas:scale', function (scale) { return _this.setState({ scale: scale }); });
+        to('image:save', function (dataUrl) {
+            var name = 'test';
+            var a = $('<a>').attr("href", dataUrl).attr("download", "file-" + name + ".png");
+            a.trigger('click');
+        });
     };
     return EditorContext;
 }(parcel_1.Parcel));
@@ -809,6 +831,9 @@ var ImageEditor = (function () {
         this.update();
         return store.historyGroup;
     };
+    ImageEditor.prototype.exportPng = function () {
+        return this.canvas.image.toDataURL("image/png");
+    };
     ImageEditor.prototype.startSlide = function () {
         var _this = this;
         var startX = this.container.x;
@@ -867,8 +892,8 @@ var ImageEditor = (function () {
         var _a = this, width = _a.width, height = _a.height;
         width *= this._scale;
         height *= this._scale;
-        this.container.x = (displayWidth - width) / 2;
-        this.container.y = (displayHeight - height) / 2;
+        this.container.x = (displayWidth - width) / 2 >> 0;
+        this.container.y = (displayHeight - height) / 2 >> 0;
         this.update();
     };
     ImageEditor.prototype.scale = function (n, baseX, baseY) {
@@ -923,7 +948,7 @@ var KeyControl = (function () {
         });
         $(window).keyup(function (e) {
             _this.up(e.keyCode);
-            _this.check(e);
+            _this.strike(null, e);
         });
     }
     KeyControl.prototype.down = function (code) {
@@ -937,9 +962,22 @@ var KeyControl = (function () {
     };
     KeyControl.prototype.check = function (e) {
         if (this.isDown(32)) {
-            return this.callback('slide');
+            return this.strike('slide', e);
         }
-        this.callback(null);
+        var string = 'on';
+        if (e.altKey) {
+            string += 'Alt';
+        }
+        if (e.ctrlKey) {
+            string += 'Control';
+        }
+        string += e.code.replace('Key', '');
+        this.strike(string, e);
+    };
+    KeyControl.prototype.strike = function (name, e) {
+        console.log('strike', name);
+        this.callback(name);
+        this.hook && this.hook(name, e);
     };
     KeyControl.prototype.codeEnum = function (code) {
         switch (code) {

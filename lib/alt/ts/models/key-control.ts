@@ -1,5 +1,6 @@
 export default class KeyControl {
   downStore:any = {};
+  public hook:(name:string, e:JQueryKeyEventObject)=>void;
 
   constructor(public callback) {
     console.log('key control')
@@ -11,35 +12,52 @@ export default class KeyControl {
 
     $(window).keyup((e:JQueryKeyEventObject)=> {
       this.up(e.keyCode);
-      this.check(e);
+      this.strike(null, e);
     });
   }
 
-  down(code){
+  down(code) {
     this.downStore[code] = true;
   }
 
-  up(code){
+  up(code) {
     this.downStore[code] = false;
   }
 
-  isDown(code){
+  isDown(code) {
     return this.downStore[code];
   }
 
-  check(e:JQueryKeyEventObject){
-    if(this.isDown(32)){
-      return this.callback('slide')
+  check(e:JQueryKeyEventObject) {
+    if (this.isDown(32)) {
+      return this.strike('slide', e)
     }
 
-    this.callback(null);
+    let string = 'on';
+
+    if(e.altKey){
+      string += 'Alt'
+    }
+
+    if(e.ctrlKey){
+      string += 'Control'
+    }
+
+    string += e.code.replace('Key', '');
+
+    this.strike(string, e);
   }
 
-  codeEnum(code){
-    switch(code){
+  strike(name:string, e:JQueryKeyEventObject){
+    console.log('strike', name)
+    this.callback(name);
+    this.hook && this.hook(name, e)
+  }
+
+  codeEnum(code) {
+    switch (code) {
       case 'Space':
         return Code.Space
-
     }
   }
 }

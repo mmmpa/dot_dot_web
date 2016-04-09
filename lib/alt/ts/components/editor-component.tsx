@@ -30,15 +30,12 @@ export default class EditorComponent extends Good<P,{}> {
 
   componentWillMount() {
     super.componentWillMount();
-    this.setState({
-      layout: {}
-    });
+    this.onWindowResize();
   }
 
   componentDidMount() {
     super.componentDidMount();
     this.addEvent();
-    this.onWindowResize()
   }
 
   onWindowResize(e?:Event) {

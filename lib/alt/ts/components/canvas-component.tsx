@@ -31,6 +31,11 @@ export default class CanvasComponent extends Cell<P,{}> {
     });
 
     $(window).on('mousemove', (e)=> this.recordPosition(e));
+    console.log(this.props)
+    this.props.keyControl.hook = (name, e:JQueryKeyEventObject)=> {
+      e.preventDefault();
+      this.call(name)()
+    }
   }
 
   recordPosition(e:JQueryMouseEventObject) {
@@ -49,23 +54,14 @@ export default class CanvasComponent extends Cell<P,{}> {
 
     if (!this.state.src) {
       this.ie = ImageEditor.create(this.stage, 100, 100);
-      /*
-       this.ie.once((wrapper, s)=> {
-       wrapper(
-       s.setPixel(1, 1, 0xff0000ff),
-       s.setPixel(2, 1, 0xff0000ff),
-       s.setPixel(1, 2, 0xff0000ff),
-       s.setPixel(2, 2, 0xff0000ff)
-       )
-       });
-       */
     }
 
     this.refreshCanvas(this.props);
+    this.center();
   }
 
   componentWillReceiveProps(props) {
-    this.refreshCanvas(props, this.props)
+    this.refreshCanvas(props, this.props);
   }
 
   refreshCanvas(props, oldProps?) {
@@ -97,9 +93,14 @@ export default class CanvasComponent extends Cell<P,{}> {
     this.commands['onMouseDown'] = this.draw.bind(this);
     this.commands['onMouseWheel'] = (x, y)=> y > 0 ? this.scaleStep(-1) : this.scaleStep(1);
     this.commands['onDoubleClick'] = this.drawDouble.bind(this);
+    this.commands['onControlS'] = ()=> this.save();
   }
 
   bitmapData() {
+  }
+
+  save() {
+    this.dispatch('image:save', this.ie.exportPng());
   }
 
   draw(x, y) {
@@ -114,11 +115,15 @@ export default class CanvasComponent extends Cell<P,{}> {
   drawDouble(x, y) {
     switch (this.props.mode) {
       case 'slide':
-        let {width, height} = this.layoutStyle;
-        return this.ie.center(parseInt(width), parseInt(height));
+        return this.center();
       default:
         return null;
     }
+  }
+
+  center() {
+    let {width, height} = this.layoutStyle;
+    return this.ie.center(parseInt(width), parseInt(height));
   }
 
   startSlide(startX, startY) {
@@ -162,9 +167,13 @@ export default class CanvasComponent extends Cell<P,{}> {
     this.call('onMouseDown')(x, y);
   }
 
+  get canvas() {
+    return this.refs['canvas'];
+  }
+
   mousePosition(e) {
-    var x = e.pageX - this.refs['canvas'].offsetLeft;
-    var y = e.pageY - this.refs['canvas'].offsetTop;
+    var x = e.pageX - this.canvas.offsetLeft;
+    var y = e.pageY - this.canvas.offsetTop;
 
     return {x, y};
   }

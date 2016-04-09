@@ -17,9 +17,9 @@ export default class EditorContext extends Parcel<P,S> {
       colors: [ARGB.number(0xff000000), ARGB.number(0xffffffff)],
       selectedColorNumber: 0,
       selectedColor: ARGB.number(0xff000000),
-      scale: 4,
+      scale: 1,
       grid: true,
-      key: new KeyControl((mode)=> mode !== this.state.mode && this.setState({mode})),
+      keyControl: new KeyControl((mode)=> mode !== this.state.mode && this.setState({mode})),
       mode: null
     });
   }
@@ -37,5 +37,10 @@ export default class EditorContext extends Parcel<P,S> {
     to('color:switch', (selectedColorNumber)=>this.setState({selectedColorNumber, selectedColor: this.state.colors[selectedColorNumber]}));
     to('color:arrange', (argb)=>this.arrangeColor(argb));
     to('canvas:scale', (scale)=>this.setState({scale}));
+    to('image:save', (dataUrl)=> {
+      let name = 'test'
+      let a = $('<a>').attr("href", dataUrl).attr("download", "file-" + name + ".png");
+      a.trigger('click');
+    });
   }
 }

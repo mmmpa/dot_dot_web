@@ -39,6 +39,10 @@ export default class ImageEditor {
     return store.historyGroup
   }
 
+  exportPng(){
+    return this.canvas.image.toDataURL("image/png");
+  }
+
   startSlide() {
     let startX = this.container.x;
     let startY = this.container.y;
@@ -103,8 +107,8 @@ export default class ImageEditor {
     let {width, height} = this;
     width *= this._scale;
     height *= this._scale;
-    this.container.x = (displayWidth - width) / 2;
-    this.container.y = (displayHeight - height) /2 ;
+    this.container.x = (displayWidth - width) / 2 >> 0;
+    this.container.y = (displayHeight - height) /2 >> 0 ;
     this.update();
   }
 
