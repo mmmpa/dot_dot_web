@@ -89,16 +89,24 @@ export default class ImageEditor {
     }
 
     let {width, height} = this.bitmapData;
-    let bitmapData = new createjs.BitmapData(null, width * scale + 1, height * scale + 1, 0x01000000);
-    this._gridElement = new createjs.Bitmap(bitmapData.canvas);
+
+    this._gridElement = new createjs.Shape();
+    let g = this._gridElement.graphics;
+    g.setStrokeStyle(0);
+    g.beginStroke('rgba(0,0,0,0.1)');
     this._gridStore[scale] = this._gridElement;
 
     _.times(height + 1, (h)=> {
-      _.times(width + 1, (w)=> {
-        bitmapData.setPixel32(w * scale, h * scale, this._gridColor)
-      });
+      let y = h * scale - 0.5
+      g.moveTo(-0.5,  y);
+      g.lineTo(width * scale - 0.5, y);
     });
-    bitmapData.updateContext();
+
+    _.times(width + 1, (w)=> {
+      let x = w * scale - 0.5
+      g.moveTo(x,  -0.5);
+      g.lineTo(x, height * scale - 0.5);
+    });
     this.container.addChild(this._gridElement);
     this.stage.update();
   }

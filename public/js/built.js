@@ -861,7 +861,6 @@ var ImageEditor = (function () {
         this.drawGrid();
     };
     ImageEditor.prototype.drawGrid = function () {
-        var _this = this;
         this.container.removeChild(this._gridElement);
         if (!this._grid) {
             return;
@@ -876,15 +875,21 @@ var ImageEditor = (function () {
             return;
         }
         var _a = this.bitmapData, width = _a.width, height = _a.height;
-        var bitmapData = new createjs.BitmapData(null, width * scale + 1, height * scale + 1, 0x01000000);
-        this._gridElement = new createjs.Bitmap(bitmapData.canvas);
+        this._gridElement = new createjs.Shape();
+        var g = this._gridElement.graphics;
+        g.setStrokeStyle(0);
+        g.beginStroke('rgba(0,0,0,0.1)');
         this._gridStore[scale] = this._gridElement;
         _.times(height + 1, function (h) {
-            _.times(width + 1, function (w) {
-                bitmapData.setPixel32(w * scale, h * scale, _this._gridColor);
-            });
+            var y = h * scale - 0.5;
+            g.moveTo(-0.5, y);
+            g.lineTo(width * scale - 0.5, y);
         });
-        bitmapData.updateContext();
+        _.times(width + 1, function (w) {
+            var x = w * scale - 0.5;
+            g.moveTo(x, -0.5);
+            g.lineTo(x, height * scale - 0.5);
+        });
         this.container.addChild(this._gridElement);
         this.stage.update();
     };
