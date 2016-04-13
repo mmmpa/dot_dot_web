@@ -42,9 +42,16 @@ export default class EditorContext extends Parcel<P,S> {
     this.setState({colors, selectedColor})
   }
 
+  addColor(){
+    let {colorSet, selectedColor} = this.state;
+    colorSet.add(selectedColor);
+    this.setState({colorSet})
+  }
+
   listen(to) {
     to('color:switch', (selectedColorNumber)=>this.setState({selectedColorNumber, selectedColor: this.state.colors[selectedColorNumber]}));
     to('color:select', (color)=> this.selectColor(color))
+    to('color:add', ()=> this.addColor())
     to('color:arrange', (argb)=>this.arrangeColor(argb));
     to('canvas:scale', (scale)=>this.setState({scale}));
     to('image:save', (dataUrl)=> {
