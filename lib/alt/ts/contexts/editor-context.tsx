@@ -24,7 +24,8 @@ export default class EditorContext extends Parcel<P,S> {
       keyControl: new KeyControl((mode)=> mode !== this.state.mode && this.setState({mode})),
       mode: null,
       colorSet: new ColorSet([ARGB.number(0xffff0000), ARGB.number(0xff00ff00), ARGB.number(0xff0000ff)]),
-      floatingColorPaletteMode: null
+      floatingColorPaletteMode: null,
+      floatingFrom: null
     });
   }
 
@@ -45,7 +46,8 @@ export default class EditorContext extends Parcel<P,S> {
   }
 
   riseFloater(e, floatingColorPaletteMode){
-    this.setState({floatingColorPaletteMode})
+    let floatingFrom = e.currentTarget;
+    this.setState({floatingColorPaletteMode, floatingFrom});
   }
 
   selectColorFromFloater(selectedColor:ARGB, index:number) {

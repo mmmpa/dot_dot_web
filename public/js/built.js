@@ -463,6 +463,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 var parcel_1 = require("../libs/parcel");
 var React = require("react");
 var color_cell_set_1 = require("./color-cell-set");
+require("zepto/zepto.min");
 var FloatingColorPaletteComponent = (function (_super) {
     __extends(FloatingColorPaletteComponent, _super);
     function FloatingColorPaletteComponent() {
@@ -470,17 +471,29 @@ var FloatingColorPaletteComponent = (function (_super) {
     }
     FloatingColorPaletteComponent.prototype.componentWillMount = function () {
         this.setState({
-            visible: this.detectVisibility(this.props)
+            visible: this.detectVisibility(this.props),
+            position: this.detectPosition(this.props)
         });
+    };
+    FloatingColorPaletteComponent.prototype.detectPosition = function (props) {
+        if (!props.floatingFrom) {
+            return { top: 0, left: 0 };
+        }
+        var $from = $(props.floatingFrom);
+        var _a = $from.offset(), top = _a.top, left = _a.left;
+        top += $from.height();
+        return { top: top, left: left };
     };
     FloatingColorPaletteComponent.prototype.shouldComponentUpdate = function (props) {
         return props.floatingColorPaletteMode !== this.props.floatingColorPaletteMode;
     };
     FloatingColorPaletteComponent.prototype.componentWillReceiveProps = function (props) {
-        this.setState({ visible: this.detectVisibility(props) });
+        this.setState({
+            visible: this.detectVisibility(props),
+            position: this.detectPosition(props)
+        });
     };
     FloatingColorPaletteComponent.prototype.detectVisibility = function (props) {
-        console.log(props.floatingColorPaletteMode, !_.isNull(props.floatingColorPaletteMode));
         return !_.isNull(props.floatingColorPaletteMode);
     };
     FloatingColorPaletteComponent.prototype.render = function () {
@@ -488,15 +501,16 @@ var FloatingColorPaletteComponent = (function (_super) {
         if (!this.state.visible) {
             return null;
         }
+        var _a = this.state.position, top = _a.top, left = _a.left;
         var colorSet = this.props.colorSet;
-        return React.createElement("div", {className: "floating-color-palette"}, React.createElement("section", {className: "cell-body"}, React.createElement(color_cell_set_1.default, React.__spread({}, { colorSet: colorSet, onClick: function (color) { return _this.dispatch('floater:select', color); } }))));
+        return React.createElement("div", {className: "floating-color-palette", style: { top: top, left: left }}, React.createElement(color_cell_set_1.default, React.__spread({}, { colorSet: colorSet, onClick: function (color) { return _this.dispatch('floater:select', color); } })));
     };
     return FloatingColorPaletteComponent;
 }(parcel_1.Good));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = FloatingColorPaletteComponent;
 
-},{"../libs/parcel":18,"./color-cell-set":3,"react":185}],9:[function(require,module,exports){
+},{"../libs/parcel":18,"./color-cell-set":3,"react":185,"zepto/zepto.min":186}],9:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -632,7 +646,8 @@ var EditorContext = (function (_super) {
             keyControl: new key_control_1.default(function (mode) { return mode !== _this.state.mode && _this.setState({ mode: mode }); }),
             mode: null,
             colorSet: new color_set_1.default([argb_1.default.number(0xffff0000), argb_1.default.number(0xff00ff00), argb_1.default.number(0xff0000ff)]),
-            floatingColorPaletteMode: null
+            floatingColorPaletteMode: null,
+            floatingFrom: null
         });
     };
     EditorContext.prototype.arrangeColor = function (_a) {
@@ -651,7 +666,8 @@ var EditorContext = (function (_super) {
         this.setState({ colors: colors, selectedColor: selectedColor });
     };
     EditorContext.prototype.riseFloater = function (e, floatingColorPaletteMode) {
-        this.setState({ floatingColorPaletteMode: floatingColorPaletteMode });
+        var floatingFrom = e.currentTarget;
+        this.setState({ floatingColorPaletteMode: floatingColorPaletteMode, floatingFrom: floatingFrom });
     };
     EditorContext.prototype.selectColorFromFloater = function (selectedColor, index) {
         this.detectFloatingAction()(selectedColor, index);
