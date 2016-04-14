@@ -8,6 +8,7 @@ import ColorPaletteComponent from "./color-palette-component";
 import SelectedColorComponent from "./selected-color-component";
 import StyleStylist from "../models/style-stylist"
 import ColorControllerComponent from "./color-controller-component";
+import FloatingColorPaletteComponent from "./floating-color-palette";
 
 require("zepto/zepto.min");
 declare const $:any;
@@ -24,7 +25,8 @@ export default class EditorComponent extends Good<P,{}> {
       <ToolControllerComponent name="toolController"/>,
       <ColorPaletteComponent name="colorPalette"/>,
       <SelectedColorComponent name="selectedColor"/>,
-      <ColorControllerComponent name="colorController"/>
+      <ColorControllerComponent name="colorController"/>,
+      <FloatingColorPaletteComponent  name="floaterColorPalette"/>
     ]
   }
 

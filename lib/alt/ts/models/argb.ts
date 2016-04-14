@@ -36,6 +36,6 @@ export default class ARGB {
 
   static fromJson(json):ARGB {
     let {r, b, g, a} = json;
-    return new ARGB(r, g, b, a);
+    return new ARGB(a, r, g, b);
   }
 }

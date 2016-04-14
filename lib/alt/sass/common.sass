@@ -108,17 +108,17 @@ body
   -ms-interpolation-mode: nearest-neighbor
   image-rendering: pixelated
 
-.color-pallet
-  .color-cell
-    display: inline-block
-    width: 20px
-    height: 20px
-    overflow: hidden
-    text-indent: 100px
-    cursor: pointer
-    margin: 0 1px 1px 0
-    &:hover
-      border: 2px solid #000
+.color-cell
+  display: inline-block
+  width: 20px
+  height: 20px
+  overflow: hidden
+  text-indent: 100px
+  cursor: pointer
+  margin: 0 1px 1px 0
+  &:hover
+    border: 2px solid #000
+
 .icon-button
   box-sizing: border-box
   width: 30px
@@ -126,3 +126,10 @@ body
   overflow: hidden
   line-height: 30px
   padding: 0
+
+.floating-color-palette
+  position: absolute
+  top: 10px
+  left: 10px
+  width: 200px
+  background: #fff

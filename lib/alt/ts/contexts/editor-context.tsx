@@ -4,6 +4,7 @@ import * as ReactDOM from 'react-dom';
 import ARGB from "../models/argb";
 import KeyControl from "../models/key-control";
 import ColorSet from "../models/color-set";
+import {FloatingColorPaletteMode} from "../constants/constants";
 
 interface P {
 }
@@ -22,7 +23,8 @@ export default class EditorContext extends Parcel<P,S> {
       grid: true,
       keyControl: new KeyControl((mode)=> mode !== this.state.mode && this.setState({mode})),
       mode: null,
-      colorSet: new ColorSet([ARGB.number(0xffff0000), ARGB.number(0xff00ff00), ARGB.number(0xff0000ff)])
+      colorSet: new ColorSet([ARGB.number(0xffff0000), ARGB.number(0xff00ff00), ARGB.number(0xff0000ff)]),
+      floatingColorPaletteMode: null
     });
   }
 
@@ -42,20 +44,45 @@ export default class EditorContext extends Parcel<P,S> {
     this.setState({colors, selectedColor})
   }
 
+  riseFloater(e, floatingColorPaletteMode){
+    this.setState({floatingColorPaletteMode})
+  }
+
+  selectColorFromFloater(selectedColor:ARGB, index:number) {
+    this.detectFloatingAction()(selectedColor, index);
+    this.setState({floatingColorPaletteMode: null})
+  }
+
+  detectFloatingAction(){
+    switch(this.state.floatingColorPaletteMode){
+      case FloatingColorPaletteMode.Delete:
+        return this.deleteColor.bind(this)
+
+    }
+  }
+
   addColor(){
     let {colorSet, selectedColor} = this.state;
     colorSet.add(selectedColor);
     this.setState({colorSet})
   }
 
+  deleteColor(color){
+    let {colorSet} = this.state;
+    colorSet.remove(color);
+    this.setState({colorSet})
+  }
+
   listen(to) {
     to('color:switch', (selectedColorNumber)=>this.setState({selectedColorNumber, selectedColor: this.state.colors[selectedColorNumber]}));
-    to('color:select', (color)=> this.selectColor(color))
-    to('color:add', ()=> this.addColor())
+    to('color:select', (color)=> this.selectColor(color));
+    to('color:add', ()=> this.addColor());
     to('color:arrange', (argb)=>this.arrangeColor(argb));
+    to('floater:select', (color)=> this.selectColorFromFloater(color));
+    to('floater:rise', (e, mode)=> this.riseFloater(e, mode));
     to('canvas:scale', (scale)=>this.setState({scale}));
     to('image:save', (dataUrl)=> {
-      let name = 'test'
+      let name = 'test';
       $('<a>')
         .attr("href", dataUrl)
         .attr("download", "file-" + name)
