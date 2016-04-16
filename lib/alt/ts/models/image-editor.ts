@@ -30,6 +30,11 @@ export default class ImageEditor {
     stage.addChild(this.container);
   }
 
+  close() {
+    this.stage.clear();
+    this.stage.removeAllChildren();
+  }
+
   once(callback:(writeHistory, bitmapData)=>void):ActionHistory[] {
     let store:{historyGroup:ActionHistory[]} = {historyGroup: []};
     callback(this.writeHistory(history), this);
@@ -39,7 +44,7 @@ export default class ImageEditor {
     return store.historyGroup
   }
 
-  exportPng(){
+  exportPng() {
     return this.canvas.image.toDataURL("image/png");
   }
 
@@ -99,13 +104,13 @@ export default class ImageEditor {
 
     _.times(height + 1, (h)=> {
       let y = h * scale - 0.5
-      g.moveTo(-0.5,  y);
+      g.moveTo(-0.5, y);
       g.lineTo(width * scale - 0.5, y);
     });
 
     _.times(width + 1, (w)=> {
       let x = w * scale - 0.5
-      g.moveTo(x,  -0.5);
+      g.moveTo(x, -0.5);
       g.lineTo(x, height * scale - 0.5);
     });
     this.container.addChild(this._gridElement);
@@ -117,12 +122,12 @@ export default class ImageEditor {
     width *= this._scale;
     height *= this._scale;
     this.container.x = (displayWidth - width) / 2 >> 0;
-    this.container.y = (displayHeight - height) /2 >> 0 ;
+    this.container.y = (displayHeight - height) / 2 >> 0;
     this.update();
   }
 
   scale(n:number, baseX, baseY) {
-    if(baseX && baseY){
+    if (baseX && baseY) {
       let prePosition = this.normalizePixel(baseX, baseY);
       this._scale = n;
       let nextPosition = this.normalizePixel(baseX, baseY);
@@ -132,7 +137,7 @@ export default class ImageEditor {
 
       this.container.x -= x * this._scale;
       this.container.y -= y * this._scale;
-    }else{
+    } else {
       this._scale = n;
     }
 

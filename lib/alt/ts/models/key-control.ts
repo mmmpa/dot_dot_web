@@ -3,8 +3,6 @@ export default class KeyControl {
   public hook:(name:string, e:JQueryKeyEventObject)=>void;
 
   constructor(public callback) {
-    console.log('key control')
-
     $(window).keydown((e:JQueryKeyEventObject)=> {
       this.down(e.keyCode);
       this.check(e);

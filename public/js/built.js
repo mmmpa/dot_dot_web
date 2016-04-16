@@ -73,9 +73,35 @@ var CanvasComponent = (function (_super) {
     CanvasComponent.prototype.startDraw = function (startX, startY) {
         var _this = this;
         this.dispatch('canvas:draw', startX, startY);
+        var pre = { x: startX, y: startY };
         var move = function (e) {
             var _a = _this.mousePosition(e), x = _a.x, y = _a.y;
-            _this.dispatch('canvas:draw', x, y);
+            var points = [{ x: x, y: y }];
+            if (Math.abs(x - pre.x) > 1 || Math.abs(y - pre.y) > 1) {
+                var moveX = x - pre.x;
+                var moveY = y - pre.y;
+                var power = moveY / moveX;
+                if (moveX > 0) {
+                    for (var i = moveX; i--;) {
+                        var move_1 = Math.round(i * power);
+                        if (move_1 > 1) {
+                            for (var ii = move_1; ii--;) {
+                                points.push({ x: x - i, y: y - ii });
+                            }
+                        }
+                        else {
+                            points.push({ x: x - i, y: y - move_1 });
+                        }
+                    }
+                }
+                else {
+                    for (var i = moveX; i++;) {
+                        points.push({ x: x - i, y: y - i * power });
+                    }
+                }
+            }
+            _this.dispatch('canvas:draw:once', points);
+            pre = { x: x, y: y };
         };
         $(window).on('mousemove', move);
         $(window).on('mouseup', function () {
@@ -654,9 +680,11 @@ var EditorContext = (function (_super) {
             commands: this.commands
         });
         this.commands['onControlS'] = function () { return _this.save(); };
+        this.commands['onControlN'] = function () { return _this.create(); };
+        this.commands['onControlO'] = function () { return _this.open(); };
+        this.commands['onG'] = function () { return _this.toggleGrid(); };
         this.keyControl.hook = function (name, e) {
-            e.preventDefault();
-            _this.call(name)();
+            _this.call(name, e)();
         };
     };
     EditorContext.prototype.componentDidUpdate = function (_, state) {
@@ -738,6 +766,14 @@ var EditorContext = (function (_super) {
     EditorContext.prototype.draw = function (x, y) {
         this.ie.setPixel(x, y, this.state.selectedColor.number, true);
     };
+    EditorContext.prototype.drawOnce = function (points) {
+        var _this = this;
+        points.forEach(function (_a) {
+            var x = _a.x, y = _a.y;
+            return _this.ie.setPixel(x, y, _this.state.selectedColor.number);
+        });
+        this.ie.update();
+    };
     EditorContext.prototype.scaleStep = function (direction, x, y) {
         var scale = this.state.scale;
         scale += direction;
@@ -764,6 +800,14 @@ var EditorContext = (function (_super) {
             .attr("download", "file-" + name)
             .trigger('click');
     };
+    EditorContext.prototype.open = function () {
+    };
+    EditorContext.prototype.create = function () {
+        this.ie.close();
+        this.ie = image_editor_1.default.create(this.stage, 100, 100);
+        this.center();
+        this.ie.switchGrid(this.state.grid);
+    };
     EditorContext.prototype.toggleGrid = function () {
         this.setState({ grid: !this.state.grid });
     };
@@ -777,6 +821,7 @@ var EditorContext = (function (_super) {
         to('floater:rise', function (e, mode) { return _this.riseFloater(e, mode); });
         to('canvas:mounted', function (canvas) { return _this.initializeStage(canvas); });
         to('canvas:draw', function (x, y) { return _this.draw(x, y); });
+        to('canvas:draw:once', function (points) { return _this.drawOnce(points); });
         to('canvas:resize', function (canvasWidth, canvasHeight) { return _this.setState({ canvasWidth: canvasWidth, canvasHeight: canvasHeight }); });
         to('canvas:scale:plus', function (x, y) { return _this.scaleStep(+1, x, y); });
         to('canvas:scale:minus', function (x, y) { return _this.scaleStep(-1, x, y); });
@@ -785,6 +830,8 @@ var EditorContext = (function (_super) {
         to('canvas:center', function () { return _this.center(); });
         to('canvas:grid:toggle', function () { return _this.toggleGrid(); });
         to('file:save', function () { return _this.save(); });
+        to('file:open', function () { return _this.open(); });
+        to('file:new', function () { return _this.create(); });
     };
     return EditorContext;
 }(parcel_1.Parcel));
@@ -1103,6 +1150,10 @@ var ImageEditor = (function () {
         stage.addChild(this.bg);
         stage.addChild(this.container);
     }
+    ImageEditor.prototype.close = function () {
+        this.stage.clear();
+        this.stage.removeAllChildren();
+    };
     ImageEditor.prototype.once = function (callback) {
         var store = { historyGroup: [] };
         callback(this.writeHistory(history), this);
@@ -1230,7 +1281,6 @@ var KeyControl = (function () {
         var _this = this;
         this.callback = callback;
         this.downStore = {};
-        console.log('key control');
         $(window).keydown(function (e) {
             _this.down(e.keyCode);
             _this.check(e);

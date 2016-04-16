@@ -38,19 +38,21 @@ export default class EditorContext extends Parcel<P,S> {
     });
 
     this.commands['onControlS'] = ()=> this.save();
+    this.commands['onControlN'] = ()=> this.create();
+    this.commands['onControlO'] = ()=> this.open();
+    this.commands['onG'] = ()=> this.toggleGrid();
 
     this.keyControl.hook = (name, e:JQueryKeyEventObject)=> {
-      e.preventDefault();
-      this.call(name)()
+      this.call(name, e)()
     }
   }
 
-  componentDidUpdate(_, state){
-    if(!state.canvasWidth && this.state.canvasWidth){
+  componentDidUpdate(_, state) {
+    if (!state.canvasWidth && this.state.canvasWidth) {
       this.center();
     }
 
-    if(state.grid !== this.state.grid){
+    if (state.grid !== this.state.grid) {
       this.ie.switchGrid(this.state.grid);
     }
   }
@@ -131,6 +133,10 @@ export default class EditorContext extends Parcel<P,S> {
     this.ie.setPixel(x, y, this.state.selectedColor.number, true);
   }
 
+  drawOnce(points) {
+    points.forEach(({x, y})=> this.ie.setPixel(x, y, this.state.selectedColor.number));
+    this.ie.update();
+  }
 
   scaleStep(direction, x?, y?) {
     let {scale} = this.state;
@@ -142,7 +148,7 @@ export default class EditorContext extends Parcel<P,S> {
     }
 
     this.ie.scale(this.scaleNumbers[scale], x, y)
-    if(!x && !y){
+    if (!x && !y) {
       this.center();
     }
     this.setState({scale});
@@ -162,7 +168,18 @@ export default class EditorContext extends Parcel<P,S> {
       .trigger('click');
   }
 
-  toggleGrid(){
+  open() {
+
+  }
+
+  create() {
+    this.ie.close();
+    this.ie = ImageEditor.create(this.stage, 100, 100);
+    this.center();
+    this.ie.switchGrid(this.state.grid);
+  }
+
+  toggleGrid() {
     this.setState({grid: !this.state.grid})
   }
 
@@ -177,6 +194,7 @@ export default class EditorContext extends Parcel<P,S> {
 
     to('canvas:mounted', (canvas)=> this.initializeStage(canvas));
     to('canvas:draw', (x, y)=> this.draw(x, y));
+    to('canvas:draw:once', (points)=> this.drawOnce(points));
     to('canvas:resize', (canvasWidth, canvasHeight)=> this.setState({canvasWidth, canvasHeight}));
     to('canvas:scale:plus', (x, y)=> this.scaleStep(+1, x, y));
     to('canvas:scale:minus', (x, y)=> this.scaleStep(-1, x, y));
@@ -186,5 +204,7 @@ export default class EditorContext extends Parcel<P,S> {
     to('canvas:grid:toggle', ()=> this.toggleGrid());
 
     to('file:save', ()=> this.save())
+    to('file:open', ()=> this.open())
+    to('file:new', ()=> this.create())
   }
 }
