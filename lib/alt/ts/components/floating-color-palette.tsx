@@ -21,8 +21,7 @@ export default class FloatingColorPaletteComponent extends Good<P,{}> {
     this.setState({
       visible: this.detectVisibility(this.props),
       position: this.detectPosition(this.props)
-  :
-  })
+    })
   }
 
   detectPosition(props) {

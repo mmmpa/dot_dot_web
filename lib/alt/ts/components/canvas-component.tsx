@@ -108,7 +108,7 @@ export default class CanvasComponent extends Cell<P,{}> {
       case 'slide':
         return this.startSlide(x, y);
       default:
-        return this.ie.setPixel(x, y, this.props.selectedColor.number, true);
+        return this.startDraw(x, y);
     }
   }
 
@@ -124,6 +124,19 @@ export default class CanvasComponent extends Cell<P,{}> {
   center() {
     let {width, height} = this.layoutStyle;
     return this.ie.center(parseInt(width), parseInt(height));
+  }
+
+  startDraw(startX, startY) {
+    this.ie.setPixel(startX, startY, this.props.selectedColor.number, true);
+
+    let move = (e:JQueryMouseEventObject)=> {
+      let {x, y} = this.mousePosition(e);
+      this.ie.setPixel(x, y, this.props.selectedColor.number, true);
+    };
+    $(window).on('mousemove', move);
+    $(window).on('mouseup', ()=> {
+      $(window).off('mousemove', move);
+    });
   }
 
   startSlide(startX, startY) {

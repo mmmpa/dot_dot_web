@@ -92,7 +92,7 @@ var CanvasComponent = (function (_super) {
             case 'slide':
                 return this.startSlide(x, y);
             default:
-                return this.ie.setPixel(x, y, this.props.selectedColor.number, true);
+                return this.startDraw(x, y);
         }
     };
     CanvasComponent.prototype.drawDouble = function (x, y) {
@@ -106,6 +106,18 @@ var CanvasComponent = (function (_super) {
     CanvasComponent.prototype.center = function () {
         var _a = this.layoutStyle, width = _a.width, height = _a.height;
         return this.ie.center(parseInt(width), parseInt(height));
+    };
+    CanvasComponent.prototype.startDraw = function (startX, startY) {
+        var _this = this;
+        this.ie.setPixel(startX, startY, this.props.selectedColor.number, true);
+        var move = function (e) {
+            var _a = _this.mousePosition(e), x = _a.x, y = _a.y;
+            _this.ie.setPixel(x, y, _this.props.selectedColor.number, true);
+        };
+        $(window).on('mousemove', move);
+        $(window).on('mouseup', function () {
+            $(window).off('mousemove', move);
+        });
     };
     CanvasComponent.prototype.startSlide = function (startX, startY) {
         var _this = this;
