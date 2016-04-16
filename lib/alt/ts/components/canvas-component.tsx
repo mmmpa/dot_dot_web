@@ -15,10 +15,8 @@ enum CanvasState{
 }
 
 export default class CanvasComponent extends Cell<P,{}> {
-  private scaleNumbers:number[] = [1, 2, 4, 8, 16, 32, 64];
   private stage:any;
   private ie:ImageEditor;
-  private commands:any = {};
 
   private nowX;
   private nowY;
@@ -31,11 +29,6 @@ export default class CanvasComponent extends Cell<P,{}> {
     });
 
     $(window).on('mousemove', (e)=> this.recordPosition(e));
-    console.log(this.props)
-    this.props.keyControl.hook = (name, e:JQueryKeyEventObject)=> {
-      e.preventDefault();
-      this.call(name)()
-    }
   }
 
   recordPosition(e:JQueryMouseEventObject) {
@@ -47,60 +40,23 @@ export default class CanvasComponent extends Cell<P,{}> {
   componentDidMount() {
     super.componentDidMount();
 
-    this.initializeCanvas();
+    let {width, height} = this.layoutStyle;
+    this.dispatch('canvas:resize', width, height);
+    this.dispatch('canvas:mounted', this.refs['canvas']);
+
     this.initializeCommand();
     this.refs['container'].addEventListener('mousewheel', this.onMouseWheel.bind(this));
     $(this.refs['container']).on('dblclick', (e)=> this.call('onDoubleClick')(e));
-
-    if (!this.state.src) {
-      this.ie = ImageEditor.create(this.stage, 100, 100);
-    }
-
-    this.refreshCanvas(this.props);
-    this.center();
-  }
-
-  componentWillReceiveProps(props) {
-    this.refreshCanvas(props, this.props);
-  }
-
-  refreshCanvas(props, oldProps?) {
-    let {scale, grid} = props;
-
-    if (!oldProps || oldProps.scale !== scale) {
-      this.ie.scale(this.scaleNumbers[scale], this.nowX, this.nowY)
-    }
-
-    if (!oldProps || oldProps.grid !== grid) {
-      this.ie.switchGrid(grid);
-    }
-  }
-
-  initializeCanvas() {
-    let canvas = this.refs['canvas'] as HTMLCanvasElement;
-    let context = canvas.getContext('2d');
-    [
-      'imageSmoothingEnabled',
-      'mozImageSmoothingEnabled',
-      'oImageSmoothingEnabled',
-      'msImageSmoothingEnabled'
-    ].forEach((n)=> context[n] = false);
-
-    this.stage = new createjs.Stage(canvas);
   }
 
   initializeCommand() {
     this.commands['onMouseDown'] = this.draw.bind(this);
     this.commands['onMouseWheel'] = (x, y)=> y > 0 ? this.scaleStep(-1) : this.scaleStep(1);
     this.commands['onDoubleClick'] = this.drawDouble.bind(this);
-    this.commands['onControlS'] = ()=> this.save();
   }
 
-  bitmapData() {
-  }
-
-  save() {
-    this.dispatch('image:save', this.ie.exportPng());
+  get commands() {
+    return this.props.commands;
   }
 
   draw(x, y) {
@@ -115,23 +71,18 @@ export default class CanvasComponent extends Cell<P,{}> {
   drawDouble(x, y) {
     switch (this.props.mode) {
       case 'slide':
-        return this.center();
+        return this.dispatch('canvas:center');
       default:
         return null;
     }
   }
 
-  center() {
-    let {width, height} = this.layoutStyle;
-    return this.ie.center(parseInt(width), parseInt(height));
-  }
-
   startDraw(startX, startY) {
-    this.ie.setPixel(startX, startY, this.props.selectedColor.number, true);
+    this.dispatch('canvas:draw', startX, startY);
 
     let move = (e:JQueryMouseEventObject)=> {
       let {x, y} = this.mousePosition(e);
-      this.ie.setPixel(x, y, this.props.selectedColor.number, true);
+      this.dispatch('canvas:draw', x, y);
     };
     $(window).on('mousemove', move);
     $(window).on('mouseup', ()=> {
@@ -140,10 +91,11 @@ export default class CanvasComponent extends Cell<P,{}> {
   }
 
   startSlide(startX, startY) {
-    let slide = this.ie.startSlide();
+    this.dispatch('canvas:slide:start', startX, startY);
+
     let move = (e:JQueryMouseEventObject)=> {
       let {x, y} = this.mousePosition(e);
-      slide(x - startX, y - startY);
+      this.dispatch('canvas:slide', x - startX, y - startY);
     };
     $(window).on('mousemove', move);
     $(window).on('mouseup', ()=> {
@@ -152,19 +104,15 @@ export default class CanvasComponent extends Cell<P,{}> {
   }
 
   scaleStep(direction) {
-    let {scale} = this.props;
-    scale += direction
-    if (scale < 0) {
-      scale = 0;
-    } else if (scale >= this.scaleNumbers.length) {
-      scale = this.scaleNumbers.length - 1;
+    if (direction > 0) {
+      this.dispatch('canvas:scale:plus', this.nowX, this.nowY);
+    } else {
+      this.dispatch('canvas:scale:minus', this.nowX, this.nowY);
     }
-
-    this.dispatch('canvas:scale', scale);
   }
 
   call(name) {
-    return this.commands[name] || ((...args) => console.log('未設定', ...args))
+    return this.commands[name] || ((...args) => null)
   }
 
   onMouseWheel(e:WheelEvent) {

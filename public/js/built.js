@@ -6,7 +6,6 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var React = require("react");
-var image_editor_1 = require("../models/image-editor");
 var cell_component_1 = require("./cell-component");
 var CanvasState;
 (function (CanvasState) {
@@ -17,8 +16,6 @@ var CanvasComponent = (function (_super) {
     __extends(CanvasComponent, _super);
     function CanvasComponent() {
         _super.apply(this, arguments);
-        this.scaleNumbers = [1, 2, 4, 8, 16, 32, 64];
-        this.commands = {};
     }
     CanvasComponent.prototype.componentWillMount = function () {
         var _this = this;
@@ -28,11 +25,6 @@ var CanvasComponent = (function (_super) {
             height: 1000
         });
         $(window).on('mousemove', function (e) { return _this.recordPosition(e); });
-        console.log(this.props);
-        this.props.keyControl.hook = function (name, e) {
-            e.preventDefault();
-            _this.call(name)();
-        };
     };
     CanvasComponent.prototype.recordPosition = function (e) {
         var _a = this.mousePosition(e), x = _a.x, y = _a.y;
@@ -42,51 +34,26 @@ var CanvasComponent = (function (_super) {
     CanvasComponent.prototype.componentDidMount = function () {
         var _this = this;
         _super.prototype.componentDidMount.call(this);
-        this.initializeCanvas();
+        var _a = this.layoutStyle, width = _a.width, height = _a.height;
+        this.dispatch('canvas:resize', width, height);
+        this.dispatch('canvas:mounted', this.refs['canvas']);
         this.initializeCommand();
         this.refs['container'].addEventListener('mousewheel', this.onMouseWheel.bind(this));
         $(this.refs['container']).on('dblclick', function (e) { return _this.call('onDoubleClick')(e); });
-        if (!this.state.src) {
-            this.ie = image_editor_1.default.create(this.stage, 100, 100);
-        }
-        this.refreshCanvas(this.props);
-        this.center();
-    };
-    CanvasComponent.prototype.componentWillReceiveProps = function (props) {
-        this.refreshCanvas(props, this.props);
-    };
-    CanvasComponent.prototype.refreshCanvas = function (props, oldProps) {
-        var scale = props.scale, grid = props.grid;
-        if (!oldProps || oldProps.scale !== scale) {
-            this.ie.scale(this.scaleNumbers[scale], this.nowX, this.nowY);
-        }
-        if (!oldProps || oldProps.grid !== grid) {
-            this.ie.switchGrid(grid);
-        }
-    };
-    CanvasComponent.prototype.initializeCanvas = function () {
-        var canvas = this.refs['canvas'];
-        var context = canvas.getContext('2d');
-        [
-            'imageSmoothingEnabled',
-            'mozImageSmoothingEnabled',
-            'oImageSmoothingEnabled',
-            'msImageSmoothingEnabled'
-        ].forEach(function (n) { return context[n] = false; });
-        this.stage = new createjs.Stage(canvas);
     };
     CanvasComponent.prototype.initializeCommand = function () {
         var _this = this;
         this.commands['onMouseDown'] = this.draw.bind(this);
         this.commands['onMouseWheel'] = function (x, y) { return y > 0 ? _this.scaleStep(-1) : _this.scaleStep(1); };
         this.commands['onDoubleClick'] = this.drawDouble.bind(this);
-        this.commands['onControlS'] = function () { return _this.save(); };
     };
-    CanvasComponent.prototype.bitmapData = function () {
-    };
-    CanvasComponent.prototype.save = function () {
-        this.dispatch('image:save', this.ie.exportPng());
-    };
+    Object.defineProperty(CanvasComponent.prototype, "commands", {
+        get: function () {
+            return this.props.commands;
+        },
+        enumerable: true,
+        configurable: true
+    });
     CanvasComponent.prototype.draw = function (x, y) {
         switch (this.props.mode) {
             case 'slide':
@@ -98,21 +65,17 @@ var CanvasComponent = (function (_super) {
     CanvasComponent.prototype.drawDouble = function (x, y) {
         switch (this.props.mode) {
             case 'slide':
-                return this.center();
+                return this.dispatch('canvas:center');
             default:
                 return null;
         }
     };
-    CanvasComponent.prototype.center = function () {
-        var _a = this.layoutStyle, width = _a.width, height = _a.height;
-        return this.ie.center(parseInt(width), parseInt(height));
-    };
     CanvasComponent.prototype.startDraw = function (startX, startY) {
         var _this = this;
-        this.ie.setPixel(startX, startY, this.props.selectedColor.number, true);
+        this.dispatch('canvas:draw', startX, startY);
         var move = function (e) {
             var _a = _this.mousePosition(e), x = _a.x, y = _a.y;
-            _this.ie.setPixel(x, y, _this.props.selectedColor.number, true);
+            _this.dispatch('canvas:draw', x, y);
         };
         $(window).on('mousemove', move);
         $(window).on('mouseup', function () {
@@ -121,10 +84,10 @@ var CanvasComponent = (function (_super) {
     };
     CanvasComponent.prototype.startSlide = function (startX, startY) {
         var _this = this;
-        var slide = this.ie.startSlide();
+        this.dispatch('canvas:slide:start', startX, startY);
         var move = function (e) {
             var _a = _this.mousePosition(e), x = _a.x, y = _a.y;
-            slide(x - startX, y - startY);
+            _this.dispatch('canvas:slide', x - startX, y - startY);
         };
         $(window).on('mousemove', move);
         $(window).on('mouseup', function () {
@@ -132,15 +95,12 @@ var CanvasComponent = (function (_super) {
         });
     };
     CanvasComponent.prototype.scaleStep = function (direction) {
-        var scale = this.props.scale;
-        scale += direction;
-        if (scale < 0) {
-            scale = 0;
+        if (direction > 0) {
+            this.dispatch('canvas:scale:plus', this.nowX, this.nowY);
         }
-        else if (scale >= this.scaleNumbers.length) {
-            scale = this.scaleNumbers.length - 1;
+        else {
+            this.dispatch('canvas:scale:minus', this.nowX, this.nowY);
         }
-        this.dispatch('canvas:scale', scale);
     };
     CanvasComponent.prototype.call = function (name) {
         return this.commands[name] || (function () {
@@ -148,7 +108,7 @@ var CanvasComponent = (function (_super) {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i - 0] = arguments[_i];
             }
-            return console.log.apply(console, ['未設定'].concat(args));
+            return null;
         });
     };
     CanvasComponent.prototype.onMouseWheel = function (e) {
@@ -191,7 +151,7 @@ exports.default = CanvasComponent;
 
  * */ 
 
-},{"../models/image-editor":22,"./cell-component":2,"react":185}],2:[function(require,module,exports){
+},{"./cell-component":2,"react":185}],2:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -601,8 +561,34 @@ var ToolSelectorComponent = (function (_super) {
     function ToolSelectorComponent() {
         _super.apply(this, arguments);
     }
+    ToolSelectorComponent.prototype.writeButton = function (name) {
+        var _this = this;
+        var key = name.replace(/\s/ig, '-');
+        return React.createElement("li", null, React.createElement("button", {key: key, className: key, onClick: function () { return _this.fire(key); }}, name));
+    };
+    ToolSelectorComponent.prototype.fire = function (key) {
+        switch (key) {
+            case 'save':
+                return this.dispatch('file:save');
+            case 'new':
+                return this.dispatch('file:new');
+            case 'open':
+                return this.dispatch('file:open');
+            case 'grid':
+                return this.dispatch('canvas:grid:toggle');
+            case 'centering':
+                return this.dispatch('canvas:centering');
+            case 'scale-plus':
+                return this.dispatch('canvas:scale:plus');
+            case 'scale-minus':
+                return this.dispatch('canvas:scale:minus');
+            default:
+                this.dispatch(key);
+        }
+    };
     ToolSelectorComponent.prototype.render = function () {
-        return React.createElement("div", {className: "cell y", style: this.layoutStyle}, this.myName);
+        var _this = this;
+        return React.createElement("div", {className: "cell y tool-selector", style: this.layoutStyle}, React.createElement("ul", {className: "tool-list"}), React.createElement("ul", {className: "command-list file"}, ['new', 'open', 'save'].map(function (name) { return _this.writeButton(name); })), React.createElement("ul", {className: "command-list file"}, ['grid', 'centering', 'scale plus', 'scale minus'].map(function (name) { return _this.writeButton(name); })));
     };
     return ToolSelectorComponent;
 }(cell_component_1.default));
@@ -641,10 +627,15 @@ var argb_1 = require("../models/argb");
 var key_control_1 = require("../models/key-control");
 var color_set_1 = require("../models/color-set");
 var constants_1 = require("../constants/constants");
+var image_editor_1 = require("../models/image-editor");
 var EditorContext = (function (_super) {
     __extends(EditorContext, _super);
     function EditorContext() {
+        var _this = this;
         _super.apply(this, arguments);
+        this.scaleNumbers = [1, 2, 4, 8, 16, 32, 64];
+        this.commands = [];
+        this.keyControl = new key_control_1.default(function (mode) { return mode !== _this.state.mode && _this.setState({ mode: mode }); });
     }
     EditorContext.prototype.componentWillMount = function () {
         var _this = this;
@@ -655,12 +646,42 @@ var EditorContext = (function (_super) {
             selectedColor: argb_1.default.number(0xff000000),
             scale: 1,
             grid: true,
-            keyControl: new key_control_1.default(function (mode) { return mode !== _this.state.mode && _this.setState({ mode: mode }); }),
+            keyControl: this.keyControl,
             mode: null,
             colorSet: new color_set_1.default([argb_1.default.number(0xffff0000), argb_1.default.number(0xff00ff00), argb_1.default.number(0xff0000ff)]),
             floatingColorPaletteMode: null,
-            floatingFrom: null
+            floatingFrom: null,
+            commands: this.commands
         });
+        this.commands['onControlS'] = function () { return _this.save(); };
+        this.keyControl.hook = function (name, e) {
+            e.preventDefault();
+            _this.call(name)();
+        };
+    };
+    EditorContext.prototype.componentDidUpdate = function (_, state) {
+        if (!state.canvasWidth && this.state.canvasWidth) {
+            this.center();
+        }
+        if (state.grid !== this.state.grid) {
+            this.ie.switchGrid(this.state.grid);
+        }
+    };
+    EditorContext.prototype.call = function (name, e) {
+        var command = this.state.commands[name];
+        if (command) {
+            e && e.preventDefault();
+            return command;
+        }
+        else {
+            return function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i - 0] = arguments[_i];
+                }
+                return null;
+            };
+        }
     };
     EditorContext.prototype.arrangeColor = function (_a) {
         var a = _a.a, r = _a.r, g = _a.g, b = _a.b;
@@ -701,6 +722,51 @@ var EditorContext = (function (_super) {
         colorSet.remove(color);
         this.setState({ colorSet: colorSet });
     };
+    EditorContext.prototype.initializeStage = function (canvas) {
+        var context = canvas.getContext('2d');
+        [
+            'imageSmoothingEnabled',
+            'mozImageSmoothingEnabled',
+            'oImageSmoothingEnabled',
+            'msImageSmoothingEnabled'
+        ].forEach(function (n) { return context[n] = false; });
+        this.stage = new createjs.Stage(canvas);
+        this.ie = image_editor_1.default.create(this.stage, 100, 100);
+        this.center();
+        this.ie.switchGrid(this.state.grid);
+    };
+    EditorContext.prototype.draw = function (x, y) {
+        this.ie.setPixel(x, y, this.state.selectedColor.number, true);
+    };
+    EditorContext.prototype.scaleStep = function (direction, x, y) {
+        var scale = this.state.scale;
+        scale += direction;
+        if (scale < 0) {
+            scale = 0;
+        }
+        else if (scale >= this.scaleNumbers.length) {
+            scale = this.scaleNumbers.length - 1;
+        }
+        this.ie.scale(this.scaleNumbers[scale], x, y);
+        if (!x && !y) {
+            this.center();
+        }
+        this.setState({ scale: scale });
+    };
+    EditorContext.prototype.center = function () {
+        var _a = this.state, canvasWidth = _a.canvasWidth, canvasHeight = _a.canvasHeight;
+        return this.ie.center(parseInt(canvasWidth), parseInt(canvasHeight));
+    };
+    EditorContext.prototype.save = function () {
+        var name = 'test';
+        $('<a>')
+            .attr("href", this.ie.exportPng())
+            .attr("download", "file-" + name)
+            .trigger('click');
+    };
+    EditorContext.prototype.toggleGrid = function () {
+        this.setState({ grid: !this.state.grid });
+    };
     EditorContext.prototype.listen = function (to) {
         var _this = this;
         to('color:switch', function (selectedColorNumber) { return _this.setState({ selectedColorNumber: selectedColorNumber, selectedColor: _this.state.colors[selectedColorNumber] }); });
@@ -709,21 +775,23 @@ var EditorContext = (function (_super) {
         to('color:arrange', function (argb) { return _this.arrangeColor(argb); });
         to('floater:select', function (color) { return _this.selectColorFromFloater(color); });
         to('floater:rise', function (e, mode) { return _this.riseFloater(e, mode); });
-        to('canvas:scale', function (scale) { return _this.setState({ scale: scale }); });
-        to('image:save', function (dataUrl) {
-            var name = 'test';
-            $('<a>')
-                .attr("href", dataUrl)
-                .attr("download", "file-" + name)
-                .trigger('click');
-        });
+        to('canvas:mounted', function (canvas) { return _this.initializeStage(canvas); });
+        to('canvas:draw', function (x, y) { return _this.draw(x, y); });
+        to('canvas:resize', function (canvasWidth, canvasHeight) { return _this.setState({ canvasWidth: canvasWidth, canvasHeight: canvasHeight }); });
+        to('canvas:scale:plus', function (x, y) { return _this.scaleStep(+1, x, y); });
+        to('canvas:scale:minus', function (x, y) { return _this.scaleStep(-1, x, y); });
+        to('canvas:slide:start', function (x, y) { return _this.slide = _this.ie.startSlide(); });
+        to('canvas:slide', function (x, y) { return _this.slide(x, y); });
+        to('canvas:center', function () { return _this.center(); });
+        to('canvas:grid:toggle', function () { return _this.toggleGrid(); });
+        to('file:save', function () { return _this.save(); });
     };
     return EditorContext;
 }(parcel_1.Parcel));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = EditorContext;
 
-},{"../constants/constants":13,"../libs/parcel":18,"../models/argb":20,"../models/color-set":21,"../models/key-control":23}],15:[function(require,module,exports){
+},{"../constants/constants":13,"../libs/parcel":18,"../models/argb":20,"../models/color-set":21,"../models/image-editor":22,"../models/key-control":23}],15:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -1069,6 +1137,7 @@ var ImageEditor = (function () {
         }
         this._grid = bol;
         this.drawGrid();
+        this.stage.update();
     };
     ImageEditor.prototype.drawGrid = function () {
         this.container.removeChild(this._gridElement);
@@ -1112,13 +1181,18 @@ var ImageEditor = (function () {
         this.update();
     };
     ImageEditor.prototype.scale = function (n, baseX, baseY) {
-        var prePosition = this.normalizePixel(baseX, baseY);
-        this._scale = n;
-        var nextPosition = this.normalizePixel(baseX, baseY);
-        var x = prePosition.x - nextPosition.x;
-        var y = prePosition.y - nextPosition.y;
-        this.container.x -= x * this._scale;
-        this.container.y -= y * this._scale;
+        if (baseX && baseY) {
+            var prePosition = this.normalizePixel(baseX, baseY);
+            this._scale = n;
+            var nextPosition = this.normalizePixel(baseX, baseY);
+            var x = prePosition.x - nextPosition.x;
+            var y = prePosition.y - nextPosition.y;
+            this.container.x -= x * this._scale;
+            this.container.y -= y * this._scale;
+        }
+        else {
+            this._scale = n;
+        }
         this.canvas.scaleX = this.canvas.scaleY = this._scale;
         this.drawGrid();
         this.stage.update();

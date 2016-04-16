@@ -67,6 +67,7 @@ export default class ImageEditor {
 
     this._grid = bol;
     this.drawGrid();
+    this.stage.update();
   }
 
   drawGrid() {
@@ -121,15 +122,19 @@ export default class ImageEditor {
   }
 
   scale(n:number, baseX, baseY) {
-    let prePosition = this.normalizePixel(baseX, baseY);
-    this._scale = n;
-    let nextPosition = this.normalizePixel(baseX, baseY);
+    if(baseX && baseY){
+      let prePosition = this.normalizePixel(baseX, baseY);
+      this._scale = n;
+      let nextPosition = this.normalizePixel(baseX, baseY);
 
-    let x = prePosition.x - nextPosition.x;
-    let y = prePosition.y - nextPosition.y;
+      let x = prePosition.x - nextPosition.x;
+      let y = prePosition.y - nextPosition.y;
 
-    this.container.x -= x * this._scale;
-    this.container.y -= y * this._scale;
+      this.container.x -= x * this._scale;
+      this.container.y -= y * this._scale;
+    }else{
+      this._scale = n;
+    }
 
     this.canvas.scaleX = this.canvas.scaleY = this._scale;
     this.drawGrid();
