@@ -6,6 +6,7 @@ import KeyControl from "../models/key-control";
 import ColorSet from "../models/color-set";
 import {FloatingColorPaletteMode} from "../constants/constants";
 import ImageEditor from "../models/image-editor";
+import FileInformation from "../models/file-information";
 
 interface P {
 }
@@ -36,7 +37,12 @@ export default class EditorContext extends Parcel<P,S> {
       floatingFrom: null,
       commands: this.commands,
       draw: (...args)=> this.draw(...args),
-      drawOnce: (...args)=> this.drawOnce(...args)
+      drawOnce: (...args)=> this.drawOnce(...args),
+      layerCount: 1,
+      frameCount: 1,
+      fileName: 'noname',
+      layers: [],
+      frames: []
     });
 
     this.commands['onControlS'] = ()=> this.save();
@@ -158,43 +164,58 @@ export default class EditorContext extends Parcel<P,S> {
     }
   }
 
+  get fileName() {
+    let {fileName, layerCount, frameCount} = this.state;
+    return `${fileName}_${new Date().getTime()}.${layerCount}.${frameCount}.png`
+  }
+
   center() {
     let {canvasWidth, canvasHeight} = this.state;
     return this.ie.center(parseInt(canvasWidth), parseInt(canvasHeight));
   }
 
   save() {
-    let name = 'test';
     $('<a>')
       .attr("href", this.ie.exportPng())
-      .attr("download", "file-" + name)
+      .attr("download", this.fileName)
       .trigger('click');
   }
 
   open() {
     let $fileListener = $('<input type="file"/>');
     let $img = $('<img/>');
-    let $canvas = $('<canvas/>');
-    let canvas = $canvas.get(0);
+    let canvas = document.createElement('canvas');
     let context = canvas.getContext("2d");
 
     $fileListener.on('change', (e)=> {
       let file = e.path[0].files[0];
+      let information = this.parseFileName(file.name);
       let reader = new FileReader();
       reader.addEventListener('load', (e)=> {
-        let image = new Image();
-        image.addEventListener('load', (e)=> {
-          canvas.width = e.target.width / 2;
-          canvas.height = e.target.height / 2;
-          context.drawImage(e.target, 0, 0, canvas.width, canvas.height);
+        let img = new Image();
+        img.addEventListener('load', (e)=> {
+          let {width, height} = e.target;
+
+          canvas.width = width;
+          canvas.height = height;
+
+          let baseWidth = width / information.frameCount;
+          let baseHeight = height / information.layerCount;
+
+          console.log(information)
+          context.drawImage(e.target, 0, 0, baseWidth, baseHeight, 0, 0, baseWidth, baseHeight);
           $img.prop('src', canvas.toDataURL());
           this.create($img.get(0));
         });
-        image.src = e.target.result;
+        img.src = e.target.result;
       });
       reader.readAsDataURL(file);
     });
     $fileListener.trigger('click');
+  }
+
+  parseFileName(fileName) {
+    return FileInformation.parseFileName(fileName)
   }
 
   create(imageElement?) {
