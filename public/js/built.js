@@ -72,36 +72,34 @@ var CanvasComponent = (function (_super) {
     };
     CanvasComponent.prototype.startDraw = function (startX, startY) {
         var _this = this;
-        this.dispatch('canvas:draw', startX, startY);
-        var pre = { x: startX, y: startY };
+        //this.dispatch('canvas:draw', startX, startY);
+        this.props.draw(startX, startY);
+        //let pre = {x: startX, y: startY};
         var move = function (e) {
             var _a = _this.mousePosition(e), x = _a.x, y = _a.y;
-            var points = [{ x: x, y: y }];
-            if (Math.abs(x - pre.x) > 1 || Math.abs(y - pre.y) > 1) {
-                var moveX = x - pre.x;
-                var moveY = y - pre.y;
-                var power = moveY / moveX;
-                if (moveX > 0) {
-                    for (var i = moveX; i--;) {
-                        var move_1 = Math.round(i * power);
-                        if (move_1 > 1) {
-                            for (var ii = move_1; ii--;) {
-                                points.push({ x: x - i, y: y - ii });
-                            }
-                        }
-                        else {
-                            points.push({ x: x - i, y: y - move_1 });
-                        }
-                    }
-                }
-                else {
-                    for (var i = moveX; i++;) {
-                        points.push({ x: x - i, y: y - i * power });
-                    }
-                }
-            }
-            _this.dispatch('canvas:draw:once', points);
-            pre = { x: x, y: y };
+            _this.props.draw(x, y);
+            /*
+             let {x, y} = this.mousePosition(e);
+             this.dispatch('canvas:draw', x, y);
+             let {x, y} = this.mousePosition(e);
+             let points = [{x, y}];
+             if (Math.abs(x - pre.x) > 1 || Math.abs(y - pre.y) > 1) {
+             let moveX = x - pre.x;
+             let moveY = y - pre.y;
+             let power = moveY / moveX;
+             if (moveX > 0) {
+             for (let i = moveX; i--;) {
+             points.push({x: x - i, y: y - i * power});
+             }
+             } else {
+             for (let i = moveX; i++;) {
+             points.push({x: x - i, y: y - i * power});
+             }
+             }
+             }
+             this.dispatch('canvas:draw:once', points);
+             pre = {x, y}
+             */
         };
         $(window).on('mousemove', move);
         $(window).on('mouseup', function () {
@@ -590,9 +588,10 @@ var ToolSelectorComponent = (function (_super) {
     ToolSelectorComponent.prototype.writeButton = function (name) {
         var _this = this;
         var key = name.replace(/\s/ig, '-');
-        return React.createElement("li", null, React.createElement("button", {key: key, className: key, onClick: function () { return _this.fire(key); }}, name));
+        return React.createElement("li", null, React.createElement("button", {key: key, className: key, onClick: function (e) { return _this.fire(e, key); }}, name));
     };
-    ToolSelectorComponent.prototype.fire = function (key) {
+    ToolSelectorComponent.prototype.fire = function (e, key) {
+        e.target.blur();
         switch (key) {
             case 'save':
                 return this.dispatch('file:save');
@@ -677,7 +676,21 @@ var EditorContext = (function (_super) {
             colorSet: new color_set_1.default([argb_1.default.number(0xffff0000), argb_1.default.number(0xff00ff00), argb_1.default.number(0xff0000ff)]),
             floatingColorPaletteMode: null,
             floatingFrom: null,
-            commands: this.commands
+            commands: this.commands,
+            draw: function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i - 0] = arguments[_i];
+                }
+                return _this.draw.apply(_this, args);
+            },
+            drawOnce: function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i - 0] = arguments[_i];
+                }
+                return _this.drawOnce.apply(_this, args);
+            }
         });
         this.commands['onControlS'] = function () { return _this.save(); };
         this.commands['onControlN'] = function () { return _this.create(); };
@@ -759,9 +772,7 @@ var EditorContext = (function (_super) {
             'msImageSmoothingEnabled'
         ].forEach(function (n) { return context[n] = false; });
         this.stage = new createjs.Stage(canvas);
-        this.ie = image_editor_1.default.create(this.stage, 100, 100);
-        this.center();
-        this.ie.switchGrid(this.state.grid);
+        this.create();
     };
     EditorContext.prototype.draw = function (x, y) {
         this.ie.setPixel(x, y, this.state.selectedColor.number, true);
@@ -783,11 +794,14 @@ var EditorContext = (function (_super) {
         else if (scale >= this.scaleNumbers.length) {
             scale = this.scaleNumbers.length - 1;
         }
-        this.ie.scale(this.scaleNumbers[scale], x, y);
+        this.scale(scale, x, y);
+        this.setState({ scale: scale });
+    };
+    EditorContext.prototype.scale = function (scale, x, y) {
+        this.ie.scale(this.scaleNumbers[scale || this.state.scale], x, y);
         if (!x && !y) {
             this.center();
         }
-        this.setState({ scale: scale });
     };
     EditorContext.prototype.center = function () {
         var _a = this.state, canvasWidth = _a.canvasWidth, canvasHeight = _a.canvasHeight;
@@ -801,12 +815,41 @@ var EditorContext = (function (_super) {
             .trigger('click');
     };
     EditorContext.prototype.open = function () {
+        var _this = this;
+        var $fileListener = $('<input type="file"/>');
+        var $img = $('<img/>');
+        var $canvas = $('<canvas/>');
+        var canvas = $canvas.get(0);
+        var context = canvas.getContext("2d");
+        $fileListener.on('change', function (e) {
+            var file = e.path[0].files[0];
+            var reader = new FileReader();
+            reader.addEventListener('load', function (e) {
+                var image = new Image();
+                image.addEventListener('load', function (e) {
+                    canvas.width = e.target.width / 2;
+                    canvas.height = e.target.height / 2;
+                    context.drawImage(e.target, 0, 0, canvas.width, canvas.height);
+                    $img.prop('src', canvas.toDataURL());
+                    _this.create($img.get(0));
+                });
+                image.src = e.target.result;
+            });
+            reader.readAsDataURL(file);
+        });
+        $fileListener.trigger('click');
     };
-    EditorContext.prototype.create = function () {
-        this.ie.close();
-        this.ie = image_editor_1.default.create(this.stage, 100, 100);
-        this.center();
+    EditorContext.prototype.create = function (imageElement) {
+        this.ie && this.ie.close();
+        if (imageElement) {
+            this.ie = image_editor_1.default.create(this.stage, 0, 0, imageElement);
+        }
+        else {
+            this.ie = image_editor_1.default.create(this.stage, 50, 50);
+        }
+        this.scale();
         this.ie.switchGrid(this.state.grid);
+        this.setState({ ie: this.ie });
     };
     EditorContext.prototype.toggleGrid = function () {
         this.setState({ grid: !this.state.grid });
@@ -1133,7 +1176,7 @@ exports.default = ColorSet;
 "use strict";
 var action_history_1 = require("./action-history");
 var ImageEditor = (function () {
-    function ImageEditor(stage, width, height) {
+    function ImageEditor(stage, width, height, imageElement) {
         this.stage = stage;
         this.width = width;
         this.height = height;
@@ -1144,7 +1187,12 @@ var ImageEditor = (function () {
         this._gridColor = 0xff000000;
         this.container = new createjs.Container();
         this.bg = new createjs.Bitmap(new createjs.BitmapData(null, stage.canvas.width, stage.canvas.height, 0xffeeeeee).canvas);
-        this.bitmapData = new createjs.BitmapData(null, width, height, 0xffffffff);
+        if (imageElement) {
+            this.bitmapData = new createjs.BitmapData(imageElement);
+        }
+        else {
+            this.bitmapData = new createjs.BitmapData(null, width, height, 0xffffffff);
+        }
         this.canvas = new createjs.Bitmap(this.bitmapData.canvas);
         this.container.addChild(this.canvas);
         stage.addChild(this.bg);
@@ -1161,7 +1209,8 @@ var ImageEditor = (function () {
         return store.historyGroup;
     };
     ImageEditor.prototype.exportPng = function () {
-        return this.canvas.image.toDataURL("image/png");
+        console.log(this.bitmapData.canvas);
+        return this.bitmapData.canvas.toDataURL("image/png");
     };
     ImageEditor.prototype.startSlide = function () {
         var _this = this;
@@ -1266,8 +1315,8 @@ var ImageEditor = (function () {
         }
         return new action_history_1.default('setPixel', { x: x, y: y, color: old }, { x: x, y: y, color: color });
     };
-    ImageEditor.create = function (stage, w, h) {
-        return new ImageEditor(stage, w, h);
+    ImageEditor.create = function (stage, w, h, imageElement) {
+        return new ImageEditor(stage, w, h, imageElement);
     };
     return ImageEditor;
 }());

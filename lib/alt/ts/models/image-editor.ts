@@ -16,14 +16,18 @@ export default class ImageEditor {
 
   public mode:string;
 
-  constructor(public stage, public width, public height) {
+  constructor(public stage, public width, public height, imageElement?) {
     this.container = new createjs.Container();
 
     this.bg = new createjs.Bitmap(new createjs.BitmapData(null, stage.canvas.width, stage.canvas.height, 0xffeeeeee).canvas);
 
-    this.bitmapData = new createjs.BitmapData(null, width, height, 0xffffffff);
-    this.canvas = new createjs.Bitmap(this.bitmapData.canvas);
+    if (imageElement) {
+      this.bitmapData = new createjs.BitmapData(imageElement);
+    } else {
+      this.bitmapData = new createjs.BitmapData(null, width, height, 0xffffffff);
+    }
 
+    this.canvas = new createjs.Bitmap(this.bitmapData.canvas);
     this.container.addChild(this.canvas);
 
     stage.addChild(this.bg);
@@ -45,7 +49,8 @@ export default class ImageEditor {
   }
 
   exportPng() {
-    return this.canvas.image.toDataURL("image/png");
+    console.log(this.bitmapData.canvas)
+    return this.bitmapData.canvas.toDataURL("image/png");
   }
 
   startSlide() {
@@ -169,7 +174,7 @@ export default class ImageEditor {
     return new ActionHistory('setPixel', {x, y, color: old}, {x, y, color});
   }
 
-  static create(stage, w, h) {
-    return new ImageEditor(stage, w, h);
+  static create(stage, w, h, imageElement?) {
+    return new ImageEditor(stage, w, h, imageElement);
   }
 }

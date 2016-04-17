@@ -34,7 +34,9 @@ export default class EditorContext extends Parcel<P,S> {
       colorSet: new ColorSet([ARGB.number(0xffff0000), ARGB.number(0xff00ff00), ARGB.number(0xff0000ff)]),
       floatingColorPaletteMode: null,
       floatingFrom: null,
-      commands: this.commands
+      commands: this.commands,
+      draw: (...args)=> this.draw(...args),
+      drawOnce: (...args)=> this.drawOnce(...args)
     });
 
     this.commands['onControlS'] = ()=> this.save();
@@ -98,7 +100,6 @@ export default class EditorContext extends Parcel<P,S> {
     switch (this.state.floatingColorPaletteMode) {
       case FloatingColorPaletteMode.Delete:
         return this.deleteColor.bind(this)
-
     }
   }
 
@@ -124,9 +125,7 @@ export default class EditorContext extends Parcel<P,S> {
     ].forEach((n)=> context[n] = false);
 
     this.stage = new createjs.Stage(canvas);
-    this.ie = ImageEditor.create(this.stage, 100, 100);
-    this.center();
-    this.ie.switchGrid(this.state.grid);
+    this.create();
   }
 
   draw(x, y) {
@@ -147,18 +146,22 @@ export default class EditorContext extends Parcel<P,S> {
       scale = this.scaleNumbers.length - 1;
     }
 
-    this.ie.scale(this.scaleNumbers[scale], x, y)
+    this.scale(scale, x, y)
+
+    this.setState({scale});
+  }
+
+  scale(scale?, x?, y?) {
+    this.ie.scale(this.scaleNumbers[scale || this.state.scale], x, y);
     if (!x && !y) {
       this.center();
     }
-    this.setState({scale});
   }
 
   center() {
     let {canvasWidth, canvasHeight} = this.state;
     return this.ie.center(parseInt(canvasWidth), parseInt(canvasHeight));
   }
-
 
   save() {
     let name = 'test';
@@ -169,14 +172,41 @@ export default class EditorContext extends Parcel<P,S> {
   }
 
   open() {
+    let $fileListener = $('<input type="file"/>');
+    let $img = $('<img/>');
+    let $canvas = $('<canvas/>');
+    let canvas = $canvas.get(0);
+    let context = canvas.getContext("2d");
 
+    $fileListener.on('change', (e)=> {
+      let file = e.path[0].files[0];
+      let reader = new FileReader();
+      reader.addEventListener('load', (e)=> {
+        let image = new Image();
+        image.addEventListener('load', (e)=> {
+          canvas.width = e.target.width / 2;
+          canvas.height = e.target.height / 2;
+          context.drawImage(e.target, 0, 0, canvas.width, canvas.height);
+          $img.prop('src', canvas.toDataURL());
+          this.create($img.get(0));
+        });
+        image.src = e.target.result;
+      });
+      reader.readAsDataURL(file);
+    });
+    $fileListener.trigger('click');
   }
 
-  create() {
-    this.ie.close();
-    this.ie = ImageEditor.create(this.stage, 100, 100);
-    this.center();
+  create(imageElement?) {
+    this.ie && this.ie.close();
+    if (imageElement) {
+      this.ie = ImageEditor.create(this.stage, 0, 0, imageElement);
+    } else {
+      this.ie = ImageEditor.create(this.stage, 50, 50);
+    }
+    this.scale();
     this.ie.switchGrid(this.state.grid);
+    this.setState({ie: this.ie});
   }
 
   toggleGrid() {

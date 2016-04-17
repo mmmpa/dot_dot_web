@@ -78,36 +78,35 @@ export default class CanvasComponent extends Cell<P,{}> {
   }
 
   startDraw(startX, startY) {
-    this.dispatch('canvas:draw', startX, startY);
-
-    let pre = {x: startX, y: startY};
+    //this.dispatch('canvas:draw', startX, startY);
+    this.props.draw(startX, startY);
+    //let pre = {x: startX, y: startY};
 
     let move = (e:JQueryMouseEventObject)=> {
       let {x, y} = this.mousePosition(e);
-      let points = [{x, y}]
-      if (Math.abs(x - pre.x) > 1 || Math.abs(y - pre.y) > 1) {
-        let moveX = x - pre.x;
-        let moveY = y - pre.y;
-        let power = moveY / moveX;
-        if (moveX > 0) {
-          for (let i = moveX; i--;) {
-            let move = Math.round(i * power);
-            if (move > 1) {
-              for (let ii = move; ii--;) {
-                points.push({x: x - i, y: y - ii});
-              }
-            } else {
-              points.push({x: x - i, y: y - move});
-            }
-          }
-        } else {
-          for (let i = moveX; i++;) {
-            points.push({x: x - i, y: y - i * power});
-          }
-        }
-      }
-      this.dispatch('canvas:draw:once', points);
-      pre = {x, y}
+      this.props.draw(x, y);
+      /*
+       let {x, y} = this.mousePosition(e);
+       this.dispatch('canvas:draw', x, y);
+       let {x, y} = this.mousePosition(e);
+       let points = [{x, y}];
+       if (Math.abs(x - pre.x) > 1 || Math.abs(y - pre.y) > 1) {
+       let moveX = x - pre.x;
+       let moveY = y - pre.y;
+       let power = moveY / moveX;
+       if (moveX > 0) {
+       for (let i = moveX; i--;) {
+       points.push({x: x - i, y: y - i * power});
+       }
+       } else {
+       for (let i = moveX; i++;) {
+       points.push({x: x - i, y: y - i * power});
+       }
+       }
+       }
+       this.dispatch('canvas:draw:once', points);
+       pre = {x, y}
+       */
     };
 
     $(window).on('mousemove', move);

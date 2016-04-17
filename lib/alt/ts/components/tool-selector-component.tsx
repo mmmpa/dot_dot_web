@@ -8,11 +8,12 @@ export default class ToolSelectorComponent extends Cell<{},{}> {
   writeButton(name) {
     let key = name.replace(/\s/ig, '-');
     return <li>
-      <button key={key} className={key} onClick={()=> this.fire(key)}>{name}</button>
+      <button key={key} className={key} onClick={(e)=> this.fire(e, key)}>{name}</button>
     </li>
   }
 
-  fire(key) {
+  fire(e, key) {
+    e.target.blur();
     switch (key) {
       case 'save':
         return this.dispatch('file:save');
