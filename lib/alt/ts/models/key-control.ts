@@ -33,12 +33,16 @@ export default class KeyControl {
 
     let string = 'on';
 
-    if(e.altKey){
+    if (e.altKey) {
       string += 'Alt'
     }
 
-    if(e.ctrlKey){
+    if (e.ctrlKey) {
       string += 'Control'
+    }
+
+    if (e.shiftKey) {
+      string += 'Shift'
     }
 
     string += e.code.replace('Key', '');
@@ -46,8 +50,8 @@ export default class KeyControl {
     this.strike(string, e);
   }
 
-  strike(name:string, e:JQueryKeyEventObject){
-    console.log('strike', name)
+  strike(name:string, e:JQueryKeyEventObject) {
+    console.log(name, e)
     this.callback(name);
     this.hook && this.hook(name, e)
   }

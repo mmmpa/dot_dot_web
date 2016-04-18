@@ -4,10 +4,12 @@ import * as ReactDOM from 'react-dom';
 import ARGB from "../models/argb";
 import KeyControl from "../models/key-control";
 import ColorSet from "../models/color-set";
-import {FloatingColorPaletteMode} from "../constants/constants";
+import {FloatingColorPaletteMode, nes} from "../constants/constants";
 import ImageEditor from "../models/image-editor";
 import FileInformation from "../models/file-information";
 import Configuration from "../records/configuration";
+import LayeredImage from "../models/layered-image";
+import DataUrlGenerator from "../models/data-url-generator";
 
 interface P {
 }
@@ -16,7 +18,7 @@ interface S {
 }
 
 export default class EditorContext extends Parcel<P,S> {
-  private version:number = 1;
+  private version:number = 2;
   private stage:any;
   private ie:ImageEditor;
   private scaleNumbers:number[] = [1, 2, 4, 8, 16, 32, 64];
@@ -25,7 +27,7 @@ export default class EditorContext extends Parcel<P,S> {
   private keyControl:KeyControl = new KeyControl((mode)=> mode !== this.state.mode && this.setState({mode}))
   private configuration:Configuration;
   private intervals:number[] = [];
-
+  private gen:DataUrlGenerator = new DataUrlGenerator();
 
   componentWillMount() {
     this.initializeConfiguration();
@@ -45,22 +47,39 @@ export default class EditorContext extends Parcel<P,S> {
       frameCount: 1,
       fileName: 'noname',
       layers: [],
-      frames: [],
+      frames: [new LayeredImage(10, 10, [this.gen.blankDataUrl(10, 10)])],
+      selectedFrameNumber: 0,
       // user state
       scale, grid, colors, selectedColorNumber, selectedColor, colorSet
     });
 
-    this.commands['onControlS'] = ()=> this.save();
-    this.commands['onControlN'] = ()=> this.create();
-    this.commands['onControlO'] = ()=> this.open();
-    this.commands['onG'] = ()=> this.toggleGrid();
+    this.commands['onG'] = ()=> this.dispatch('canvas:grid:toggle');
+    this.commands['onShiftG'] = ()=> this.dispatch('canvas:outline:toggle');
+    this.commands['onControlS'] = ()=> this.dispatch('file:save');
+    this.commands['onControlN'] = ()=> this.dispatch('file:new');
+    this.commands['onControlO'] = ()=> this.dispatch('file:open');
+    this.commands['onControlZ'] = ()=> this.dispatch('work:undo');
+    this.commands['onControlY'] = ()=> this.dispatch('work:redo');
+    this.commands['onControlShiftZ'] = ()=> this.dispatch('work:redo');
+    this.commands['onControlArrowUp'] = ()=> this.dispatch('canvas:size', 1, 0, 0, 0);
+    this.commands['onControlArrowRight'] = ()=> this.dispatch('canvas:size', 0, 1, 0, 0);
+    this.commands['onControlArrowDown'] = ()=> this.dispatch('canvas:size', 0, 0, 1, 0);
+    this.commands['onControlArrowLeft'] = ()=> this.dispatch('canvas:size', 0, 0, 0, 1);
+    this.commands['onControlShiftArrowUp'] = ()=> this.dispatch('canvas:size', -1, 0, 0, 0);
+    this.commands['onControlShiftArrowRight'] = ()=> this.dispatch('canvas:size', 0, -1, 0, 0);
+    this.commands['onControlShiftArrowDown'] = ()=> this.dispatch('canvas:size', 0, 0, -1, 0);
+    this.commands['onControlShiftArrowLeft'] = ()=> this.dispatch('canvas:size', 0, 0, 0, -1);
 
     this.keyControl.hook = (name, e:JQueryKeyEventObject)=> {
       this.call(name, e)()
     }
   }
 
-  componentWillUnmount(){
+  componentDidMount() {
+    this.dispatch('frame:select', 0);
+  }
+
+  componentWillUnmount() {
     super.componentWillUnmount();
     this.intervals.forEach((id)=> clearInterval(id));
   }
@@ -86,7 +105,7 @@ export default class EditorContext extends Parcel<P,S> {
         colors: [ARGB.number(0xff000000), ARGB.number(0xffffffff)],
         selectedColorNumber: 0,
         selectedColor: ARGB.number(0xff000000),
-        colorSet: new ColorSet([ARGB.number(0xffff0000), ARGB.number(0xff00ff00), ARGB.number(0xff0000ff)]),
+        colorSet: new ColorSet(nes),
       })
     }
 
@@ -109,7 +128,6 @@ export default class EditorContext extends Parcel<P,S> {
   }
 
   arrangeColor({a, r, g, b}) {
-    //console.log(argb)
     let {selectedColorNumber} = this.state;
     let colors = this.state.colors.concat();
     let selectedColor = new ARGB(a, r, g, b)
@@ -129,8 +147,8 @@ export default class EditorContext extends Parcel<P,S> {
     this.setState({floatingColorPaletteMode, floatingFrom});
   }
 
-  selectColorFromFloater(selectedColor:ARGB, index:number) {
-    this.detectFloatingAction()(selectedColor, index);
+  selectColorFromFloater(selectedColor:ARGB) {
+    this.detectFloatingAction()(selectedColor);
     this.setState({floatingColorPaletteMode: null})
   }
 
@@ -163,16 +181,24 @@ export default class EditorContext extends Parcel<P,S> {
     ].forEach((n)=> context[n] = false);
 
     this.stage = new createjs.Stage(canvas);
-    this.create();
   }
 
   draw(x, y) {
     this.ie.setPixel(x, y, this.state.selectedColor.number, true);
+    this.updateFrame();
   }
 
   drawOnce(points) {
     points.forEach(({x, y})=> this.ie.setPixel(x, y, this.state.selectedColor.number));
     this.ie.update();
+    this.updateFrame();
+  }
+
+  updateFrame() {
+    let {frames, selectedFrameNumber} = this.state;
+    frames[selectedFrameNumber].update(0, this.ie.exportPng());
+
+    this.setState({});
   }
 
   scaleStep(direction, x?, y?) {
@@ -185,7 +211,6 @@ export default class EditorContext extends Parcel<P,S> {
     }
 
     this.scale(scale, x, y)
-
     this.setState({scale});
   }
 
@@ -215,9 +240,6 @@ export default class EditorContext extends Parcel<P,S> {
 
   open() {
     let $fileListener = $('<input type="file"/>');
-    let $img = $('<img/>');
-    let canvas = document.createElement('canvas');
-    let context = canvas.getContext("2d");
 
     $fileListener.on('change', (e)=> {
       let file = e.path[0].files[0];
@@ -227,17 +249,16 @@ export default class EditorContext extends Parcel<P,S> {
         let img = new Image();
         img.addEventListener('load', (e)=> {
           let {width, height} = e.target;
-
           let baseWidth = width / information.frameCount;
           let baseHeight = height / information.layerCount;
+          let trimmer = this.gen.trimmer(e.target, baseWidth, baseHeight);
 
-          canvas.width = baseWidth;
-          canvas.height = baseHeight;
+          let frames = _.times(information.frameCount, (n)=> {
+            // レイヤー分割処理を入れる。
+            return new LayeredImage(baseWidth, baseHeight, [trimmer(baseWidth * n, 0)])
+          });
 
-          console.log(information)
-          context.drawImage(e.target, 0, 0, baseWidth, baseHeight, 0, 0, baseWidth, baseHeight);
-          $img.prop('src', canvas.toDataURL());
-          this.create($img.get(0));
+          this.setState({frames}, ()=> this.dispatch('frame:select', 0));
         });
         img.src = e.target.result;
       });
@@ -248,6 +269,11 @@ export default class EditorContext extends Parcel<P,S> {
 
   parseFileName(fileName) {
     return FileInformation.parseFileName(fileName)
+  }
+
+  selectFrame(selectedFrameNumber) {
+    this.create(this.state.frames[selectedFrameNumber].image(0));
+    this.setState({selectedFrameNumber});
   }
 
   create(imageElement?) {
@@ -267,27 +293,29 @@ export default class EditorContext extends Parcel<P,S> {
   }
 
   listen(to) {
-    to('color:switch', (selectedColorNumber)=>this.setState({selectedColorNumber, selectedColor: this.state.colors[selectedColorNumber]}));
-    to('color:select', (color)=> this.selectColor(color));
-    to('color:add', ()=> this.addColor());
-    to('color:arrange', (argb)=>this.arrangeColor(argb));
+    to('edit', 'color:switch', (selectedColorNumber)=>this.setState({selectedColorNumber, selectedColor: this.state.colors[selectedColorNumber]}));
+    to('edit', 'color:select', (color)=> this.selectColor(color));
+    to('edit', 'color:add', ()=> this.addColor());
+    to('edit', 'color:arrange', (argb)=>this.arrangeColor(argb));
 
-    to('floater:select', (color)=> this.selectColorFromFloater(color));
-    to('floater:rise', (e, mode)=> this.riseFloater(e, mode));
+    to('edit', 'floater:select', (color)=> this.selectColorFromFloater(color));
+    to('edit', 'floater:rise', (e, mode)=> this.riseFloater(e, mode));
 
-    to('canvas:mounted', (canvas)=> this.initializeStage(canvas));
-    to('canvas:draw', (x, y)=> this.draw(x, y));
-    to('canvas:draw:once', (points)=> this.drawOnce(points));
-    to('canvas:resize', (canvasWidth, canvasHeight)=> this.setState({canvasWidth, canvasHeight}));
-    to('canvas:scale:plus', (x, y)=> this.scaleStep(+1, x, y));
-    to('canvas:scale:minus', (x, y)=> this.scaleStep(-1, x, y));
-    to('canvas:slide:start', (x, y)=> this.slide = this.ie.startSlide());
-    to('canvas:slide', (x, y)=> this.slide(x, y));
-    to('canvas:center', ()=> this.center());
-    to('canvas:grid:toggle', ()=> this.toggleGrid());
+    to('edit', 'canvas:mounted', (canvas)=> this.initializeStage(canvas));
+    to('edit', 'canvas:draw', (x, y)=> this.draw(x, y));
+    to('edit', 'canvas:draw:once', (points)=> this.drawOnce(points));
+    to('edit', 'canvas:resize', (canvasWidth, canvasHeight)=> this.setState({canvasWidth, canvasHeight}));
+    to('edit', 'canvas:scale:plus', (x, y)=> this.scaleStep(+1, x, y));
+    to('edit', 'canvas:scale:minus', (x, y)=> this.scaleStep(-1, x, y));
+    to('edit', 'canvas:slide:start', (x, y)=> this.slide = this.ie.startSlide());
+    to('edit', 'canvas:slide', (x, y)=> this.slide(x, y));
+    to('edit', 'canvas:center', ()=> this.center());
+    to('edit', 'canvas:grid:toggle', ()=> this.toggleGrid());
 
-    to('file:save', ()=> this.save())
-    to('file:open', ()=> this.open())
-    to('file:new', ()=> this.create())
+    to('edit', 'frame:select', (n)=> this.selectFrame(n));
+
+    to('edit', 'file:save', ()=> this.save());
+    to('edit', 'file:open', ()=> this.open());
+    to('edit', 'file:new', ()=> this.create());
   }
 }

@@ -49,7 +49,6 @@ export default class ImageEditor {
   }
 
   exportPng() {
-    console.log(this.bitmapData.canvas)
     return this.bitmapData.canvas.toDataURL("image/png");
   }
 

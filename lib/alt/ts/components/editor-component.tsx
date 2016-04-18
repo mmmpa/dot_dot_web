@@ -9,6 +9,7 @@ import SelectedColorComponent from "./selected-color-component";
 import StyleStylist from "../models/style-stylist"
 import ColorControllerComponent from "./color-controller-component";
 import FloatingColorPaletteComponent from "./floating-color-palette";
+import FrameSelectorComponent from "./frame-selector-component";
 
 require("zepto/zepto.min");
 declare const $:any;
@@ -21,6 +22,7 @@ export default class EditorComponent extends Good<P,{}> {
   get components() {
     return [
       <CanvasComponent name="canvas"/>,
+      <FrameSelectorComponent name="frameSelector"/>,
       <ToolSelectorComponent name="toolSelector"/>,
       <ToolControllerComponent name="toolController"/>,
       <ColorPaletteComponent name="colorPalette"/>,
@@ -50,7 +52,8 @@ export default class EditorComponent extends Good<P,{}> {
 
     this.setState({
       layout: {
-        canvas: new StyleStylist(0, 0, left, h).css,
+        canvas: new StyleStylist(0, 0, left, h - 200).css,
+        frameSelector: new StyleStylist(0, h - 200, left, 200).css,
         toolSelector: new StyleStylist(left, 0, right, split).css,
         toolController: new StyleStylist(left, split, right, split).css,
         colorPalette: new StyleStylist(left, split * 2, right, split).css,

@@ -14,7 +14,7 @@ interface P {
 export default class ColorPaletteComponent extends Cell<P,{}> {
   render() {
     let {colorSet} = this.props;
-    return <div className="cell y color-pallet" style={this.layoutStyle}>
+    return <div className="cell y color-palette" style={this.layoutStyle}>
       <header className="cell-header">{this.myName}</header>
       <section className="cell-body">
         <ColorCellSet {...{colorSet, onClick: (color)=> this.dispatch('color:select', color)}}/>

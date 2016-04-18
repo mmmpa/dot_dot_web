@@ -116,6 +116,8 @@ body
   text-indent: 100px
   cursor: pointer
   margin: 0 1px 1px 0
+  line-height: 100%
+  vertical-align: top
   &:hover
     border: 2px solid #000
 
@@ -131,6 +133,16 @@ body
   li
     display: inline-block
 
+.frame-selector
+  .frame-cell
+    display: inline-block
+    border: 1px solid #000
+.color-palette
+  .colors
+    line-height: 100%
+  .controller
+    margin: 4px 0 0 0
+
 .floating-color-palette
   border-radius: 3px
   border: 1px solid #ccc
@@ -144,3 +156,7 @@ body
   ul
     margin: 0
     padding: 0
+
+img
+  image-rendering: optimizeSpeed
+  image-rendering: pixelated

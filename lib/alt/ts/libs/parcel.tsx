@@ -32,7 +32,7 @@ export abstract class Good<P, S> extends React.Component<P & GoodProps, S & Good
     target.addEventListener(...args);
   }
 
-  removeEventAll(){
+  removeEventAll() {
     this.eventStore.forEach(([target, ...args])=> target.removeEventListener(...args));
   }
 
@@ -102,8 +102,9 @@ export abstract class Parcel<P, S> extends Good<P & ParcelProps, S & ParcelState
   emitter:EventEmitter;
   routeChildren;
   addedOnStore:EventStore[] = [];
+  acceptable:any = {};
 
-  abstract listen(to:(eventName:string, callback:Function)=>void):void;
+  abstract listen(to:(key:string, eventName:string, callback:Function)=>void):void;
 
 
   componentWillUnmount() {
@@ -115,12 +116,27 @@ export abstract class Parcel<P, S> extends Good<P & ParcelProps, S & ParcelState
   }
 
   componentWillMount() {
-    this.listen((eventName:string, callback:Function) => {
+    this.listen((key:string, eventName:string, callback:Function) => {
       console.log(eventName)
       this.addedOnStore.push({eventName, callback});
-      this.emitter.on(eventName, callback);
+      this.acceptable[key] = true;
+      if (key) {
+        this.emitter.on(eventName, (...args)=> {
+          this.acceptable[key] && callback(...args);
+        });
+      } else {
+        this.emitter.on(eventName, callback);
+      }
     });
     super.componentWillMount();
+  }
+
+  lock(key:string) {
+    this.acceptable[key] = false;
+  }
+
+  unlock(key:string) {
+    this.acceptable[key] = true;
   }
 
   constructor(props) {
