@@ -7,6 +7,7 @@ import ColorSet from "../models/color-set";
 import {FloatingColorPaletteMode} from "../constants/constants";
 import ImageEditor from "../models/image-editor";
 import FileInformation from "../models/file-information";
+import Configuration from "../records/configuration";
 
 interface P {
 }
@@ -15,24 +16,26 @@ interface S {
 }
 
 export default class EditorContext extends Parcel<P,S> {
+  private version:number = 1;
   private stage:any;
   private ie:ImageEditor;
   private scaleNumbers:number[] = [1, 2, 4, 8, 16, 32, 64];
   private slide:(x, y)=>void;
   private commands:any = [];
   private keyControl:KeyControl = new KeyControl((mode)=> mode !== this.state.mode && this.setState({mode}))
+  private configuration:Configuration;
+  private intervals:number[] = [];
+
 
   componentWillMount() {
+    this.initializeConfiguration();
     super.componentWillMount();
+
+    let {scale, grid, colors, selectedColorNumber, selectedColor, colorSet} = this.configuration.readOnce('scale', 'grid', 'colors', 'selectedColorNumber', 'selectedColor', 'colorSet');
+
     this.setState({
-      colors: [ARGB.number(0xff000000), ARGB.number(0xffffffff)],
-      selectedColorNumber: 0,
-      selectedColor: ARGB.number(0xff000000),
-      scale: 1,
-      grid: true,
       keyControl: this.keyControl,
       mode: null,
-      colorSet: new ColorSet([ARGB.number(0xffff0000), ARGB.number(0xff00ff00), ARGB.number(0xff0000ff)]),
       floatingColorPaletteMode: null,
       floatingFrom: null,
       commands: this.commands,
@@ -42,7 +45,9 @@ export default class EditorContext extends Parcel<P,S> {
       frameCount: 1,
       fileName: 'noname',
       layers: [],
-      frames: []
+      frames: [],
+      // user state
+      scale, grid, colors, selectedColorNumber, selectedColor, colorSet
     });
 
     this.commands['onControlS'] = ()=> this.save();
@@ -55,6 +60,11 @@ export default class EditorContext extends Parcel<P,S> {
     }
   }
 
+  componentWillUnmount(){
+    super.componentWillUnmount();
+    this.intervals.forEach((id)=> clearInterval(id));
+  }
+
   componentDidUpdate(_, state) {
     if (!state.canvasWidth && this.state.canvasWidth) {
       this.center();
@@ -63,6 +73,28 @@ export default class EditorContext extends Parcel<P,S> {
     if (state.grid !== this.state.grid) {
       this.ie.switchGrid(this.state.grid);
     }
+  }
+
+  initializeConfiguration() {
+    this.configuration = new Configuration();
+
+    if (this.configuration.read('initialized') !== this.version) {
+      this.configuration.writeOnce({
+        initialized: this.version,
+        scale: 2,
+        grid: true,
+        colors: [ARGB.number(0xff000000), ARGB.number(0xffffffff)],
+        selectedColorNumber: 0,
+        selectedColor: ARGB.number(0xff000000),
+        colorSet: new ColorSet([ARGB.number(0xffff0000), ARGB.number(0xff00ff00), ARGB.number(0xff0000ff)]),
+      })
+    }
+
+    let id = setInterval(()=> {
+      let {scale, grid, colors, selectedColorNumber, selectedColor, colorSet} = this.state;
+      this.configuration.writeOnce({scale, grid, colors, selectedColorNumber, selectedColor, colorSet});
+    }, 1000);
+    this.intervals.push(id);
   }
 
   call(name, e?) {
@@ -196,11 +228,11 @@ export default class EditorContext extends Parcel<P,S> {
         img.addEventListener('load', (e)=> {
           let {width, height} = e.target;
 
-          canvas.width = width;
-          canvas.height = height;
-
           let baseWidth = width / information.frameCount;
           let baseHeight = height / information.layerCount;
+
+          canvas.width = baseWidth;
+          canvas.height = baseHeight;
 
           console.log(information)
           context.drawImage(e.target, 0, 0, baseWidth, baseHeight, 0, 0, baseWidth, baseHeight);
