@@ -10,6 +10,7 @@ import StyleStylist from "../models/style-stylist"
 import ColorControllerComponent from "./color-controller-component";
 import FloatingColorPaletteComponent from "./floating-color-palette";
 import FrameSelectorComponent from "./frame-selector-component";
+import GradationSelectorComponent from "./gradation-component";
 
 require("zepto/zepto.min");
 declare const $:any;
@@ -26,7 +27,7 @@ export default class EditorComponent extends Good<P,{}> {
       <ToolSelectorComponent name="toolSelector"/>,
       <ToolControllerComponent name="toolController"/>,
       <ColorPaletteComponent name="colorPalette"/>,
-      <SelectedColorComponent name="selectedColor"/>,
+      <GradationSelectorComponent name="gradationSelector"/>,
       <ColorControllerComponent name="colorController"/>,
       <FloatingColorPaletteComponent  name="floaterColorPalette"/>
     ]
@@ -57,7 +58,7 @@ export default class EditorComponent extends Good<P,{}> {
         toolSelector: new StyleStylist(left, 0, right, split).css,
         toolController: new StyleStylist(left, split, right, split).css,
         colorPalette: new StyleStylist(left, split * 2, right, split).css,
-        selectedColor: new StyleStylist(left, split * 3, right, split).css,
+        gradationSelector: new StyleStylist(left, split * 3, right, split).css,
         colorController: new StyleStylist(left, split * 4, right, h - split * 4).css
       }
     })

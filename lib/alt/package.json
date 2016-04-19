@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "watchify --extension=js ./built/index.js -o ./out/built.js -v",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha -w --require test/built/setup.js test/built/**/*-test.js"
   },
   "browser": {
     "easeljs": "/home/ten/ruby_project/dot_dot/lib/alt/node_modules/easeljs/lib/easeljs-0.8.2.min.js"

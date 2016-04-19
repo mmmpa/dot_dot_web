@@ -10,6 +10,7 @@ import FileInformation from "../models/file-information";
 import Configuration from "../records/configuration";
 import LayeredImage from "../models/layered-image";
 import DataUrlGenerator from "../models/data-url-generator";
+import GradationColor from "../models/gradation-color";
 
 interface P {
 }
@@ -18,7 +19,7 @@ interface S {
 }
 
 export default class EditorContext extends Parcel<P,S> {
-  private version:number = 2;
+  private version:number = 1;
   private stage:any;
   private ie:ImageEditor;
   private scaleNumbers:number[] = [1, 2, 4, 8, 16, 32, 64];
@@ -33,12 +34,12 @@ export default class EditorContext extends Parcel<P,S> {
     this.initializeConfiguration();
     super.componentWillMount();
 
-    let {scale, grid, colors, selectedColorNumber, selectedColor, colorSet} = this.configuration.readOnce('scale', 'grid', 'colors', 'selectedColorNumber', 'selectedColor', 'colorSet');
+    let {scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations} = this.configuration.readOnce('scale', 'grid', 'colors', 'selectedColorNumber', 'selectedColor', 'colorSet', 'gradations');
 
     this.setState({
       keyControl: this.keyControl,
       mode: null,
-      floatingColorPaletteMode: null,
+      floatingCallback: null,
       floatingFrom: null,
       commands: this.commands,
       draw: (...args)=> this.draw(...args),
@@ -50,7 +51,7 @@ export default class EditorContext extends Parcel<P,S> {
       frames: [new LayeredImage(10, 10, [this.gen.blankDataUrl(10, 10)])],
       selectedFrameNumber: 0,
       // user state
-      scale, grid, colors, selectedColorNumber, selectedColor, colorSet
+      scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations
     });
 
     this.commands['onG'] = ()=> this.dispatch('canvas:grid:toggle');
@@ -106,12 +107,13 @@ export default class EditorContext extends Parcel<P,S> {
         selectedColorNumber: 0,
         selectedColor: ARGB.number(0xff000000),
         colorSet: new ColorSet(nes),
+        gradations: []
       })
     }
 
     let id = setInterval(()=> {
-      let {scale, grid, colors, selectedColorNumber, selectedColor, colorSet} = this.state;
-      this.configuration.writeOnce({scale, grid, colors, selectedColorNumber, selectedColor, colorSet});
+      let {scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations} = this.state;
+      this.configuration.writeOnce({scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations});
     }, 1000);
     this.intervals.push(id);
   }
@@ -142,21 +144,14 @@ export default class EditorContext extends Parcel<P,S> {
     this.setState({colors, selectedColor})
   }
 
-  riseFloater(e, floatingColorPaletteMode) {
+  riseFloater(e, floatingCallback) {
     let floatingFrom = e.currentTarget;
-    this.setState({floatingColorPaletteMode, floatingFrom});
+    this.setState({floatingCallback, floatingFrom});
   }
 
-  selectColorFromFloater(selectedColor:ARGB) {
-    this.detectFloatingAction()(selectedColor);
-    this.setState({floatingColorPaletteMode: null})
-  }
-
-  detectFloatingAction() {
-    switch (this.state.floatingColorPaletteMode) {
-      case FloatingColorPaletteMode.Delete:
-        return this.deleteColor.bind(this)
-    }
+  selectColorFromFloater(callback){
+    callback();
+    this.setState({floatingCallback: null, floatingFrom: null});
   }
 
   addColor() {
@@ -292,14 +287,22 @@ export default class EditorContext extends Parcel<P,S> {
     this.setState({grid: !this.state.grid})
   }
 
+  addGradation(){
+    let [color1, color2] = this.state.colors;
+    this.state.gradations.push(new GradationColor(color1, color2));
+    this.setState({});
+  }
+
   listen(to) {
     to('edit', 'color:switch', (selectedColorNumber)=>this.setState({selectedColorNumber, selectedColor: this.state.colors[selectedColorNumber]}));
     to('edit', 'color:select', (color)=> this.selectColor(color));
     to('edit', 'color:add', ()=> this.addColor());
     to('edit', 'color:arrange', (argb)=>this.arrangeColor(argb));
 
-    to('edit', 'floater:select', (color)=> this.selectColorFromFloater(color));
-    to('edit', 'floater:rise', (e, mode)=> this.riseFloater(e, mode));
+    to('edit', 'gradation:add', ()=> this.addGradation());
+
+    to('edit', 'floater:select', (callback)=> this.selectColorFromFloater(callback));
+    to('edit', 'floater:rise', (e, floatingCallback)=> this.riseFloater(e, floatingCallback));
 
     to('edit', 'canvas:mounted', (canvas)=> this.initializeStage(canvas));
     to('edit', 'canvas:draw', (x, y)=> this.draw(x, y));

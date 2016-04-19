@@ -32,6 +32,5 @@ export default class ColorCellSet extends React.Component<{colorSet:ColorSet, on
     return <ul className="colors">
       {this.writeCells()}
     </ul>
-
   }
 }

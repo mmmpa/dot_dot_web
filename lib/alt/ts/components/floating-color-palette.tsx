@@ -12,7 +12,7 @@ declare const $:any;
 
 interface P {
   colorSet:ColorSet,
-  floatingColorPaletteMode:FloatingColorPaletteMode,
+  floatingCallback:(color)=>void,
   floatingFrom:HTMLElement
 }
 
@@ -36,7 +36,7 @@ export default class FloatingColorPaletteComponent extends Good<P,{}> {
   }
 
   shouldComponentUpdate(props) {
-    return props.floatingColorPaletteMode !== this.props.floatingColorPaletteMode
+    return props.floatingCallback !== this.props.floatingCallback
   }
 
   componentWillReceiveProps(props) {
@@ -47,7 +47,7 @@ export default class FloatingColorPaletteComponent extends Good<P,{}> {
   }
 
   detectVisibility(props) {
-    return !_.isNull(props.floatingColorPaletteMode)
+    return !_.isNull(props.floatingCallback)
   }
 
   render() {
@@ -56,10 +56,10 @@ export default class FloatingColorPaletteComponent extends Good<P,{}> {
     }
 
     let {top, left} = this.state.position;
-    let {colorSet} = this.props;
+    let {colorSet, floatingCallback} = this.props;
 
     return <div className="floating-color-palette" style={{top, left}}>
-      <ColorCellSet {...{colorSet, onClick: (color)=> this.dispatch('floater:select', color)}}/>
+      <ColorCellSet {...{colorSet, onClick: (color)=> this.dispatch('floater:select', ()=> floatingCallback(color))}}/>
     </div>
   }
 }
