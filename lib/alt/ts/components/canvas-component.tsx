@@ -41,7 +41,7 @@ export default class CanvasComponent extends Cell<P,{}> {
     super.componentDidMount();
 
     let {width, height} = this.layoutStyle;
-    this.dispatch('canvas:resize', width, height);
+    this.dispatch('canvas:resize', parseInt(width), parseInt(height));
     this.dispatch('canvas:mounted', this.refs['canvas']);
 
     this.initializeCommand();

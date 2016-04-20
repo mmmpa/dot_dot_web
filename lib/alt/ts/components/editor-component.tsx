@@ -11,6 +11,7 @@ import ColorControllerComponent from "./color-controller-component";
 import FloatingColorPaletteComponent from "./floating-color-palette";
 import FrameSelectorComponent from "./frame-selector-component";
 import GradationSelectorComponent from "./gradation-component";
+import ModalComponent from "./modal-component";
 
 require("zepto/zepto.min");
 declare const $:any;
@@ -25,11 +26,12 @@ export default class EditorComponent extends Good<P,{}> {
       <CanvasComponent name="canvas"/>,
       <FrameSelectorComponent name="frameSelector"/>,
       <ToolSelectorComponent name="toolSelector"/>,
-      <ToolControllerComponent name="toolController"/>,
+      //<ToolControllerComponent name="toolController"/>,
       <ColorPaletteComponent name="colorPalette"/>,
       <GradationSelectorComponent name="gradationSelector"/>,
       <ColorControllerComponent name="colorController"/>,
-      <FloatingColorPaletteComponent  name="floaterColorPalette"/>
+      <FloatingColorPaletteComponent name="floaterColorPalette"/>,
+      <ModalComponent name="modal"/>
     ]
   }
 
@@ -49,17 +51,18 @@ export default class EditorComponent extends Good<P,{}> {
 
     let left = w * 0.7 >> 0;
     let right = w - left;
-    let split = h / 5;
+    let split = (h - 140) / 4;
 
     this.setState({
       layout: {
         canvas: new StyleStylist(0, 0, left, h - 200).css,
         frameSelector: new StyleStylist(0, h - 200, left, 200).css,
-        toolSelector: new StyleStylist(left, 0, right, split).css,
-        toolController: new StyleStylist(left, split, right, split).css,
+        toolSelector: new StyleStylist(left, 0, right, split * 2).css,
+        //toolController: new StyleStylist(left, split, right, split).css,
         colorPalette: new StyleStylist(left, split * 2, right, split).css,
         gradationSelector: new StyleStylist(left, split * 3, right, split).css,
-        colorController: new StyleStylist(left, split * 4, right, h - split * 4).css
+        colorController: new StyleStylist(left, split * 4, right, 140).css,
+        modal: new StyleStylist(0, 0, w, h).css
       }
     })
   }

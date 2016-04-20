@@ -2,6 +2,9 @@
 @import './primer/primer.scss'
 @import './gfm/github-markdown'
 
+$icon-button-size: 30px
+$color-cell-size: 20px
+
 div
   box-sizing: border-box
 
@@ -26,7 +29,12 @@ body
 .editor-area
   position: relative
 
+.modal
+  position: absolute
+  background: rgba(255, 255, 255, 0.7)
+
 .cell
+  background: #fff
   position: absolute
   display: inline-block
   overflow: scroll
@@ -38,13 +46,36 @@ body
     overflow-y: scroll
   &.canvas
     overflow: hidden
+    background: url("/img/stripe.png")
 
 .cell-header
+  display: none
+  position: fixed
   background: #eee
   padding: 5px
 
 .cell-body
   padding: 5px
+
+.gradation-line
+  display: table-row
+  max-width: 100%
+  .button-container
+    display: table-cell
+    white-space: nowrap
+    width: 10px
+  .color-container
+    vertical-align: top
+    display: table-cell
+    width: 100%
+    text-align: center
+    .colors
+      display: table-row
+      width: 100%
+    .color-cell
+      width: 5.8%
+      height: $icon-button-size
+      margin: 0
 
 .color-controller
   white-space: nowrap
@@ -52,8 +83,12 @@ body
   .selected
     display: table-cell
     vertical-align: middle
+  .selected
+    padding-right: 10px
 
 .color-slider
+  height: 30px
+  overflow: hidden
   .title,
   .number,
   .slider
@@ -110,8 +145,8 @@ body
 
 .color-cell
   display: inline-block
-  width: 20px
-  height: 20px
+  width: $color-cell-size
+  height: $color-cell-size
   overflow: hidden
   text-indent: 100px
   cursor: pointer
@@ -123,8 +158,8 @@ body
 
 .icon-button
   box-sizing: border-box
-  width: 30px
-  height: 30px
+  width: $icon-button-size
+  height: $icon-button-size
   overflow: hidden
   line-height: 30px
   padding: 0
@@ -137,12 +172,12 @@ body
   .frame-cell
     display: inline-block
     border: 1px solid #000
+
 .color-palette
   .colors
     line-height: 100%
   .controller
     margin: 4px 0 0 0
-
 
 .floating-color-palette
   border-radius: 3px

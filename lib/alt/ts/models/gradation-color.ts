@@ -4,7 +4,7 @@ import ARGB from "./argb";
 export default class GradationColor {
   public colors:ARGB[];
 
-  constructor(private _color1 = new ARGB(255, 0, 0, 0), private _color2 = new ARGB(255, 255, 255, 255), private length:number = 10, public version = 0) {
+  constructor(private _color1 = new ARGB(255, 0, 0, 0), private _color2 = new ARGB(255, 255, 255, 255), private length:number = 17, public version = 0) {
     this.compute();
   }
 

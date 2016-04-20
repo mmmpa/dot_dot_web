@@ -36,6 +36,10 @@ export default class ToolSelectorComponent extends Cell<{},{}> {
 
   render() {
     return <div className="cell y tool-selector" style={this.layoutStyle}>
+      <section>
+        <h1>file name</h1>
+        <input type="text" onChange={(e)=> this.dispatch('file:name', e.target.value)}/>
+      </section>
       <ul className="tool-list">
 
       </ul>

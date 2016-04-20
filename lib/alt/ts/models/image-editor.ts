@@ -19,7 +19,7 @@ export default class ImageEditor {
   constructor(public stage, public width, public height, imageElement?) {
     this.container = new createjs.Container();
 
-    this.bg = new createjs.Bitmap(new createjs.BitmapData(null, stage.canvas.width, stage.canvas.height, 0xffeeeeee).canvas);
+    this.bg = new createjs.Bitmap(new createjs.BitmapData(null, stage.canvas.width, stage.canvas.height, 0x01ffffff).canvas);
 
     if (imageElement) {
       this.bitmapData = new createjs.BitmapData(imageElement);

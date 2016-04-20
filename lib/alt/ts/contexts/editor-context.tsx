@@ -11,6 +11,11 @@ import Configuration from "../records/configuration";
 import LayeredImage from "../models/layered-image";
 import DataUrlGenerator from "../models/data-url-generator";
 import GradationColor from "../models/gradation-color";
+import CanvasSettingComponent from "../components/canvas-setting-component";
+import {mix} from "../libs/mix"
+import {FileMixin} from "./editor-mixins/file-mixin"
+import {ColorMixin} from "./editor-mixins/color-mixin"
+import {GradationMixin} from "./editor-mixins/gradation-mixin"
 
 interface P {
 }
@@ -18,7 +23,9 @@ interface P {
 interface S {
 }
 
-export default class EditorContext extends Parcel<P,S> {
+
+
+export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixin, GradationMixin) {
   private version:number = 1;
   private stage:any;
   private ie:ImageEditor;
@@ -78,6 +85,7 @@ export default class EditorContext extends Parcel<P,S> {
 
   componentDidMount() {
     this.dispatch('frame:select', 0);
+    //this.dispatch('modal:rise', <CanvasSettingComponent/>, {});
   }
 
   componentWillUnmount() {
@@ -86,7 +94,7 @@ export default class EditorContext extends Parcel<P,S> {
   }
 
   componentDidUpdate(_, state) {
-    if (!state.canvasWidth && this.state.canvasWidth) {
+    if (!state.canvasComponentWidth && this.state.canvasComponentWidth) {
       this.center();
     }
 
@@ -129,41 +137,22 @@ export default class EditorContext extends Parcel<P,S> {
     }
   }
 
-  arrangeColor({a, r, g, b}) {
-    let {selectedColorNumber} = this.state;
-    let colors = this.state.colors.concat();
-    let selectedColor = new ARGB(a, r, g, b)
-    colors[selectedColorNumber] = selectedColor;
-    this.setState({colors, selectedColor});
-  }
-
-  selectColor(selectedColor:ARGB) {
-    let {colors, selectedColorNumber} = this.state;
-    colors = colors.concat();
-    colors[selectedColorNumber] = selectedColor;
-    this.setState({colors, selectedColor})
-  }
-
   riseFloater(e, floatingCallback) {
     let floatingFrom = e.currentTarget;
-    this.setState({floatingCallback, floatingFrom});
+    this.setState({floatingCallback, floatingFrom}, ()=> {
+      let remove = ()=> {
+        $(window).unbind('click', remove);
+        this.setState({floatingCallback: null, floatingFrom: null})
+      };
+      setTimeout(()=> {
+        $(window).bind('click', remove);
+      }, 1)
+    });
   }
 
-  selectColorFromFloater(callback){
+  selectColorFromFloater(callback) {
     callback();
     this.setState({floatingCallback: null, floatingFrom: null});
-  }
-
-  addColor() {
-    let {colorSet, selectedColor} = this.state;
-    colorSet.add(selectedColor);
-    this.setState({colorSet})
-  }
-
-  deleteColor(color) {
-    let {colorSet} = this.state;
-    colorSet.remove(color);
-    this.setState({colorSet})
   }
 
   initializeStage(canvas) {
@@ -216,51 +205,12 @@ export default class EditorContext extends Parcel<P,S> {
     }
   }
 
-  get fileName() {
-    let {fileName, layerCount, frameCount} = this.state;
-    return `${fileName}_${new Date().getTime()}.${layerCount}.${frameCount}.png`
-  }
-
   center() {
-    let {canvasWidth, canvasHeight} = this.state;
-    return this.ie.center(parseInt(canvasWidth), parseInt(canvasHeight));
+    let {canvasComponentWidth, canvasComponentHeight} = this.state;
+    return this.ie.center(parseInt(canvasComponentWidth), parseInt(canvasComponentHeight));
   }
 
-  save() {
-    $('<a>')
-      .attr("href", this.ie.exportPng())
-      .attr("download", this.fileName)
-      .trigger('click');
-  }
 
-  open() {
-    let $fileListener = $('<input type="file"/>');
-
-    $fileListener.on('change', (e)=> {
-      let file = e.path[0].files[0];
-      let information = this.parseFileName(file.name);
-      let reader = new FileReader();
-      reader.addEventListener('load', (e)=> {
-        let img = new Image();
-        img.addEventListener('load', (e)=> {
-          let {width, height} = e.target;
-          let baseWidth = width / information.frameCount;
-          let baseHeight = height / information.layerCount;
-          let trimmer = this.gen.trimmer(e.target, baseWidth, baseHeight);
-
-          let frames = _.times(information.frameCount, (n)=> {
-            // レイヤー分割処理を入れる。
-            return new LayeredImage(baseWidth, baseHeight, [trimmer(baseWidth * n, 0)])
-          });
-
-          this.setState({frames}, ()=> this.dispatch('frame:select', 0));
-        });
-        img.src = e.target.result;
-      });
-      reader.readAsDataURL(file);
-    });
-    $fileListener.trigger('click');
-  }
 
   parseFileName(fileName) {
     return FileInformation.parseFileName(fileName)
@@ -271,35 +221,21 @@ export default class EditorContext extends Parcel<P,S> {
     this.setState({selectedFrameNumber});
   }
 
-  create(imageElement?) {
-    this.ie && this.ie.close();
-    if (imageElement) {
-      this.ie = ImageEditor.create(this.stage, 0, 0, imageElement);
-    } else {
-      this.ie = ImageEditor.create(this.stage, 50, 50);
-    }
-    this.scale();
-    this.ie.switchGrid(this.state.grid);
-    this.setState({ie: this.ie});
-  }
-
   toggleGrid() {
     this.setState({grid: !this.state.grid})
-  }
-
-  addGradation(){
-    let [color1, color2] = this.state.colors;
-    this.state.gradations.push(new GradationColor(color1, color2));
-    this.setState({});
   }
 
   listen(to) {
     to('edit', 'color:switch', (selectedColorNumber)=>this.setState({selectedColorNumber, selectedColor: this.state.colors[selectedColorNumber]}));
     to('edit', 'color:select', (color)=> this.selectColor(color));
     to('edit', 'color:add', ()=> this.addColor());
+    to('edit', 'color:delete', (color)=> this.deleteColor(color));
     to('edit', 'color:arrange', (argb)=>this.arrangeColor(argb));
 
-    to('edit', 'gradation:add', ()=> this.addGradation());
+    to('edit', 'gradation:add', (color1, color2)=> this.addGradation(color1, color2));
+    to('edit', 'gradation:delete', (gradation)=> this.deleteGradation(gradation));
+    to('edit', 'gradation:change:color1', (gradation, color)=> this.changeGradationColor('color1', gradation, color));
+    to('edit', 'gradation:change:color2', (gradation, color)=> this.changeGradationColor('color2', gradation, color));
 
     to('edit', 'floater:select', (callback)=> this.selectColorFromFloater(callback));
     to('edit', 'floater:rise', (e, floatingCallback)=> this.riseFloater(e, floatingCallback));
@@ -307,7 +243,7 @@ export default class EditorContext extends Parcel<P,S> {
     to('edit', 'canvas:mounted', (canvas)=> this.initializeStage(canvas));
     to('edit', 'canvas:draw', (x, y)=> this.draw(x, y));
     to('edit', 'canvas:draw:once', (points)=> this.drawOnce(points));
-    to('edit', 'canvas:resize', (canvasWidth, canvasHeight)=> this.setState({canvasWidth, canvasHeight}));
+    to('edit', 'canvas:resize', (canvasComponentWidth, canvasComponentHeight)=> this.setState({canvasComponentWidth, canvasComponentHeight}));
     to('edit', 'canvas:scale:plus', (x, y)=> this.scaleStep(+1, x, y));
     to('edit', 'canvas:scale:minus', (x, y)=> this.scaleStep(-1, x, y));
     to('edit', 'canvas:slide:start', (x, y)=> this.slide = this.ie.startSlide());
@@ -319,6 +255,10 @@ export default class EditorContext extends Parcel<P,S> {
 
     to('edit', 'file:save', ()=> this.save());
     to('edit', 'file:open', ()=> this.open());
-    to('edit', 'file:new', ()=> this.create());
+    to('edit', 'file:new', (width, height, backgroundColor)=> this.create(width, height, backgroundColor));
+
+    to('edit', 'modal:rise', (modalComponent, modalProps)=> this.setState({modalComponent, modalProps}))
+
+    to('modal', 'modal:canvas', ()=> null)
   }
 }

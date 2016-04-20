@@ -16,13 +16,20 @@ export default class GradationSelectorComponent extends Cell<P,{}> {
     let onClick = (color)=> this.dispatch('color:select', color);
     return this.props.gradations.map((colorSet)=> {
       return <div className="gradation-line">
-        <button className="chage icon-button" onClick={(e)=> this.dispatch('floater:rise', e,()=> console.log('gradation1'))}>
-          <Fa icon="eyedropper"/>
-        </button>
-        <ColorCellSet {...{colorSet, onClick}}/>
-        <button className="chage icon-button" onClick={(e)=> this.dispatch('floater:rise', e,()=> console.log('gradation2'))}>
-          <Fa icon="eyedropper"/>
-        </button>
+        <div className="button-container">
+          <button className="change icon-button" onClick={(e)=> this.dispatch('floater:rise', e,(color)=> this.dispatch('gradation:change:color1', colorSet, color))}>
+            <Fa icon="eyedropper"/>
+          </button>
+        </div>
+        <div className="color-container"><ColorCellSet {...{colorSet, onClick}}/></div>
+        <div className="button-container">
+          <button className="change icon-button" onClick={(e)=> this.dispatch('floater:rise', e,(color)=> this.dispatch('gradation:change:color2', colorSet, color))}>
+            <Fa icon="eyedropper"/>
+          </button>
+          <button className="delete icon-button" onClick={(e)=> this.dispatch('gradation:delete', colorSet)}>
+            <Fa icon="trash"/>
+          </button>
+        </div>
       </div>
     })
   }
@@ -33,11 +40,11 @@ export default class GradationSelectorComponent extends Cell<P,{}> {
       <section className="cell-body">
         {this.writeGradations()}
         <div className="controller">
-          <button className="add icon-button" onClick={()=> this.dispatch('gradation:add')}>
+          <button className="add icon-button" onClick={()=> {
+                let [color1, color2] = this.props.colors;
+            this.dispatch('gradation:add', color1, color2)
+          }}>
             <Fa icon="plus-circle"/>
-          </button>
-          <button className="delete icon-button" onClick={(e)=> this.dispatch('floater:rise', e,FloatingColorPaletteMode.Delete)}>
-            <Fa icon="trash"/>
           </button>
         </div>
       </section>
