@@ -85,13 +85,13 @@ class SelectedColor extends React.Component<SelectedColorP,{}> {
 
     return <div className="selected-color">
       <div className={"tip first" + this.selectedStyle(0)}>
-        <div className="inner" style={{background: color1.hex}} onClick={()=> onSelect(0)}>
-          {color1.hex}
+        <div className="inner" onClick={()=> onSelect(0)}>
+          <em style={{background: color1.css}}>{color1.hex}</em>
         </div>
       </div>
       <div className={"tip second" + this.selectedStyle(1)}>
-        <div className="inner" style={{background: color2.hex}} onClick={()=> onSelect(1)}>
-          {color2.hex}
+        <div className="inner" onClick={()=> onSelect(1)}>
+          <em style={{background: color2.css}}>{color2.hex}</em>
         </div>
       </div>
     </div>

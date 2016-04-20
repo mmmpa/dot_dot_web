@@ -16,6 +16,9 @@ import {mix} from "../libs/mix"
 import {FileMixin} from "./editor-mixins/file-mixin"
 import {ColorMixin} from "./editor-mixins/color-mixin"
 import {GradationMixin} from "./editor-mixins/gradation-mixin"
+import {CanvasMixin} from "./editor-mixins/canvas-mixin"
+import {FloaterMixin} from "./editor-mixins/floater-mixin"
+import {FrameMixin} from "./editor-mixins/frame-mixin"
 
 interface P {
 }
@@ -24,8 +27,7 @@ interface S {
 }
 
 
-
-export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixin, GradationMixin) {
+export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixin, GradationMixin, CanvasMixin, FloaterMixin, FrameMixin) {
   private version:number = 1;
   private stage:any;
   private ie:ImageEditor;
@@ -55,7 +57,9 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
       frameCount: 1,
       fileName: 'noname',
       layers: [],
-      frames: [new LayeredImage(10, 10, [this.gen.blankDataUrl(10, 10)])],
+      canvasWidth: 0,
+      canvasHeight: 0,
+      frames: [],
       selectedFrameNumber: 0,
       // user state
       scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations
@@ -84,8 +88,7 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
   }
 
   componentDidMount() {
-    this.dispatch('frame:select', 0);
-    //this.dispatch('modal:rise', <CanvasSettingComponent/>, {});
+    this.dispatch('file:new:complete', 10, 10, 0);
   }
 
   componentWillUnmount() {
@@ -137,24 +140,6 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     }
   }
 
-  riseFloater(e, floatingCallback) {
-    let floatingFrom = e.currentTarget;
-    this.setState({floatingCallback, floatingFrom}, ()=> {
-      let remove = ()=> {
-        $(window).unbind('click', remove);
-        this.setState({floatingCallback: null, floatingFrom: null})
-      };
-      setTimeout(()=> {
-        $(window).bind('click', remove);
-      }, 1)
-    });
-  }
-
-  selectColorFromFloater(callback) {
-    callback();
-    this.setState({floatingCallback: null, floatingFrom: null});
-  }
-
   initializeStage(canvas) {
     let context = canvas.getContext('2d');
     [
@@ -167,68 +152,10 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     this.stage = new createjs.Stage(canvas);
   }
 
-  draw(x, y) {
-    this.ie.setPixel(x, y, this.state.selectedColor.number, true);
-    this.updateFrame();
-  }
-
-  drawOnce(points) {
-    points.forEach(({x, y})=> this.ie.setPixel(x, y, this.state.selectedColor.number));
-    this.ie.update();
-    this.updateFrame();
-  }
-
-  updateFrame() {
-    let {frames, selectedFrameNumber} = this.state;
-    frames[selectedFrameNumber].update(0, this.ie.exportPng());
-
-    this.setState({});
-  }
-
-  scaleStep(direction, x?, y?) {
-    let {scale} = this.state;
-    scale += direction;
-    if (scale < 0) {
-      scale = 0;
-    } else if (scale >= this.scaleNumbers.length) {
-      scale = this.scaleNumbers.length - 1;
-    }
-
-    this.scale(scale, x, y)
-    this.setState({scale});
-  }
-
-  scale(scale?, x?, y?) {
-    this.ie.scale(this.scaleNumbers[scale || this.state.scale], x, y);
-    if (!x && !y) {
-      this.center();
-    }
-  }
-
-  center() {
-    let {canvasComponentWidth, canvasComponentHeight} = this.state;
-    return this.ie.center(parseInt(canvasComponentWidth), parseInt(canvasComponentHeight));
-  }
-
-
-
-  parseFileName(fileName) {
-    return FileInformation.parseFileName(fileName)
-  }
-
-  selectFrame(selectedFrameNumber) {
-    this.create(this.state.frames[selectedFrameNumber].image(0));
-    this.setState({selectedFrameNumber});
-  }
-
-  toggleGrid() {
-    this.setState({grid: !this.state.grid})
-  }
-
   listen(to) {
-    to('edit', 'color:switch', (selectedColorNumber)=>this.setState({selectedColorNumber, selectedColor: this.state.colors[selectedColorNumber]}));
+    to('edit', 'color:switch', (i)=> this.selectFromTip(i));
     to('edit', 'color:select', (color)=> this.selectColor(color));
-    to('edit', 'color:add', ()=> this.addColor());
+    to('edit', 'color:add', (color)=> this.addColor(color));
     to('edit', 'color:delete', (color)=> this.deleteColor(color));
     to('edit', 'color:arrange', (argb)=>this.arrangeColor(argb));
 
@@ -243,7 +170,7 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     to('edit', 'canvas:mounted', (canvas)=> this.initializeStage(canvas));
     to('edit', 'canvas:draw', (x, y)=> this.draw(x, y));
     to('edit', 'canvas:draw:once', (points)=> this.drawOnce(points));
-    to('edit', 'canvas:resize', (canvasComponentWidth, canvasComponentHeight)=> this.setState({canvasComponentWidth, canvasComponentHeight}));
+    to('edit', 'canvas:resize', (w, h)=> this.setState({canvasComponentWidth: w, canvasComponentHeight: h}));
     to('edit', 'canvas:scale:plus', (x, y)=> this.scaleStep(+1, x, y));
     to('edit', 'canvas:scale:minus', (x, y)=> this.scaleStep(-1, x, y));
     to('edit', 'canvas:slide:start', (x, y)=> this.slide = this.ie.startSlide());
@@ -255,9 +182,19 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
 
     to('edit', 'file:save', ()=> this.save());
     to('edit', 'file:open', ()=> this.open());
-    to('edit', 'file:new', (width, height, backgroundColor)=> this.create(width, height, backgroundColor));
+    to('edit', 'file:new', ()=> this.dispatch('modal:rise', <CanvasSettingComponent/>, {
+      width: this.state.canvasWidth,
+      height: this.state.canvasHeight,
+      onComplete: (w, h, bg)=> {
+        this.dispatch('file:new:complete', w, h, bg);
+        this.dispatch('modal:hide');
+      }
+    }));
+    to('edit', 'file:new:complete', (w, h, bg)=> this.createBlankCanvas(w, h, bg));
+    to('edit', 'file:name', (fileName)=> this.setState({fileName}));
 
     to('edit', 'modal:rise', (modalComponent, modalProps)=> this.setState({modalComponent, modalProps}))
+    to('edit', 'modal:hide', ()=> this.setState({modalComponent: null, modalProps: null}))
 
     to('modal', 'modal:canvas', ()=> null)
   }

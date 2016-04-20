@@ -75,19 +75,20 @@ export default class FrameSelectorComponent extends Cell<P,{}> {
 
 class FrameSelectorCellComponent extends React.Component<{image:LayeredImage, onClick:()=>void},{}> {
   componentWillMount() {
-    this.setState({
-      version: this.props.image.version
-    })
+    this.componentWillReceiveProps(this.props)
   }
 
   shouldComponentUpdate(props) {
-    let {version} = props.image;
-    return version === 0 || version !== this.state.version
+    let {image} = props;
+    let {version} = image;
+    return image!== this.state.imagge || version === 0 || version !== this.state.version
   }
 
   componentWillReceiveProps(props) {
-    let {version} = props.image;
-    this.setState({version});
+    this.setState({
+      version: props.image.version,
+      image: props.image
+    })
   }
 
   render() {

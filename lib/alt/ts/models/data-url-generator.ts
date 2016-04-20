@@ -11,7 +11,7 @@ export default class DataUrlGenerator {
 
   blankDataUrl(w, h) {
     this.canvas.width = w;
-    this.canvas.height = h
+    this.canvas.height = h;
     this.context.clearRect(0, 0, w, h);
 
     return this.canvas.toDataURL();

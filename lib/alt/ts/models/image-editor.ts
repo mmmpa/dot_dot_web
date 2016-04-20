@@ -2,6 +2,9 @@ import ActionHistory from "./action-history";
 declare const createjs;
 
 export default class ImageEditor {
+  static id:number = 0;
+
+  public id:number;
   private _scale:number = 1;
   private _grid:boolean = false;
   private _gridElement:any = null;
@@ -16,7 +19,13 @@ export default class ImageEditor {
 
   public mode:string;
 
+  static genId(){
+    return this.id++;
+  }
+
   constructor(public stage, public width, public height, imageElement?) {
+    this.id = ImageEditor.genId();
+
     this.container = new createjs.Container();
 
     this.bg = new createjs.Bitmap(new createjs.BitmapData(null, stage.canvas.width, stage.canvas.height, 0x01ffffff).canvas);
@@ -27,11 +36,16 @@ export default class ImageEditor {
       this.bitmapData = new createjs.BitmapData(null, width, height, 0xffffffff);
     }
 
+    this.width = this.bitmapData.width;
+    this.height = this.bitmapData.height;
+
     this.canvas = new createjs.Bitmap(this.bitmapData.canvas);
     this.container.addChild(this.canvas);
 
     stage.addChild(this.bg);
     stage.addChild(this.container);
+    this.update();
+
   }
 
   close() {
@@ -125,8 +139,10 @@ export default class ImageEditor {
     let {width, height} = this;
     width *= this._scale;
     height *= this._scale;
-    this.container.x = (displayWidth - width) / 2 >> 0;
-    this.container.y = (displayHeight - height) / 2 >> 0;
+    this.container.x = (displayWidth - width) / 2;
+    this.container.y = (displayHeight - height) / 2;
+    //this.container.x = 0
+    //this.container.y = 0
     this.update();
   }
 

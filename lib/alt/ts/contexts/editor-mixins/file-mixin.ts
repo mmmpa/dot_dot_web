@@ -1,4 +1,5 @@
-import ImageEditor from "../../models/image-editor";
+import FileInformation from "../../models/file-information";
+import LayeredImage from "../../models/layered-image";
 
 export let FileMixin = (superclass) => class extends superclass {
   get fileName() {
@@ -6,24 +7,19 @@ export let FileMixin = (superclass) => class extends superclass {
     return `${fileName}_${new Date().getTime()}.${layerCount}.${frameCount}.png`
   }
 
+  parseFileName(fileName) {
+    return FileInformation.parseFileName(fileName)
+  }
+
   createBlankCanvas(width, height, backgroundColor) {
-    return ImageEditor.create(this.stage, 50, 50);
-  }
-
-  createFromImageElement(imageElement){
-    return ImageEditor.create(this.stage, 0, 0, imageElement);
-  }
-
-  create(imageElement?) {
-    this.ie && this.ie.close();
-    if (imageElement) {
-      this.ie = ImageEditor.create(this.stage, 0, 0, imageElement);
-    } else {
-      this.ie = ImageEditor.create(this.stage, 50, 50);
-    }
-    this.scale();
-    this.ie.switchGrid(this.state.grid);
-    this.setState({ie: this.ie});
+    let frames = [new LayeredImage(width, height, [this.gen.blankDataUrl(width, height)])]
+    this.setState({
+      frames,
+      canvasWidth: width,
+      canvasHeight: height,
+      selectedFrameNumber: 0,
+      fileName: ''
+    }, ()=> this.dispatch('frame:select', 0));
   }
 
   save() {
@@ -35,30 +31,46 @@ export let FileMixin = (superclass) => class extends superclass {
 
   open() {
     let $fileListener = $('<input type="file"/>');
+    $fileListener.on('change', this.forOpenOnChange());
+    $fileListener.trigger('click');
+  }
 
-    $fileListener.on('change', (e)=> {
+  forOpenOnChange() {
+    return (e)=> {
       let file = e.path[0].files[0];
       let information = this.parseFileName(file.name);
       let reader = new FileReader();
-      reader.addEventListener('load', (e)=> {
-        let img = new Image();
-        img.addEventListener('load', (e)=> {
-          let {width, height} = e.target;
-          let baseWidth = width / information.frameCount;
-          let baseHeight = height / information.layerCount;
-          let trimmer = this.gen.trimmer(e.target, baseWidth, baseHeight);
-
-          let frames = _.times(information.frameCount, (n)=> {
-            // レイヤー分割処理を入れる。
-            return new LayeredImage(baseWidth, baseHeight, [trimmer(baseWidth * n, 0)])
-          });
-
-          this.setState({frames}, ()=> this.dispatch('frame:select', 0));
-        });
-        img.src = e.target.result;
-      });
+      reader.addEventListener('load', this.forOpenOnRead(information));
       reader.readAsDataURL(file);
-    });
-    $fileListener.trigger('click');
+    }
+  }
+
+  forOpenOnRead(information) {
+    return (e)=> {
+      let img = new Image();
+      img.addEventListener('load', this.forOpenOnLoaded(information));
+      img.src = e.target.result;
+    }
+  }
+
+  forOpenOnLoaded(information) {
+    return (e)=> {
+      let {width, height} = e.target;
+      let baseWidth = width / information.frameCount;
+      let baseHeight = height / information.layerCount;
+      let trimmer = this.gen.trimmer(e.target, baseWidth, baseHeight);
+
+      let frames = _.times(information.frameCount, (n)=> {
+        return new LayeredImage(baseWidth, baseHeight, [trimmer(baseWidth * n, 0)])
+      });
+
+      this.setState({
+        frames,
+        canvasWidth: baseWidth,
+        canvasHeight: baseHeight,
+        selectedFrameNumber: 0,
+        fileName: information.name
+      }, ()=> this.dispatch('frame:select', 0));
+    }
   }
 };

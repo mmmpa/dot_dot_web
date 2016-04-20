@@ -20,7 +20,7 @@ export default class ColorPaletteComponent extends Cell<P,{}> {
       <section className="cell-body">
         <ColorCellSet {...{colorSet, onClick: (color)=> this.dispatch('color:select', color)}}/>
         <div className="controller">
-          <button className="add icon-button" onClick={()=> this.dispatch('color:add')}>
+          <button className="add icon-button" onClick={()=> this.dispatch('color:add', this.props.selectedColor)}>
             <Fa icon="plus-circle"/>
           </button>
           <button className="delete icon-button" onClick={(e)=> this.dispatch('floater:rise', e,(color)=> this.dispatch('color:delete', color))}>

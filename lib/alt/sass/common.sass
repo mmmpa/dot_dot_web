@@ -74,8 +74,10 @@ body
       width: 100%
     .color-cell
       width: 5.8%
-      height: $icon-button-size
       margin: 0
+      em
+        width: 100%
+        height: $icon-button-size
 
 .color-controller
   white-space: nowrap
@@ -119,12 +121,17 @@ body
     display: inline-block
     width: 50px
     height: 50px
-    overflow: hidden
     position: absolute
     border: 2px solid #ccc
+    background: url("/img/stripe.png")
+    em
+      display: inline-block
+      overflow: hidden
+      width: 46px
+      height: 46px
+      text-indent: 100px
     .inner
       box-sizing: border-box
-      padding-top: 44px
       width: 46px
       height: 46px
       overflow: hidden
@@ -145,16 +152,21 @@ body
 
 .color-cell
   display: inline-block
-  width: $color-cell-size
-  height: $color-cell-size
-  overflow: hidden
-  text-indent: 100px
   cursor: pointer
   margin: 0 1px 1px 0
-  line-height: 100%
   vertical-align: top
+  background-image: url("/img/stripe.png") !important
+  em
+    display: inline-block
+    width: $color-cell-size
+    height: $color-cell-size
+    line-height: 100%
+    vertical-align: top
+    overflow: hidden
+    text-indent: 100px
   &:hover
-    border: 2px solid #000
+    em
+      border: 2px solid #000
 
 .icon-button
   box-sizing: border-box

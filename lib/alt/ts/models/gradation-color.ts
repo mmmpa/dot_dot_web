@@ -27,22 +27,21 @@ export default class GradationColor {
   }
 
   compute() {
-    let steps = _.reduce(['r', 'g', 'b'], (a, argb)=> {
+    let steps = _.reduce(['a', 'r', 'g', 'b'], (a, argb)=> {
       a[argb] = (this._color2[argb] - this._color1[argb]) / (this.length - 1);
       return a;
-    }, {a: 255});
+    }, {});
 
     this.colors = _.times(this.length - 1, (n)=> {
-      let {a, r, g, b} = _.reduce(['r', 'g', 'b'], (a, argb)=> {
+      let {a, r, g, b} = _.reduce(['a', 'r', 'g', 'b'], (a, argb)=> {
         a[argb] = Math.round(this._color1[argb] + steps[argb] * n);
         return a;
-      }, {a: 255});
+      }, {});
 
       return new ARGB(a, r, g, b);
     });
 
     let last = this._color2.clone();
-    last.a = 255;
 
     this.colors.push(last);
     this.version++;

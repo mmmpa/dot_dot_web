@@ -25,6 +25,12 @@ export default class ARGB {
     return "#" + this.hexSupport(this.r) + this.hexSupport(this.g) + this.hexSupport(this.b);
   }
 
+  get css() {
+    let {a, r, g, b} = this;
+    let floatA = a / 255;
+    return `rgba(${[r, g, b, floatA].join(',')})`;
+  }
+
   toJson() {
     let {r, b, g, a} = this;
     return {r, g, b, a}

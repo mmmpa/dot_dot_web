@@ -15,9 +15,6 @@ enum CanvasState{
 }
 
 export default class CanvasComponent extends Cell<P,{}> {
-  private stage:any;
-  private ie:ImageEditor;
-
   private nowX;
   private nowY;
 
@@ -170,14 +167,3 @@ export default class CanvasComponent extends Cell<P,{}> {
     </div>
   }
 }
-
-
-/*
-
- // 読み込み
- new createjs.BitmapData(HTMLImageElement)
-
- // 新規作成
- new createjs.BitmapData(null, 100, 100, 0xffff0000)
-
- * */

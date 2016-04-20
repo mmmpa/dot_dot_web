@@ -24,7 +24,7 @@ export default class ToolSelectorComponent extends Cell<{},{}> {
       case 'grid':
         return this.dispatch('canvas:grid:toggle');
       case 'centering':
-        return this.dispatch('canvas:centering');
+        return this.dispatch('canvas:center');
       case 'scale-plus':
         return this.dispatch('canvas:scale:plus');
       case 'scale-minus':
@@ -38,7 +38,7 @@ export default class ToolSelectorComponent extends Cell<{},{}> {
     return <div className="cell y tool-selector" style={this.layoutStyle}>
       <section>
         <h1>file name</h1>
-        <input type="text" onChange={(e)=> this.dispatch('file:name', e.target.value)}/>
+        <input type="text" value={this.props.fileName} onChange={(e)=> this.dispatch('file:name', e.target.value)}/>
       </section>
       <ul className="tool-list">
 

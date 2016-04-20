@@ -5,8 +5,8 @@ import ARGB from "../models/argb";
 export default class ColorCell extends React.Component<{color:ARGB, onClick:()=> void},{}> {
   render() {
     let {color, index, onClick} = this.props;
-    return <li className="color-cell" style={{background: color.hex}} onClick={()=> onClick(color, index)}>
-      {color.hex}
+    return <li className="color-cell" onClick={()=> onClick(color, index)}>
+      <em style={{background: color.css}}>{color.hex}</em>
     </li>
   }
 }
