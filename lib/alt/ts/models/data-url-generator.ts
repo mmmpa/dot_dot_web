@@ -17,13 +17,25 @@ export default class DataUrlGenerator {
     return this.canvas.toDataURL();
   }
 
-  trimmer(image, baseWidth, baseHeight){
+  trimmer(image, baseWidth, baseHeight) {
     this.canvas.width = baseWidth;
     this.canvas.height = baseHeight;
 
-    return (offsetX, offsetY)=>{
+    return (offsetX, offsetY)=> {
+      this.context.clearRect(0, 0, baseWidth, baseHeight);
       this.context.drawImage(image, offsetX, offsetY, baseWidth, baseHeight, 0, 0, baseWidth, baseHeight);
       return this.canvas.toDataURL();
     }
+  }
+
+  join(images, baseWidth, baseHeight) {
+    let {length} = images
+    this.canvas.width = baseWidth * length;
+    this.canvas.height = baseHeight;
+
+    images.forEach((image, i)=> {
+      this.context.drawImage(image, 0, 0, baseWidth, baseHeight, baseWidth * i, 0, baseWidth, baseHeight);
+    });
+    return this.canvas.toDataURL();
   }
 }

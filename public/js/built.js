@@ -43,6 +43,7 @@ var CanvasComponent = (function (_super) {
     };
     CanvasComponent.prototype.initializeCommand = function () {
         var _this = this;
+        this.commands['onMouseDownRight'] = this.drawRight.bind(this);
         this.commands['onMouseDown'] = this.draw.bind(this);
         this.commands['onMouseWheel'] = function (x, y) { return y > 0 ? _this.scaleStep(-1) : _this.scaleStep(1); };
         this.commands['onDoubleClick'] = this.drawDouble.bind(this);
@@ -54,13 +55,32 @@ var CanvasComponent = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(CanvasComponent.prototype, "leftColor", {
+        get: function () {
+            var _a = this.props, colors = _a.colors, selectedColorNumber = _a.selectedColorNumber;
+            return colors[selectedColorNumber];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(CanvasComponent.prototype, "rightColor", {
+        get: function () {
+            var _a = this.props, colors = _a.colors, selectedColorNumber = _a.selectedColorNumber;
+            return colors[selectedColorNumber ^ 1];
+        },
+        enumerable: true,
+        configurable: true
+    });
     CanvasComponent.prototype.draw = function (x, y) {
         switch (this.props.mode) {
             case 'slide':
                 return this.startSlide(x, y);
             default:
-                return this.startDraw(x, y);
+                return this.startDraw(x, y, this.leftColor);
         }
+    };
+    CanvasComponent.prototype.drawRight = function (x, y) {
+        this.startDraw(x, y, this.rightColor);
     };
     CanvasComponent.prototype.drawDouble = function (x, y) {
         switch (this.props.mode) {
@@ -70,14 +90,14 @@ var CanvasComponent = (function (_super) {
                 return null;
         }
     };
-    CanvasComponent.prototype.startDraw = function (startX, startY) {
+    CanvasComponent.prototype.startDraw = function (startX, startY, color) {
         var _this = this;
         //this.dispatch('canvas:draw', startX, startY);
-        this.props.draw(startX, startY);
+        this.props.draw(startX, startY, color);
         //let pre = {x: startX, y: startY};
         var move = function (e) {
             var _a = _this.mousePosition(e), x = _a.x, y = _a.y;
-            _this.props.draw(x, y);
+            _this.props.draw(x, y, color);
             /*
              let {x, y} = this.mousePosition(e);
              this.dispatch('canvas:draw', x, y);
@@ -140,10 +160,12 @@ var CanvasComponent = (function (_super) {
         var _a = this.mousePosition(e), x = _a.x, y = _a.y;
         this.call('onMouseWheel')(e.deltaX, e.deltaY);
     };
-    CanvasComponent.prototype.onMouseDown = function (e) {
+    CanvasComponent.prototype.onMouseDown = function (e, isRight) {
+        if (isRight === void 0) { isRight = false; }
         e.preventDefault();
         var _a = this.mousePosition(e), x = _a.x, y = _a.y;
-        this.call('onMouseDown')(x, y);
+        console.log(e, isRight);
+        isRight ? this.call('onMouseDownRight')(x, y) : this.call('onMouseDown')(x, y);
     };
     Object.defineProperty(CanvasComponent.prototype, "canvas", {
         get: function () {
@@ -159,7 +181,7 @@ var CanvasComponent = (function (_super) {
     };
     CanvasComponent.prototype.render = function () {
         var _this = this;
-        return React.createElement("div", {style: this.layoutStyle, className: "cell canvas", ref: "container"}, React.createElement("canvas", {width: "2000", height: "2000", ref: "canvas", onMouseDown: function (e) { return _this.onMouseDown(e); }}, "canvas"));
+        return React.createElement("div", {style: this.layoutStyle, className: "cell canvas", ref: "container"}, React.createElement("canvas", {width: "2000", height: "2000", ref: "canvas", onMouseDown: function (e) { return _this.onMouseDown(e); }, onContextMenu: function (e) { return _this.onMouseDown(e, true); }}, "canvas"));
     };
     return CanvasComponent;
 }(cell_component_1.default));
@@ -1052,8 +1074,8 @@ var EditorContext = (function (_super) {
         to('edit', 'floater:select', function (callback) { return _this.selectColorFromFloater(callback); });
         to('edit', 'floater:rise', function (e, floatingCallback) { return _this.riseFloater(e, floatingCallback); });
         to('edit', 'canvas:mounted', function (canvas) { return _this.initializeStage(canvas); });
-        to('edit', 'canvas:draw', function (x, y) { return _this.draw(x, y); });
-        to('edit', 'canvas:draw:once', function (points) { return _this.drawOnce(points); });
+        to('edit', 'canvas:draw', function (x, y, color) { return _this.draw(x, y, color); });
+        to('edit', 'canvas:draw:once', function (points, color) { return _this.drawOnce(points, color); });
         to('edit', 'canvas:resize', function (w, h) { return _this.setState({ canvasComponentWidth: w, canvasComponentHeight: h }); });
         to('edit', 'canvas:scale:plus', function (x, y) { return _this.scaleStep(+1, x, y); });
         to('edit', 'canvas:scale:minus', function (x, y) { return _this.scaleStep(-1, x, y); });
@@ -1095,15 +1117,15 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
     function class_1() {
         _super.apply(this, arguments);
     }
-    class_1.prototype.draw = function (x, y) {
-        this.ie.setPixel(x, y, this.state.selectedColor.number, true);
+    class_1.prototype.draw = function (x, y, color) {
+        this.ie.setPixel(x, y, color.number, true);
         this.updateFrame();
     };
-    class_1.prototype.drawOnce = function (points) {
+    class_1.prototype.drawOnce = function (points, color) {
         var _this = this;
         points.forEach(function (_a) {
             var x = _a.x, y = _a.y;
-            return _this.ie.setPixel(x, y, _this.state.selectedColor.number);
+            return _this.ie.setPixel(x, y, color.number);
         });
         this.ie.update();
         this.updateFrame();
@@ -1196,8 +1218,17 @@ exports.FileMixin = function (superclass) { return (function (_super) {
     }
     Object.defineProperty(class_1.prototype, "fileName", {
         get: function () {
-            var _a = this.state, fileName = _a.fileName, layerCount = _a.layerCount, frameCount = _a.frameCount;
-            return fileName + "_" + new Date().getTime() + "." + layerCount + "." + frameCount + ".png";
+            var _a = this.state, fileName = _a.fileName, layerCount = _a.layerCount, frames = _a.frames;
+            return fileName + "_" + new Date().getTime() + "." + layerCount + "." + frames.length + ".png";
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(class_1.prototype, "dataUrl", {
+        get: function () {
+            var _a = this.state, canvasWidth = _a.canvasWidth, canvasHeight = _a.canvasHeight, frames = _a.frames;
+            var images = frames.map(function (frame) { return frame.image(0); });
+            return this.gen.join(images, canvasWidth, canvasHeight);
         },
         enumerable: true,
         configurable: true
@@ -1233,7 +1264,7 @@ exports.FileMixin = function (superclass) { return (function (_super) {
     };
     class_1.prototype.save = function () {
         $('<a>')
-            .attr("href", this.ie.exportPng())
+            .attr("href", this.dataUrl)
             .attr("download", this.fileName)
             .trigger('click');
     };
@@ -1864,9 +1895,20 @@ var DataUrlGenerator = (function () {
         this.canvas.width = baseWidth;
         this.canvas.height = baseHeight;
         return function (offsetX, offsetY) {
+            _this.context.clearRect(0, 0, baseWidth, baseHeight);
             _this.context.drawImage(image, offsetX, offsetY, baseWidth, baseHeight, 0, 0, baseWidth, baseHeight);
             return _this.canvas.toDataURL();
         };
+    };
+    DataUrlGenerator.prototype.join = function (images, baseWidth, baseHeight) {
+        var _this = this;
+        var length = images.length;
+        this.canvas.width = baseWidth * length;
+        this.canvas.height = baseHeight;
+        images.forEach(function (image, i) {
+            _this.context.drawImage(image, 0, 0, baseWidth, baseHeight, baseWidth * i, 0, baseWidth, baseHeight);
+        });
+        return this.canvas.toDataURL();
     };
     return DataUrlGenerator;
 }());

@@ -165,8 +165,8 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     to('edit', 'floater:rise', (e, floatingCallback)=> this.riseFloater(e, floatingCallback));
 
     to('edit', 'canvas:mounted', (canvas)=> this.initializeStage(canvas));
-    to('edit', 'canvas:draw', (x, y)=> this.draw(x, y));
-    to('edit', 'canvas:draw:once', (points)=> this.drawOnce(points));
+    to('edit', 'canvas:draw', (x, y, color)=> this.draw(x, y, color));
+    to('edit', 'canvas:draw:once', (points, color)=> this.drawOnce(points, color));
     to('edit', 'canvas:resize', (w, h)=> this.setState({canvasComponentWidth: w, canvasComponentHeight: h}));
     to('edit', 'canvas:scale:plus', (x, y)=> this.scaleStep(+1, x, y));
     to('edit', 'canvas:scale:minus', (x, y)=> this.scaleStep(-1, x, y));

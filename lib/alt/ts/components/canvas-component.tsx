@@ -47,6 +47,7 @@ export default class CanvasComponent extends Cell<P,{}> {
   }
 
   initializeCommand() {
+    this.commands['onMouseDownRight'] = this.drawRight.bind(this);
     this.commands['onMouseDown'] = this.draw.bind(this);
     this.commands['onMouseWheel'] = (x, y)=> y > 0 ? this.scaleStep(-1) : this.scaleStep(1);
     this.commands['onDoubleClick'] = this.drawDouble.bind(this);
@@ -56,13 +57,27 @@ export default class CanvasComponent extends Cell<P,{}> {
     return this.props.commands;
   }
 
+  get leftColor(){
+    let {colors, selectedColorNumber} = this.props;
+    return colors[selectedColorNumber];
+  }
+
+  get rightColor(){
+    let {colors, selectedColorNumber} = this.props;
+    return colors[selectedColorNumber^1];
+  }
+
   draw(x, y) {
     switch (this.props.mode) {
       case 'slide':
         return this.startSlide(x, y);
       default:
-        return this.startDraw(x, y);
+        return this.startDraw(x, y, this.leftColor);
     }
+  }
+
+  drawRight(x, y) {
+    this.startDraw(x, y, this.rightColor);
   }
 
   drawDouble(x, y) {
@@ -74,14 +89,14 @@ export default class CanvasComponent extends Cell<P,{}> {
     }
   }
 
-  startDraw(startX, startY) {
+  startDraw(startX, startY, color) {
     //this.dispatch('canvas:draw', startX, startY);
-    this.props.draw(startX, startY);
+    this.props.draw(startX, startY, color);
     //let pre = {x: startX, y: startY};
 
     let move = (e:JQueryMouseEventObject)=> {
       let {x, y} = this.mousePosition(e);
-      this.props.draw(x, y);
+      this.props.draw(x, y, color);
       /*
        let {x, y} = this.mousePosition(e);
        this.dispatch('canvas:draw', x, y);
@@ -143,11 +158,12 @@ export default class CanvasComponent extends Cell<P,{}> {
     this.call('onMouseWheel')(e.deltaX, e.deltaY);
   }
 
-  onMouseDown(e:MouseEvent) {
+  onMouseDown(e:MouseEvent, isRight = false) {
     e.preventDefault();
     let {x, y} = this.mousePosition(e);
 
-    this.call('onMouseDown')(x, y);
+    console.log(e, isRight)
+    isRight ? this.call('onMouseDownRight')(x, y) : this.call('onMouseDown')(x, y);
   }
 
   get canvas() {
@@ -163,7 +179,7 @@ export default class CanvasComponent extends Cell<P,{}> {
 
   render() {
     return <div style={this.layoutStyle} className="cell canvas" ref="container">
-      <canvas width="2000" height="2000" ref="canvas" onMouseDown={(e)=> this.onMouseDown(e)}>canvas</canvas>
+      <canvas width="2000" height="2000" ref="canvas" onMouseDown={(e)=> this.onMouseDown(e)} onContextMenu={(e)=> this.onMouseDown(e, true)}>canvas</canvas>
     </div>
   }
 }

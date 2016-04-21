@@ -1,11 +1,11 @@
 export let CanvasMixin = (superclass) => class extends superclass {
-  draw(x, y) {
-    this.ie.setPixel(x, y, this.state.selectedColor.number, true);
+  draw(x, y, color) {
+    this.ie.setPixel(x, y, color.number, true);
     this.updateFrame();
   }
 
-  drawOnce(points) {
-    points.forEach(({x, y})=> this.ie.setPixel(x, y, this.state.selectedColor.number));
+  drawOnce(points, color) {
+    points.forEach(({x, y})=> this.ie.setPixel(x, y, color.number));
     this.ie.update();
     this.updateFrame();
   }

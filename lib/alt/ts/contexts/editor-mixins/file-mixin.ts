@@ -3,8 +3,14 @@ import LayeredImage from "../../models/layered-image";
 
 export let FileMixin = (superclass) => class extends superclass {
   get fileName() {
-    let {fileName, layerCount, frameCount} = this.state;
-    return `${fileName}_${new Date().getTime()}.${layerCount}.${frameCount}.png`
+    let {fileName, layerCount, frames} = this.state;
+    return `${fileName}_${new Date().getTime()}.${layerCount}.${frames.length}.png`
+  }
+
+  get dataUrl() {
+    let {canvasWidth, canvasHeight, frames} = this.state;
+    let images = frames.map((frame)=> frame.image(0));
+    return this.gen.join(images, canvasWidth, canvasHeight);
   }
 
   parseFileName(fileName) {
@@ -30,7 +36,7 @@ export let FileMixin = (superclass) => class extends superclass {
         this.dispatch('modal:hide');
         this.dispatch('file:new:complete', w, h, bg);
       },
-      onCancel: ()=>{
+      onCancel: ()=> {
         this.dispatch('modal:hide');
       }
     };
@@ -39,7 +45,7 @@ export let FileMixin = (superclass) => class extends superclass {
 
   save() {
     $('<a>')
-      .attr("href", this.ie.exportPng())
+      .attr("href", this.dataUrl)
       .attr("download", this.fileName)
       .trigger('click');
   }
