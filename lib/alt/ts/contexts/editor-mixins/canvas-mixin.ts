@@ -36,6 +36,7 @@ export let CanvasMixin = (superclass) => class extends superclass {
   }
 
   toggleGrid() {
+    this.ie.switchGrid(!this.state.grid)
     this.setState({grid: !this.state.grid})
   }
 };

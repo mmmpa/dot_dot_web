@@ -22,6 +22,21 @@ export let FileMixin = (superclass) => class extends superclass {
     }, ()=> this.dispatch('frame:select', 0));
   }
 
+  createBlankCanvasFromModal(component) {
+    let modalProps = {
+      width: this.state.canvasWidth,
+      height: this.state.canvasHeight,
+      onComplete: (w, h, bg)=> {
+        this.dispatch('modal:hide');
+        this.dispatch('file:new:complete', w, h, bg);
+      },
+      onCancel: ()=>{
+        this.dispatch('modal:hide');
+      }
+    };
+    this.dispatch('modal:rise', component, modalProps);
+  }
+
   save() {
     $('<a>')
       .attr("href", this.ie.exportPng())

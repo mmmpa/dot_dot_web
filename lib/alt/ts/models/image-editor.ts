@@ -19,7 +19,7 @@ export default class ImageEditor {
 
   public mode:string;
 
-  static genId(){
+  static genId() {
     return this.id++;
   }
 
@@ -74,6 +74,18 @@ export default class ImageEditor {
       this.container.x = startX + xRange;
       this.container.y = startY + yRange;
       this.update();
+    }
+  }
+
+  posit({x, y}) {
+    this.container.x = x;
+    this.container.y = y;
+  }
+
+  get position() {
+    return {
+      x: this.container.x,
+      y: this.container.y
     }
   }
 

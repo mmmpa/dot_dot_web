@@ -1,6 +1,12 @@
 export default class LayeredImage {
-  constructor(public width, public height, public images:any[], public version = 0) {
+  static id:number = 0;
 
+  static genId() {
+    return this.id++;
+  }
+  
+  constructor(public width, public height, public images:any[], public version = 0) {
+    this.id = LayeredImage.genId();
   }
 
   update(index:number, dataUrl) {

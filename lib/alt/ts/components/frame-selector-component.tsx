@@ -43,27 +43,27 @@ export default class FrameSelectorComponent extends Cell<P,{}> {
         </div>
         <div className="controller">
           <div className="edit">
-            <button className="delete icon-button" onClick={(e)=> this.dispatch('floater:rise', e,FloatingColorPaletteMode.Delete)}>
+            <button className="delete icon-button" onClick={(e)=> this.dispatch('frame:previous')}>
               <Fa icon="backward"/>
             </button>
-            <button className="add icon-button" onClick={()=> this.dispatch('color:add')}>
+            <button className="add icon-button" onClick={()=> this.dispatch('frame:play')}>
               <Fa icon="play"/>
             </button>
-            <button className="delete icon-button" onClick={(e)=> this.dispatch('floater:rise', e,FloatingColorPaletteMode.Delete)}>
+            <button className="delete icon-button" onClick={(e)=> this.dispatch('frame:next')}>
               <Fa icon="forward"/>
             </button>
           </div>
           <div className="edit">
-            <button className="delete icon-button" onClick={(e)=> this.dispatch('floater:rise', e,FloatingColorPaletteMode.Delete)}>
+            <button className="delete icon-button" onClick={(e)=> this.dispatch('frame:delete')}>
               <Fa icon="trash"/>
             </button>
-            <button className="add icon-button" onClick={()=> this.dispatch('color:add')}>
+            <button className="add icon-button" onClick={()=> this.dispatch('frame:add')}>
               <Fa icon="plus-circle"/>
             </button>
-            <button className="add icon-button" onClick={()=> this.dispatch('color:add')}>
+            <button className="add icon-button" onClick={()=> this.dispatch('frame:move:backward')}>
               <Fa icon="hand-o-left"/>
             </button>
-            <button className="add icon-button" onClick={()=> this.dispatch('color:add')}>
+            <button className="add icon-button" onClick={()=> this.dispatch('frame:move:forward')}>
               <Fa icon="hand-o-right"/>
             </button>
           </div>

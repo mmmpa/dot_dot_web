@@ -98,11 +98,7 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
 
   componentDidUpdate(_, state) {
     if (!state.canvasComponentWidth && this.state.canvasComponentWidth) {
-      this.center();
-    }
-
-    if (state.grid !== this.state.grid) {
-      this.ie.switchGrid(this.state.grid);
+      this.dispatch('canvas:center', 0)
     }
   }
 
@@ -179,22 +175,21 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     to('edit', 'canvas:grid:toggle', ()=> this.toggleGrid());
 
     to('edit', 'frame:select', (n)=> this.selectFrame(n));
+    to('edit', 'frame:next', ()=> this.selectNextFrame());
+    to('edit', 'frame:previous', ()=> this.selectPreviousFrame());
+    to('edit', 'frame:add', ()=> this.addFrame());
+    to('edit', 'frame:delete', ()=> this.deleteFrame());
+    to('edit', 'frame:move:backward', ()=> this.moveFrameBackward());
+    to('edit', 'frame:move:forward', ()=> this.moveFrameForward());
 
     to('edit', 'file:save', ()=> this.save());
     to('edit', 'file:open', ()=> this.open());
-    to('edit', 'file:new', ()=> this.dispatch('modal:rise', <CanvasSettingComponent/>, {
-      width: this.state.canvasWidth,
-      height: this.state.canvasHeight,
-      onComplete: (w, h, bg)=> {
-        this.dispatch('file:new:complete', w, h, bg);
-        this.dispatch('modal:hide');
-      }
-    }));
+    to('edit', 'file:new', ()=> this.createBlankCanvasFromModal(<CanvasSettingComponent/>));
     to('edit', 'file:new:complete', (w, h, bg)=> this.createBlankCanvas(w, h, bg));
     to('edit', 'file:name', (fileName)=> this.setState({fileName}));
 
     to('edit', 'modal:rise', (modalComponent, modalProps)=> this.setState({modalComponent, modalProps}))
-    to('edit', 'modal:hide', ()=> this.setState({modalComponent: null, modalProps: null}))
+    to('modal', 'modal:hide', ()=> this.setState({modalComponent: null, modalProps: null}))
 
     to('modal', 'modal:canvas', ()=> null)
   }

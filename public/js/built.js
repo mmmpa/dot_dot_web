@@ -544,7 +544,6 @@ var __extends = (this && this.__extends) || function (d, b) {
 var React = require("react");
 var fa_1 = require("../mods/fa");
 var cell_component_1 = require("./cell-component");
-var constants_1 = require("../constants/constants");
 var FrameSelectorComponent = (function (_super) {
     __extends(FrameSelectorComponent, _super);
     function FrameSelectorComponent() {
@@ -568,7 +567,7 @@ var FrameSelectorComponent = (function (_super) {
     };
     FrameSelectorComponent.prototype.render = function () {
         var _this = this;
-        return React.createElement("div", {className: "cell x frame-selector", style: this.layoutStyle}, React.createElement("header", {className: "cell-header"}, this.myName), React.createElement("section", {className: "cell-body"}, React.createElement("div", {className: "frames"}, this.writeFrames()), React.createElement("div", {className: "controller"}, React.createElement("div", {className: "edit"}, React.createElement("button", {className: "delete icon-button", onClick: function (e) { return _this.dispatch('floater:rise', e, constants_1.FloatingColorPaletteMode.Delete); }}, React.createElement(fa_1.default, {icon: "backward"})), React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('color:add'); }}, React.createElement(fa_1.default, {icon: "play"})), React.createElement("button", {className: "delete icon-button", onClick: function (e) { return _this.dispatch('floater:rise', e, constants_1.FloatingColorPaletteMode.Delete); }}, React.createElement(fa_1.default, {icon: "forward"}))), React.createElement("div", {className: "edit"}, React.createElement("button", {className: "delete icon-button", onClick: function (e) { return _this.dispatch('floater:rise', e, constants_1.FloatingColorPaletteMode.Delete); }}, React.createElement(fa_1.default, {icon: "trash"})), React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('color:add'); }}, React.createElement(fa_1.default, {icon: "plus-circle"})), React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('color:add'); }}, React.createElement(fa_1.default, {icon: "hand-o-left"})), React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('color:add'); }}, React.createElement(fa_1.default, {icon: "hand-o-right"}))))));
+        return React.createElement("div", {className: "cell x frame-selector", style: this.layoutStyle}, React.createElement("header", {className: "cell-header"}, this.myName), React.createElement("section", {className: "cell-body"}, React.createElement("div", {className: "frames"}, this.writeFrames()), React.createElement("div", {className: "controller"}, React.createElement("div", {className: "edit"}, React.createElement("button", {className: "delete icon-button", onClick: function (e) { return _this.dispatch('frame:previous'); }}, React.createElement(fa_1.default, {icon: "backward"})), React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('frame:play'); }}, React.createElement(fa_1.default, {icon: "play"})), React.createElement("button", {className: "delete icon-button", onClick: function (e) { return _this.dispatch('frame:next'); }}, React.createElement(fa_1.default, {icon: "forward"}))), React.createElement("div", {className: "edit"}, React.createElement("button", {className: "delete icon-button", onClick: function (e) { return _this.dispatch('frame:delete'); }}, React.createElement(fa_1.default, {icon: "trash"})), React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('frame:add'); }}, React.createElement(fa_1.default, {icon: "plus-circle"})), React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('frame:move:backward'); }}, React.createElement(fa_1.default, {icon: "hand-o-left"})), React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('frame:move:forward'); }}, React.createElement(fa_1.default, {icon: "hand-o-right"}))))));
     };
     return FrameSelectorComponent;
 }(cell_component_1.default));
@@ -600,7 +599,7 @@ var FrameSelectorCellComponent = (function (_super) {
     return FrameSelectorCellComponent;
 }(React.Component));
 
-},{"../constants/constants":15,"../mods/fa":39,"./cell-component":3,"react":200}],11:[function(require,module,exports){
+},{"../mods/fa":39,"./cell-component":3,"react":200}],11:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -924,10 +923,7 @@ var EditorContext = (function (_super) {
     };
     EditorContext.prototype.componentDidUpdate = function (_, state) {
         if (!state.canvasComponentWidth && this.state.canvasComponentWidth) {
-            this.center();
-        }
-        if (state.grid !== this.state.grid) {
-            this.ie.switchGrid(this.state.grid);
+            this.dispatch('canvas:center', 0);
         }
     };
     EditorContext.prototype.initializeConfiguration = function () {
@@ -1001,20 +997,19 @@ var EditorContext = (function (_super) {
         to('edit', 'canvas:center', function () { return _this.center(); });
         to('edit', 'canvas:grid:toggle', function () { return _this.toggleGrid(); });
         to('edit', 'frame:select', function (n) { return _this.selectFrame(n); });
+        to('edit', 'frame:next', function () { return _this.selectNextFrame(); });
+        to('edit', 'frame:previous', function () { return _this.selectPreviousFrame(); });
+        to('edit', 'frame:add', function () { return _this.addFrame(); });
+        to('edit', 'frame:delete', function () { return _this.deleteFrame(); });
+        to('edit', 'frame:move:backward', function () { return _this.moveFrameBackward(); });
+        to('edit', 'frame:move:forward', function () { return _this.moveFrameForward(); });
         to('edit', 'file:save', function () { return _this.save(); });
         to('edit', 'file:open', function () { return _this.open(); });
-        to('edit', 'file:new', function () { return _this.dispatch('modal:rise', React.createElement(canvas_setting_component_1.default, null), {
-            width: _this.state.canvasWidth,
-            height: _this.state.canvasHeight,
-            onComplete: function (w, h, bg) {
-                _this.dispatch('file:new:complete', w, h, bg);
-                _this.dispatch('modal:hide');
-            }
-        }); });
+        to('edit', 'file:new', function () { return _this.createBlankCanvasFromModal(React.createElement(canvas_setting_component_1.default, null)); });
         to('edit', 'file:new:complete', function (w, h, bg) { return _this.createBlankCanvas(w, h, bg); });
         to('edit', 'file:name', function (fileName) { return _this.setState({ fileName: fileName }); });
         to('edit', 'modal:rise', function (modalComponent, modalProps) { return _this.setState({ modalComponent: modalComponent, modalProps: modalProps }); });
-        to('edit', 'modal:hide', function () { return _this.setState({ modalComponent: null, modalProps: null }); });
+        to('modal', 'modal:hide', function () { return _this.setState({ modalComponent: null, modalProps: null }); });
         to('modal', 'modal:canvas', function () { return null; });
     };
     return EditorContext;
@@ -1070,6 +1065,7 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
         return this.ie.center(parseInt(canvasComponentWidth), parseInt(canvasComponentHeight));
     };
     class_1.prototype.toggleGrid = function () {
+        this.ie.switchGrid(!this.state.grid);
         this.setState({ grid: !this.state.grid });
     };
     return class_1;
@@ -1153,6 +1149,21 @@ exports.FileMixin = function (superclass) { return (function (_super) {
             selectedFrameNumber: 0,
             fileName: ''
         }, function () { return _this.dispatch('frame:select', 0); });
+    };
+    class_1.prototype.createBlankCanvasFromModal = function (component) {
+        var _this = this;
+        var modalProps = {
+            width: this.state.canvasWidth,
+            height: this.state.canvasHeight,
+            onComplete: function (w, h, bg) {
+                _this.dispatch('modal:hide');
+                _this.dispatch('file:new:complete', w, h, bg);
+            },
+            onCancel: function () {
+                _this.dispatch('modal:hide');
+            }
+        };
+        this.dispatch('modal:rise', component, modalProps);
     };
     class_1.prototype.save = function () {
         $('<a>')
@@ -1245,6 +1256,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var image_editor_1 = require("../../models/image-editor");
+var layered_image_1 = require("../../models/layered-image");
 exports.FrameMixin = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
     function class_1() {
@@ -1256,19 +1268,62 @@ exports.FrameMixin = function (superclass) { return (function (_super) {
         this.scale();
         this.ie.switchGrid(this.state.grid);
     };
+    Object.defineProperty(class_1.prototype, "frameNow", {
+        get: function () {
+            return this.state.frames[this.state.selectedFrameNumber];
+        },
+        enumerable: true,
+        configurable: true
+    });
     class_1.prototype.selectFrame = function (selectedFrameNumber) {
-        var ie = this.replaceIeByImageElement(this.state.frames[selectedFrameNumber].image(0));
+        var frame = this.state.frames[selectedFrameNumber];
+        if (!frame) {
+            return;
+        }
+        var ie = this.replaceIeByImageElement(frame.image(0));
         this.setState({ ie: ie, selectedFrameNumber: selectedFrameNumber });
     };
     class_1.prototype.updateFrame = function () {
         var _a = this.state, frames = _a.frames, selectedFrameNumber = _a.selectedFrameNumber;
         frames[selectedFrameNumber].update(0, this.ie.exportPng());
-        this.setState({});
+        this.setState({ frames: frames });
+    };
+    class_1.prototype.selectNextFrame = function () {
+        this.dispatch('frame:select', this.state.selectedFrameNumber + 1);
+    };
+    class_1.prototype.selectPreviousFrame = function () {
+        this.dispatch('frame:select', this.state.selectedFrameNumber - 1);
+    };
+    class_1.prototype.addFrame = function () {
+        var _this = this;
+        var _a = this.state, frames = _a.frames, selectedFrameNumber = _a.selectedFrameNumber, canvasWidth = _a.canvasWidth, canvasHeight = _a.canvasHeight;
+        var newFrames = frames.reduce(function (a, frame, i) {
+            a.push(frame);
+            if (i === selectedFrameNumber) {
+                a.push(new layered_image_1.default(canvasWidth, canvasHeight, [_this.gen.blankDataUrl(canvasWidth, canvasHeight)]));
+            }
+            return a;
+        }, []);
+        this.setState({ frames: newFrames }, function () { return _this.dispatch('frame:select', selectedFrameNumber + 1); });
+    };
+    class_1.prototype.deleteFrame = function () {
+        var _this = this;
+        var _a = this.state, frames = _a.frames, selectedFrameNumber = _a.selectedFrameNumber;
+        if (frames.length === 1) {
+            return;
+        }
+        var newFrames = frames.filter(function (f) { return f.id !== _this.frameNow.id; });
+        var nextFrame = selectedFrameNumber === 0 ? 0 : selectedFrameNumber - 1;
+        this.setState({ frames: newFrames }, function () { return _this.dispatch('frame:select', nextFrame); });
+    };
+    class_1.prototype.moveFrameBackward = function () {
+    };
+    class_1.prototype.moveFrameForward = function () {
     };
     return class_1;
 }(superclass)); };
 
-},{"../../models/image-editor":35}],22:[function(require,module,exports){
+},{"../../models/image-editor":35,"../../models/layered-image":37}],22:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -1868,6 +1923,21 @@ var ImageEditor = (function () {
             _this.update();
         };
     };
+    ImageEditor.prototype.posit = function (_a) {
+        var x = _a.x, y = _a.y;
+        this.container.x = x;
+        this.container.y = y;
+    };
+    Object.defineProperty(ImageEditor.prototype, "position", {
+        get: function () {
+            return {
+                x: this.container.x,
+                y: this.container.y
+            };
+        },
+        enumerable: true,
+        configurable: true
+    });
     ImageEditor.prototype.writeHistory = function (store) {
         return function () {
             var args = [];
@@ -2043,7 +2113,11 @@ var LayeredImage = (function () {
         this.height = height;
         this.images = images;
         this.version = version;
+        this.id = LayeredImage.genId();
     }
+    LayeredImage.genId = function () {
+        return this.id++;
+    };
     LayeredImage.prototype.update = function (index, dataUrl) {
         this.images[index] = dataUrl;
         this.version++;
@@ -2062,6 +2136,7 @@ var LayeredImage = (function () {
     LayeredImage.prototype.raw = function (index) {
         return this.images[index];
     };
+    LayeredImage.id = 0;
     return LayeredImage;
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
