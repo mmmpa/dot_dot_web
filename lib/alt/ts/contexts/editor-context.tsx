@@ -43,7 +43,7 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     this.initializeConfiguration();
     super.componentWillMount();
 
-    let {scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations} = this.configuration.readOnce('scale', 'grid', 'colors', 'selectedColorNumber', 'selectedColor', 'colorSet', 'gradations');
+    let {scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations, framesScale} = this.configuration.readOnce('scale', 'grid', 'colors', 'selectedColorNumber', 'selectedColor', 'colorSet', 'gradations', 'framesScale');
 
     this.setState({
       keyControl: this.keyControl,
@@ -62,7 +62,7 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
       frames: [],
       selectedFrameNumber: 0,
       // user state
-      scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations
+      scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations, framesScale
     });
 
     this.commands['onG'] = ()=> this.dispatch('canvas:grid:toggle');
@@ -114,13 +114,14 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
         selectedColorNumber: 0,
         selectedColor: ARGB.number(0xff000000),
         colorSet: new ColorSet(nes),
-        gradations: []
+        gradations: [],
+        framesScale: 4
       })
     }
 
     let id = setInterval(()=> {
-      let {scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations} = this.state;
-      this.configuration.writeOnce({scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations});
+      let {scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations, framesScale} = this.state;
+      this.configuration.writeOnce({scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations, framesScale});
     }, 1000);
     this.intervals.push(id);
   }
@@ -181,6 +182,7 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     to('edit', 'frame:delete', ()=> this.deleteFrame());
     to('edit', 'frame:move:backward', ()=> this.moveFrameBackward());
     to('edit', 'frame:move:forward', ()=> this.moveFrameForward());
+    to('edit', 'frame:scale', (n)=> this.scaleFrame(n));
 
     to('edit', 'file:save', ()=> this.save());
     to('edit', 'file:open', ()=> this.open());

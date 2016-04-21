@@ -7,6 +7,7 @@ import ColorSet from "../models/color-set";
 import ColorCellSet from "./color-cell-set";
 import {FloatingColorPaletteMode} from "../constants/constants";
 import LayeredImage from "../models/layered-image";
+import StepperInput from "./stepper-input";
 
 interface P {
   frames:LayeredImage[],
@@ -28,9 +29,10 @@ export default class FrameSelectorComponent extends Cell<P,{}> {
   }
 
   writeFrames() {
+    let scale = this.props.framesScale;
     return this.props.frames.map((image, frameNumber)=> {
       let onClick = ()=> this.dispatch('frame:select', frameNumber)
-      return <FrameSelectorCellComponent {...{image, onClick}}/>
+      return <FrameSelectorCellComponent {...{scale, image, onClick, selected: frameNumber === this.props.selectedFrameNumber}}/>
     })
   }
 
@@ -43,6 +45,7 @@ export default class FrameSelectorComponent extends Cell<P,{}> {
         </div>
         <div className="controller">
           <div className="edit">
+            <StepperInput value={this.props.framesScale} onChange={(v)=> this.dispatch('frame:scale', v)}/>
             <button className="delete icon-button" onClick={(e)=> this.dispatch('frame:previous')}>
               <Fa icon="backward"/>
             </button>
@@ -73,7 +76,7 @@ export default class FrameSelectorComponent extends Cell<P,{}> {
   }
 }
 
-class FrameSelectorCellComponent extends React.Component<{image:LayeredImage, onClick:()=>void},{}> {
+class FrameSelectorCellComponent extends React.Component<{scale:number, image:LayeredImage, selected:boolean, onClick:()=>void},{}> {
   componentWillMount() {
     this.componentWillReceiveProps(this.props)
   }
@@ -81,7 +84,7 @@ class FrameSelectorCellComponent extends React.Component<{image:LayeredImage, on
   shouldComponentUpdate(props) {
     let {image} = props;
     let {version} = image;
-    return image!== this.state.imagge || version === 0 || version !== this.state.version
+    return image !== this.state.imagge || version === 0 || version !== this.state.version
   }
 
   componentWillReceiveProps(props) {
@@ -91,9 +94,13 @@ class FrameSelectorCellComponent extends React.Component<{image:LayeredImage, on
     })
   }
 
+  get detectedClassName() {
+    return "frame-cell" + (this.props.selected ? ' selected' : '');
+  }
+
   render() {
     let {image, onClick} = this.props;
 
-    return <div className="frame-cell"><img src={image.raw(0)} style={image.scale(2)} onClick={()=> onClick()}/></div>
+    return <div className={this.detectedClassName}><img src={image.raw(0)} style={image.scale(this.props.scale)} onClick={()=> onClick()}/></div>
   }
 }

@@ -49,7 +49,7 @@ export default class EditorComponent extends Good<P,{}> {
     let w = $(window).width();
     let h = $(window).height();
 
-    let left = w * 0.7 >> 0;
+    let left = w - 406;
     let right = w - left;
     let split = (h - 140) / 4;
 

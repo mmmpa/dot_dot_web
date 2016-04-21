@@ -39,10 +39,15 @@ export let FrameMixin = (superclass) => class extends superclass {
     this.dispatch('frame:select', this.state.selectedFrameNumber - 1)
   }
 
+  scaleFrame(framesScale){
+    console.log(framesScale)
+    this.setState({framesScale})
+  }
+
   addFrame() {
     let {frames, selectedFrameNumber, canvasWidth, canvasHeight} = this.state;
     let newFrames = frames.reduce((a, frame, i)=> {
-      a.push(frame)
+      a.push(frame);
       if (i === selectedFrameNumber) {
         a.push(new LayeredImage(canvasWidth, canvasHeight, [this.gen.blankDataUrl(canvasWidth, canvasHeight)]));
       }
@@ -64,10 +69,32 @@ export let FrameMixin = (superclass) => class extends superclass {
   }
 
   moveFrameBackward() {
+    let {frames, selectedFrameNumber} = this.state;
+    let target = frames[selectedFrameNumber - 1];
+    if(!target){
+      return;
+    }
 
+    let newFrames = frames.concat();
+
+    newFrames[selectedFrameNumber] = target;
+    newFrames[selectedFrameNumber - 1] = this.frameNow;
+
+    this.setState({frames: newFrames}, ()=> this.dispatch('frame:select', selectedFrameNumber - 1));
   }
 
   moveFrameForward() {
+    let {frames, selectedFrameNumber} = this.state;
+    let target = frames[selectedFrameNumber + 1];
+    if(!target){
+      return;
+    }
 
+    let newFrames = frames.concat();
+
+    newFrames[selectedFrameNumber] = target;
+    newFrames[selectedFrameNumber + 1] = this.frameNow;
+
+    this.setState({frames: newFrames}, ()=> this.dispatch('frame:select', selectedFrameNumber + 1));
   }
 };

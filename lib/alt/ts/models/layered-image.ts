@@ -4,7 +4,7 @@ export default class LayeredImage {
   static genId() {
     return this.id++;
   }
-  
+
   constructor(public width, public height, public images:any[], public version = 0) {
     this.id = LayeredImage.genId();
   }
@@ -14,7 +14,7 @@ export default class LayeredImage {
     this.version++;
   }
 
-  scale(n:number) {
+  scale(n:number = 4) {
     return {
       width: this.width * n,
       height: this.height * n
