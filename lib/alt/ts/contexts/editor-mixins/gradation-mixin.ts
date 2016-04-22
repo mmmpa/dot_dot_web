@@ -8,7 +8,7 @@ export let GradationMixin = (superclass) => class extends superclass {
 
   deleteGradation(gradation) {
     let {gradations} = this.state;
-    _.remove(gradations, gradation);
+    _.remove(gradations, (g)=> g === gradation);
     this.setState({gradations})
   }
 

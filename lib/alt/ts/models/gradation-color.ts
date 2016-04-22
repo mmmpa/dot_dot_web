@@ -2,9 +2,16 @@ import * as _ from 'lodash';
 import ARGB from "./argb";
 
 export default class GradationColor {
+  static id:number = 0;
+
   public colors:ARGB[];
 
+  static genId() {
+    return this.id++;
+  }
+
   constructor(private _color1 = new ARGB(255, 0, 0, 0), private _color2 = new ARGB(255, 255, 255, 255), private length:number = 17, public version = 0) {
+    this.id = GradationColor.genId();
     this.compute();
   }
 

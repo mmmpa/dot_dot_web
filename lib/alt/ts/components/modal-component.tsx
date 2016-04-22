@@ -13,6 +13,10 @@ export default class ModalComponent extends Cell<{modalComponent:any},{}> {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if(!this.props.modalComponent){
+      return;
+    }
+
     let {width, height} = this.layoutStyle;
     let {clientWidth, clientHeight} = this.window;
 

@@ -15,7 +15,7 @@ export default class GradationSelectorComponent extends Cell<P,{}> {
   writeGradations() {
     let onClick = (color)=> this.dispatch('color:select', color);
     return this.props.gradations.map((colorSet)=> {
-      return <div className="gradation-line">
+      return <div className="gradation-line" key={colorSet.id}>
         <div className="button-container">
           <button className="change icon-button" onClick={(e)=> this.dispatch('floater:rise', e,(color)=> this.dispatch('gradation:change:color1', colorSet, color))}>
             <Fa icon="eyedropper"/>
@@ -35,15 +35,14 @@ export default class GradationSelectorComponent extends Cell<P,{}> {
   }
 
   render() {
+    let [color1, color2] = this.props.colors;
+
     return <div className="cell y color-palette" style={this.layoutStyle}>
       <header className="cell-header">{this.myName}</header>
       <section className="cell-body">
         {this.writeGradations()}
         <div className="controller">
-          <button className="add icon-button" onClick={()=> {
-                let [color1, color2] = this.props.colors;
-            this.dispatch('gradation:add', color1, color2)
-          }}>
+          <button className="add icon-button" onClick={()=> this.dispatch('gradation:add', color1, color2)}>
             <Fa icon="plus-circle"/>
           </button>
         </div>

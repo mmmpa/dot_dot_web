@@ -91,6 +91,10 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
 
   componentDidMount() {
     this.dispatch('file:new:complete', 10, 10, 0);
+    setTimeout(()=> {
+      this.dispatch('canvas:draw', 353, 453, ARGB.number(0xff000000));
+      this.dispatch('canvas:size:complete', 10, 10, 10, 10);
+    }, 100)
   }
 
   componentWillUnmount() {
@@ -190,6 +194,7 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     to('edit', 'frame:scale', (n)=> this.scaleFrame(n));
     to('edit', 'frame:play', (n)=> this.playFrame(n));
     to('edit', 'frame:rate', (n)=> this.setFrameRate(n));
+    to('edit', 'frame:replace', (frames)=> this.replaceFrames(frames));
 
     to('edit', 'file:save', ()=> this.save());
     to('edit', 'file:open', ()=> this.open());

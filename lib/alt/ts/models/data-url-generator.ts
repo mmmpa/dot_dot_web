@@ -17,11 +17,26 @@ export default class DataUrlGenerator {
     return this.canvas.toDataURL();
   }
 
-  fromImage(image, w, h) {
+  fromImage(image, w, h, top = 0, left = 0) {
+    let trimX = 0;
+    let trimY = 0;
+    let offsetX = left;
+    let offsetY = top;
+
+    if(offsetX < 0){
+      trimX = -offsetX;
+      offsetX = 0;
+    }
+
+    if(offsetY < 0){
+      trimY = -offsetY;
+      offsetY = 0;
+    }
+
     this.canvas.width = w;
     this.canvas.height = h;
     this.context.clearRect(0, 0, w, h);
-    this.context.drawImage(image, 0, 0, w, h, 0, 0, w, h);
+    this.context.drawImage(image, trimX, trimY, w, h, offsetX, offsetY, w, h);
 
     return this.canvas.toDataURL();
   }

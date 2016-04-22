@@ -1,5 +1,7 @@
+import LayeredImage from "../../models/layered-image";
 export let CanvasMixin = (superclass) => class extends superclass {
   draw(x, y, color) {
+    console.log('draw', x, y, color)
     this.ie.setPixel(x, y, color.number, true);
     this.updateFrame();
   }
@@ -56,7 +58,18 @@ export let CanvasMixin = (superclass) => class extends superclass {
   }
 
 
-  resizeCanvas(top, right, bottom, left){
-    
+  resizeCanvas(top, right, bottom, left) {
+    let {canvasWidth, canvasHeight, frames} = this.state;
+    let width = canvasWidth + left + right;
+    let height = canvasHeight + top + bottom;
+
+    let newFrames = frames.map((frame)=> {
+      return new LayeredImage(width, height, [this.gen.fromImage(frame.image(0), width, height, top, left)])
+    });
+
+    this.setState({
+      canvasWidth: width,
+      canvasHeight: height
+    }, ()=> this.dispatch('frame:replace', newFrames));
   }
 };

@@ -24,6 +24,12 @@ export let FrameMixin = (superclass) => class extends superclass {
     this.setState({ie, selectedFrameNumber});
   }
 
+  replaceFrames(frames) {
+    let {selectedFrameNumber} = this.state;
+
+    this.setState({frames}, ()=> this.selectFrame(selectedFrameNumber));
+  }
+
   updateFrame() {
     let {frames, selectedFrameNumber} = this.state;
     frames[selectedFrameNumber].update(0, this.ie.exportPng());

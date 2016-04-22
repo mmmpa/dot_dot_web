@@ -701,15 +701,13 @@ var GradationSelectorComponent = (function (_super) {
         var _this = this;
         var onClick = function (color) { return _this.dispatch('color:select', color); };
         return this.props.gradations.map(function (colorSet) {
-            return React.createElement("div", {className: "gradation-line"}, React.createElement("div", {className: "button-container"}, React.createElement("button", {className: "change icon-button", onClick: function (e) { return _this.dispatch('floater:rise', e, function (color) { return _this.dispatch('gradation:change:color1', colorSet, color); }); }}, React.createElement(fa_1.default, {icon: "eyedropper"}))), React.createElement("div", {className: "color-container"}, React.createElement(color_cell_set_1.default, React.__spread({}, { colorSet: colorSet, onClick: onClick }))), React.createElement("div", {className: "button-container"}, React.createElement("button", {className: "change icon-button", onClick: function (e) { return _this.dispatch('floater:rise', e, function (color) { return _this.dispatch('gradation:change:color2', colorSet, color); }); }}, React.createElement(fa_1.default, {icon: "eyedropper"})), React.createElement("button", {className: "delete icon-button", onClick: function (e) { return _this.dispatch('gradation:delete', colorSet); }}, React.createElement(fa_1.default, {icon: "trash"}))));
+            return React.createElement("div", {className: "gradation-line", key: colorSet.id}, React.createElement("div", {className: "button-container"}, React.createElement("button", {className: "change icon-button", onClick: function (e) { return _this.dispatch('floater:rise', e, function (color) { return _this.dispatch('gradation:change:color1', colorSet, color); }); }}, React.createElement(fa_1.default, {icon: "eyedropper"}))), React.createElement("div", {className: "color-container"}, React.createElement(color_cell_set_1.default, React.__spread({}, { colorSet: colorSet, onClick: onClick }))), React.createElement("div", {className: "button-container"}, React.createElement("button", {className: "change icon-button", onClick: function (e) { return _this.dispatch('floater:rise', e, function (color) { return _this.dispatch('gradation:change:color2', colorSet, color); }); }}, React.createElement(fa_1.default, {icon: "eyedropper"})), React.createElement("button", {className: "delete icon-button", onClick: function (e) { return _this.dispatch('gradation:delete', colorSet); }}, React.createElement(fa_1.default, {icon: "trash"}))));
         });
     };
     GradationSelectorComponent.prototype.render = function () {
         var _this = this;
-        return React.createElement("div", {className: "cell y color-palette", style: this.layoutStyle}, React.createElement("header", {className: "cell-header"}, this.myName), React.createElement("section", {className: "cell-body"}, this.writeGradations(), React.createElement("div", {className: "controller"}, React.createElement("button", {className: "add icon-button", onClick: function () {
-            var _a = _this.props.colors, color1 = _a[0], color2 = _a[1];
-            _this.dispatch('gradation:add', color1, color2);
-        }}, React.createElement(fa_1.default, {icon: "plus-circle"})))));
+        var _a = this.props.colors, color1 = _a[0], color2 = _a[1];
+        return React.createElement("div", {className: "cell y color-palette", style: this.layoutStyle}, React.createElement("header", {className: "cell-header"}, this.myName), React.createElement("section", {className: "cell-body"}, this.writeGradations(), React.createElement("div", {className: "controller"}, React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('gradation:add', color1, color2); }}, React.createElement(fa_1.default, {icon: "plus-circle"})))));
     };
     return GradationSelectorComponent;
 }(cell_component_1.default));
@@ -737,6 +735,9 @@ var ModalComponent = (function (_super) {
         this.setState(props.modalProps);
     };
     ModalComponent.prototype.componentDidUpdate = function (prevProps, prevState) {
+        if (!this.props.modalComponent) {
+            return;
+        }
         var _a = this.layoutStyle, width = _a.width, height = _a.height;
         var _b = this.window, clientWidth = _b.clientWidth, clientHeight = _b.clientHeight;
         this.window.style.top = (parseInt(height) - clientHeight) / 2 + 'px';
@@ -1069,7 +1070,12 @@ var EditorContext = (function (_super) {
         };
     };
     EditorContext.prototype.componentDidMount = function () {
+        var _this = this;
         this.dispatch('file:new:complete', 10, 10, 0);
+        setTimeout(function () {
+            _this.dispatch('canvas:draw', 353, 453, argb_1.default.number(0xff000000));
+            _this.dispatch('canvas:size:complete', 10, 10, 10, 10);
+        }, 100);
     };
     EditorContext.prototype.componentWillUnmount = function () {
         _super.prototype.componentWillUnmount.call(this);
@@ -1164,6 +1170,7 @@ var EditorContext = (function (_super) {
         to('edit', 'frame:scale', function (n) { return _this.scaleFrame(n); });
         to('edit', 'frame:play', function (n) { return _this.playFrame(n); });
         to('edit', 'frame:rate', function (n) { return _this.setFrameRate(n); });
+        to('edit', 'frame:replace', function (frames) { return _this.replaceFrames(frames); });
         to('edit', 'file:save', function () { return _this.save(); });
         to('edit', 'file:open', function () { return _this.open(); });
         to('edit', 'file:new', function () { return _this.createBlankCanvasFromModal(React.createElement(canvas_setting_component_1.default, null)); });
@@ -1185,12 +1192,14 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+var layered_image_1 = require("../../models/layered-image");
 exports.CanvasMixin = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
     function class_1() {
         _super.apply(this, arguments);
     }
     class_1.prototype.draw = function (x, y, color) {
+        console.log('draw', x, y, color);
         this.ie.setPixel(x, y, color.number, true);
         this.updateFrame();
     };
@@ -1245,11 +1254,22 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
         this.dispatch('modal:rise', component, modalProps);
     };
     class_1.prototype.resizeCanvas = function (top, right, bottom, left) {
+        var _this = this;
+        var _a = this.state, canvasWidth = _a.canvasWidth, canvasHeight = _a.canvasHeight, frames = _a.frames;
+        var width = canvasWidth + left + right;
+        var height = canvasHeight + top + bottom;
+        var newFrames = frames.map(function (frame) {
+            return new layered_image_1.default(width, height, [_this.gen.fromImage(frame.image(0), width, height, top, left)]);
+        });
+        this.setState({
+            canvasWidth: width,
+            canvasHeight: height
+        }, function () { return _this.dispatch('frame:replace', newFrames); });
     };
     return class_1;
 }(superclass)); };
 
-},{}],20:[function(require,module,exports){
+},{"../../models/layered-image":39}],20:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -1470,6 +1490,11 @@ exports.FrameMixin = function (superclass) { return (function (_super) {
         var ie = this.replaceIeByImageElement(frame.image(0));
         this.setState({ ie: ie, selectedFrameNumber: selectedFrameNumber });
     };
+    class_1.prototype.replaceFrames = function (frames) {
+        var _this = this;
+        var selectedFrameNumber = this.state.selectedFrameNumber;
+        this.setState({ frames: frames }, function () { return _this.selectFrame(selectedFrameNumber); });
+    };
     class_1.prototype.updateFrame = function () {
         var _a = this.state, frames = _a.frames, selectedFrameNumber = _a.selectedFrameNumber;
         frames[selectedFrameNumber].update(0, this.ie.exportPng());
@@ -1575,7 +1600,7 @@ exports.GradationMixin = function (superclass) { return (function (_super) {
     };
     class_1.prototype.deleteGradation = function (gradation) {
         var gradations = this.state.gradations;
-        _.remove(gradations, gradation);
+        _.remove(gradations, function (g) { return g === gradation; });
         this.setState({ gradations: gradations });
     };
     class_1.prototype.changeGradationColor = function (target, gradation, color) {
@@ -2002,11 +2027,25 @@ var DataUrlGenerator = (function () {
         this.context.clearRect(0, 0, w, h);
         return this.canvas.toDataURL();
     };
-    DataUrlGenerator.prototype.fromImage = function (image, w, h) {
+    DataUrlGenerator.prototype.fromImage = function (image, w, h, top, left) {
+        if (top === void 0) { top = 0; }
+        if (left === void 0) { left = 0; }
+        var trimX = 0;
+        var trimY = 0;
+        var offsetX = left;
+        var offsetY = top;
+        if (offsetX < 0) {
+            trimX = -offsetX;
+            offsetX = 0;
+        }
+        if (offsetY < 0) {
+            trimY = -offsetY;
+            offsetY = 0;
+        }
         this.canvas.width = w;
         this.canvas.height = h;
         this.context.clearRect(0, 0, w, h);
-        this.context.drawImage(image, 0, 0, w, h, 0, 0, w, h);
+        this.context.drawImage(image, trimX, trimY, w, h, offsetX, offsetY, w, h);
         return this.canvas.toDataURL();
     };
     DataUrlGenerator.prototype.trimmer = function (image, baseWidth, baseHeight) {
@@ -2072,8 +2111,12 @@ var GradationColor = (function () {
         this._color2 = _color2;
         this.length = length;
         this.version = version;
+        this.id = GradationColor.genId();
         this.compute();
     }
+    GradationColor.genId = function () {
+        return this.id++;
+    };
     Object.defineProperty(GradationColor.prototype, "color1", {
         get: function () {
             return this._color1;
@@ -2113,6 +2156,7 @@ var GradationColor = (function () {
         this.colors.push(last);
         this.version++;
     };
+    GradationColor.id = 0;
     return GradationColor;
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
