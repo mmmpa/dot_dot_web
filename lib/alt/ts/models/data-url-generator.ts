@@ -17,6 +17,16 @@ export default class DataUrlGenerator {
     return this.canvas.toDataURL();
   }
 
+  fromImage(image, w, h) {
+    this.canvas.width = w;
+    this.canvas.height = h;
+    this.context.clearRect(0, 0, w, h);
+    this.context.drawImage(image, 0, 0, w, h, 0, 0, w, h);
+
+    return this.canvas.toDataURL();
+  }
+
+
   trimmer(image, baseWidth, baseHeight) {
     this.canvas.width = baseWidth;
     this.canvas.height = baseHeight;

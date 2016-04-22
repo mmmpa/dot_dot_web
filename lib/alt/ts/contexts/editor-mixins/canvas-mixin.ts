@@ -39,4 +39,24 @@ export let CanvasMixin = (superclass) => class extends superclass {
     this.ie.switchGrid(!this.state.grid)
     this.setState({grid: !this.state.grid})
   }
+
+  resizeCanvasFromModal(component) {
+    let modalProps = {
+      canvasWidth: this.state.canvasWidth,
+      canvasHeight: this.state.canvasHeight,
+      onComplete: (top, right, bottom, left)=> {
+        this.dispatch('modal:hide');
+        this.dispatch('canvas:size:complete', top, right, bottom, left);
+      },
+      onCancel: ()=> {
+        this.dispatch('modal:hide');
+      }
+    };
+    this.dispatch('modal:rise', component, modalProps);
+  }
+
+
+  resizeCanvas(top, right, bottom, left){
+    
+  }
 };

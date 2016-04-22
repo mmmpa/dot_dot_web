@@ -12,6 +12,7 @@ import LayeredImage from "../models/layered-image";
 import DataUrlGenerator from "../models/data-url-generator";
 import GradationColor from "../models/gradation-color";
 import CanvasSettingComponent from "../components/canvas-setting-component";
+import CanvasResizeComponent from "../components/canvas-resize-component";
 import {mix} from "../libs/mix"
 import {FileMixin} from "./editor-mixins/file-mixin"
 import {ColorMixin} from "./editor-mixins/color-mixin"
@@ -61,6 +62,7 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
       canvasHeight: 0,
       frames: [],
       selectedFrameNumber: 0,
+      frameRate: 60,
       // user state
       scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations, framesScale
     });
@@ -115,7 +117,8 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
         selectedColor: ARGB.number(0xff000000),
         colorSet: new ColorSet(nes),
         gradations: [],
-        framesScale: 4
+        framesScale: 4,
+        frameRate: 60
       })
     }
 
@@ -174,6 +177,8 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     to('edit', 'canvas:slide', (x, y)=> this.slide(x, y));
     to('edit', 'canvas:center', ()=> this.center());
     to('edit', 'canvas:grid:toggle', ()=> this.toggleGrid());
+    to('edit', 'canvas:size', ()=> this.resizeCanvasFromModal(<CanvasResizeComponent/>));
+    to('edit', 'canvas:size:complete', (top, right, bottom, left)=> this.resizeCanvas(top, right, bottom, left));
 
     to('edit', 'frame:select', (n)=> this.selectFrame(n));
     to('edit', 'frame:next', ()=> this.selectNextFrame());
@@ -183,6 +188,8 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     to('edit', 'frame:move:backward', ()=> this.moveFrameBackward());
     to('edit', 'frame:move:forward', ()=> this.moveFrameForward());
     to('edit', 'frame:scale', (n)=> this.scaleFrame(n));
+    to('edit', 'frame:play', (n)=> this.playFrame(n));
+    to('edit', 'frame:rate', (n)=> this.setFrameRate(n));
 
     to('edit', 'file:save', ()=> this.save());
     to('edit', 'file:open', ()=> this.open());

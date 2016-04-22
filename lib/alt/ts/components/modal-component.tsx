@@ -12,14 +12,26 @@ export default class ModalComponent extends Cell<{modalComponent:any},{}> {
     this.setState(props.modalProps);
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    let {width, height} = this.layoutStyle;
+    let {clientWidth, clientHeight} = this.window;
+
+    this.window.style.top = (parseInt(height) - clientHeight) / 2 + 'px';
+    this.window.style.left = (parseInt(width) - clientWidth) / 2 + 'px';
+  }
+
+  get window() {
+    return this.refs['window']
+  }
+
   render() {
     if (!this.props.modalComponent) {
       return null;
     }
 
     return <div className="modal" style={this.layoutStyle} onClick={()=> this.dispatch('modal:cancel')}>
-      <div className="window">
-        {this.relay([this.props.modalComponent])} 
+      <div className="window" ref="window">
+        {this.relay([this.props.modalComponent])}
       </div>
     </div>
   }

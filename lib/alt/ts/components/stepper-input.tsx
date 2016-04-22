@@ -37,6 +37,6 @@ export default class StepperInput extends React.Component {
 
   render() {
     let {value} = this.state;
-    return <input type="number" min="1" max="10" step="1" {...{value}} ref="input"/>
+    return <input type="number" min="1" max="10" step="1" {...{value: isNaN(value) ? 4 : value}} ref="input"/>
   }
 }

@@ -22,14 +22,22 @@ export default class CanvasSettingComponent extends Good<{},{}> {
 
   render() {
     let {width, height, bg} = this.state;
-    let {onComplete} = this.props;;
+    let {onComplete, onCancel} = this.props;
 
-    return <div className="canvas-setting">
-      <h1>width</h1>
-      <input type="text" value={width} onChange={(e)=> this.setState({width: +e.target.value})}/>
-      <h1>height</h1>
-      <input type="text" value={height} onChange={(e)=> this.setState({height: +e.target.value})}/>
-      <button onClick={()=> onComplete(width, height, bg)}>作成</button>
+    return <div className="canvas-setting modal-window">
+      <header className="modal-header">New</header>
+      <section className="params">
+        <h1>Width</h1>
+        <div><input type="text" value={width} onChange={(e)=> this.setState({width: +e.target.value})}/></div>
+      </section>
+      <section className="params">
+        <h1>Height</h1>
+        <div><input type="text" value={height} onChange={(e)=> this.setState({height: +e.target.value})}/></div>
+      </section>
+      <div className="buttons">
+        <button className="complete-button" onClick={()=> onComplete(width, height, bg)}>Create</button>
+        <button className="cancel-button" onClick={()=> onCancel()}>Cancel</button>
+      </div>
     </div>
   }
 }

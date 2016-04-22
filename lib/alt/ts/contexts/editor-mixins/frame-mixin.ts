@@ -32,16 +32,40 @@ export let FrameMixin = (superclass) => class extends superclass {
   }
 
   selectNextFrame() {
-    this.dispatch('frame:select', this.state.selectedFrameNumber + 1)
+    let nextFrame = this.state.selectedFrameNumber + 1;
+    if (!this.state.frames[nextFrame]) {
+      nextFrame = 0;
+    }
+    this.dispatch('frame:select', nextFrame)
   }
 
   selectPreviousFrame() {
-    this.dispatch('frame:select', this.state.selectedFrameNumber - 1)
+    let nextFrame = this.state.selectedFrameNumber - 1;
+    if (!this.state.frames[nextFrame]) {
+      nextFrame = this.state.frames.length - 1;
+    }
+    this.dispatch('frame:select', nextFrame)
   }
 
-  scaleFrame(framesScale){
-    console.log(framesScale)
+  scaleFrame(framesScale) {
     this.setState({framesScale})
+  }
+
+  setFrameRate(frameRate) {
+    this.setState({frameRate})
+  }
+
+  playFrame(frameRate) {
+    let id = setInterval(()=> {
+      this.selectNextFrame();
+    }, 1000 / frameRate);
+
+    setTimeout(()=> {
+      $(window).bind('mousedown', (e)=> {
+        e.preventDefault();
+        clearInterval(id);
+      })
+    }, 1);
   }
 
   addFrame() {
@@ -49,7 +73,7 @@ export let FrameMixin = (superclass) => class extends superclass {
     let newFrames = frames.reduce((a, frame, i)=> {
       a.push(frame);
       if (i === selectedFrameNumber) {
-        a.push(new LayeredImage(canvasWidth, canvasHeight, [this.gen.blankDataUrl(canvasWidth, canvasHeight)]));
+        a.push(new LayeredImage(canvasWidth, canvasHeight, [this.gen.fromImage(frame.image(0), canvasWidth, canvasHeight)]));
       }
       return a;
     }, []);
@@ -71,7 +95,7 @@ export let FrameMixin = (superclass) => class extends superclass {
   moveFrameBackward() {
     let {frames, selectedFrameNumber} = this.state;
     let target = frames[selectedFrameNumber - 1];
-    if(!target){
+    if (!target) {
       return;
     }
 
@@ -86,7 +110,7 @@ export let FrameMixin = (superclass) => class extends superclass {
   moveFrameForward() {
     let {frames, selectedFrameNumber} = this.state;
     let target = frames[selectedFrameNumber + 1];
-    if(!target){
+    if (!target) {
       return;
     }
 

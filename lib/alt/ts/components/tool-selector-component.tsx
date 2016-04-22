@@ -29,6 +29,8 @@ export default class ToolSelectorComponent extends Cell<{},{}> {
         return this.dispatch('canvas:scale:plus');
       case 'scale-minus':
         return this.dispatch('canvas:scale:minus');
+      case 'resize':
+        return this.dispatch('canvas:size');
       default:
         this.dispatch(key);
     }
@@ -44,7 +46,7 @@ export default class ToolSelectorComponent extends Cell<{},{}> {
 
       </ul>
       <ul className="command-list file">
-        {['new', 'open', 'save'].map((name)=> this.writeButton(name))}
+        {['new', 'open', 'save', 'resize'].map((name)=> this.writeButton(name))}
       </ul>
       <ul className="command-list file">
         {['grid', 'centering', 'scale plus', 'scale minus'].map((name)=> this.writeButton(name))}
