@@ -66,12 +66,12 @@ export let FrameMixin = (superclass) => class extends superclass {
       this.selectNextFrame();
     }, 1000 / frameRate);
 
-    setTimeout(()=> {
-      $(window).bind('mousedown', (e)=> {
-        e.preventDefault();
-        clearInterval(id);
-      })
-    }, 1);
+    let stop = (e)=> {
+      e.preventDefault();
+      clearInterval(id);
+      $(window).unbind('mousedown', stop);
+    };
+    $(window).bind('mousedown', stop);
   }
 
   addFrame() {

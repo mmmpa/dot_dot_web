@@ -1,15 +1,15 @@
 import LayeredImage from "../../models/layered-image";
+
 export let CanvasMixin = (superclass) => class extends superclass {
   draw(x, y, color) {
-    console.log('draw', x, y, color)
     this.ie.setPixel(x, y, color.number, true);
-    this.updateFrame();
+    this.dispatch('frame:update');
   }
 
   drawOnce(points, color) {
     points.forEach(({x, y})=> this.ie.setPixel(x, y, color.number));
     this.ie.update();
-    this.updateFrame();
+    this.dispatch('frame:update');
   }
 
   scaleStep(direction, x?, y?) {

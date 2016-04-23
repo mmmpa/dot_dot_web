@@ -13,7 +13,7 @@ export default class ToolSelectorComponent extends Cell<{},{}> {
   }
 
   fire(e, key) {
-    e.target.blur();
+    //e.target.blur();
     switch (key) {
       case 'save':
         return this.dispatch('file:save');

@@ -57,14 +57,14 @@ export default class CanvasComponent extends Cell<P,{}> {
     return this.props.commands;
   }
 
-  get leftColor(){
+  get leftColor() {
     let {colors, selectedColorNumber} = this.props;
     return colors[selectedColorNumber];
   }
 
-  get rightColor(){
+  get rightColor() {
     let {colors, selectedColorNumber} = this.props;
-    return colors[selectedColorNumber^1];
+    return colors[selectedColorNumber ^ 1];
   }
 
   draw(x, y) {
@@ -92,33 +92,41 @@ export default class CanvasComponent extends Cell<P,{}> {
   startDraw(startX, startY, color) {
     //this.dispatch('canvas:draw', startX, startY);
     this.props.draw(startX, startY, color);
-    //let pre = {x: startX, y: startY};
+    let pre = {x: startX, y: startY};
 
     let move = (e:JQueryMouseEventObject)=> {
+      //let {x, y} = this.mousePosition(e);
+      //this.props.draw(x, y, color);
       let {x, y} = this.mousePosition(e);
-      this.props.draw(x, y, color);
-      /*
-       let {x, y} = this.mousePosition(e);
-       this.dispatch('canvas:draw', x, y);
-       let {x, y} = this.mousePosition(e);
-       let points = [{x, y}];
-       if (Math.abs(x - pre.x) > 1 || Math.abs(y - pre.y) > 1) {
-       let moveX = x - pre.x;
-       let moveY = y - pre.y;
-       let power = moveY / moveX;
-       if (moveX > 0) {
-       for (let i = moveX; i--;) {
-       points.push({x: x - i, y: y - i * power});
-       }
-       } else {
-       for (let i = moveX; i++;) {
-       points.push({x: x - i, y: y - i * power});
-       }
-       }
-       }
-       this.dispatch('canvas:draw:once', points);
-       pre = {x, y}
-       */
+      let points = [{x, y}];
+
+      if (Math.abs(x - pre.x) > 1 || Math.abs(y - pre.y) > 1) {
+        let moveX = x - pre.x;
+        let moveY = y - pre.y;
+        let power = moveY / moveX;
+
+        if (moveX > 0) {
+          for (let i = moveX; i--;) {
+            points.push({x: x - i, y: y - i * power});
+          }
+        } else if (moveX < 0) {
+          for (let i = moveX; i++;) {
+            points.push({x: x - i, y: y - i * power});
+          }
+        }
+
+        if (moveY > 0) {
+          for (let i = moveY; i--;) {
+            points.push({x: x - i / power, y: y - i});
+          }
+        } else if (moveY < 0) {
+          for (let i = moveY; i++;) {
+            points.push({x: x - i / power, y: y - i});
+          }
+        }
+      }
+      this.dispatch('canvas:draw:once', points, color);
+      pre = {x, y}
     };
 
     $(window).on('mousemove', move);

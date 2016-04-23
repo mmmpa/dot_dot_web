@@ -15,17 +15,8 @@ interface P {
 }
 
 export default class FrameSelectorComponent extends Cell<P,{}> {
-  componentWillMount() {
-  }
-
-  detectPosition(props) {
-  }
-
   shouldComponentUpdate(props) {
     return !!props.frames
-  }
-
-  componentWillReceiveProps(props) {
   }
 
   writeFrames() {
@@ -85,7 +76,7 @@ class FrameSelectorCellComponent extends React.Component<{scale:number, image:La
   shouldComponentUpdate(props) {
     let {image} = props;
     let {version} = image;
-    return image !== this.state.imagge || version === 0 || version !== this.state.version
+    return true
   }
 
   componentWillReceiveProps(props) {

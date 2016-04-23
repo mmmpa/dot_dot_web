@@ -4,12 +4,8 @@ import {Good} from "../libs/parcel";
 import Cell from "./cell-component";
 
 export default class ModalComponent extends Cell<{modalComponent:any},{}> {
-  componentWillMount() {
-    this.setState(this.props.modalProps);
-  }
-
   componentWillReceiveProps(props) {
-    this.setState(props.modalProps);
+    props.modalProps && this.setState(props.modalProps);
   }
 
   componentDidUpdate(prevProps, prevState) {

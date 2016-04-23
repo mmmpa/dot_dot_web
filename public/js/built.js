@@ -94,32 +94,39 @@ var CanvasComponent = (function (_super) {
         var _this = this;
         //this.dispatch('canvas:draw', startX, startY);
         this.props.draw(startX, startY, color);
-        //let pre = {x: startX, y: startY};
+        var pre = { x: startX, y: startY };
         var move = function (e) {
+            //let {x, y} = this.mousePosition(e);
+            //this.props.draw(x, y, color);
             var _a = _this.mousePosition(e), x = _a.x, y = _a.y;
-            _this.props.draw(x, y, color);
-            /*
-             let {x, y} = this.mousePosition(e);
-             this.dispatch('canvas:draw', x, y);
-             let {x, y} = this.mousePosition(e);
-             let points = [{x, y}];
-             if (Math.abs(x - pre.x) > 1 || Math.abs(y - pre.y) > 1) {
-             let moveX = x - pre.x;
-             let moveY = y - pre.y;
-             let power = moveY / moveX;
-             if (moveX > 0) {
-             for (let i = moveX; i--;) {
-             points.push({x: x - i, y: y - i * power});
-             }
-             } else {
-             for (let i = moveX; i++;) {
-             points.push({x: x - i, y: y - i * power});
-             }
-             }
-             }
-             this.dispatch('canvas:draw:once', points);
-             pre = {x, y}
-             */
+            var points = [{ x: x, y: y }];
+            if (Math.abs(x - pre.x) > 1 || Math.abs(y - pre.y) > 1) {
+                var moveX = x - pre.x;
+                var moveY = y - pre.y;
+                var power = moveY / moveX;
+                if (moveX > 0) {
+                    for (var i = moveX; i--;) {
+                        points.push({ x: x - i, y: y - i * power });
+                    }
+                }
+                else if (moveX < 0) {
+                    for (var i = moveX; i++;) {
+                        points.push({ x: x - i, y: y - i * power });
+                    }
+                }
+                if (moveY > 0) {
+                    for (var i = moveY; i--;) {
+                        points.push({ x: x - i / power, y: y - i });
+                    }
+                }
+                else if (moveY < 0) {
+                    for (var i = moveY; i++;) {
+                        points.push({ x: x - i / power, y: y - i });
+                    }
+                }
+            }
+            _this.dispatch('canvas:draw:once', points, color);
+            pre = { x: x, y: y };
         };
         $(window).on('mousemove', move);
         $(window).on('mouseup', function () {
@@ -623,14 +630,8 @@ var FrameSelectorComponent = (function (_super) {
     function FrameSelectorComponent() {
         _super.apply(this, arguments);
     }
-    FrameSelectorComponent.prototype.componentWillMount = function () {
-    };
-    FrameSelectorComponent.prototype.detectPosition = function (props) {
-    };
     FrameSelectorComponent.prototype.shouldComponentUpdate = function (props) {
         return !!props.frames;
-    };
-    FrameSelectorComponent.prototype.componentWillReceiveProps = function (props) {
     };
     FrameSelectorComponent.prototype.writeFrames = function () {
         var _this = this;
@@ -659,7 +660,7 @@ var FrameSelectorCellComponent = (function (_super) {
     FrameSelectorCellComponent.prototype.shouldComponentUpdate = function (props) {
         var image = props.image;
         var version = image.version;
-        return image !== this.state.imagge || version === 0 || version !== this.state.version;
+        return true;
     };
     FrameSelectorCellComponent.prototype.componentWillReceiveProps = function (props) {
         this.setState({
@@ -728,11 +729,8 @@ var ModalComponent = (function (_super) {
     function ModalComponent() {
         _super.apply(this, arguments);
     }
-    ModalComponent.prototype.componentWillMount = function () {
-        this.setState(this.props.modalProps);
-    };
     ModalComponent.prototype.componentWillReceiveProps = function (props) {
-        this.setState(props.modalProps);
+        props.modalProps && this.setState(props.modalProps);
     };
     ModalComponent.prototype.componentDidUpdate = function (prevProps, prevState) {
         if (!this.props.modalComponent) {
@@ -858,7 +856,7 @@ var ToolSelectorComponent = (function (_super) {
         return React.createElement("li", null, React.createElement("button", {key: key, className: key, onClick: function (e) { return _this.fire(e, key); }}, name));
     };
     ToolSelectorComponent.prototype.fire = function (e, key) {
-        e.target.blur();
+        //e.target.blur();
         switch (key) {
             case 'save':
                 return this.dispatch('file:save');
@@ -1070,12 +1068,7 @@ var EditorContext = (function (_super) {
         };
     };
     EditorContext.prototype.componentDidMount = function () {
-        var _this = this;
         this.dispatch('file:new:complete', 10, 10, 0);
-        setTimeout(function () {
-            _this.dispatch('canvas:draw', 353, 453, argb_1.default.number(0xff000000));
-            _this.dispatch('canvas:size:complete', 10, 10, 10, 10);
-        }, 100);
     };
     EditorContext.prototype.componentWillUnmount = function () {
         _super.prototype.componentWillUnmount.call(this);
@@ -1171,6 +1164,7 @@ var EditorContext = (function (_super) {
         to('edit', 'frame:play', function (n) { return _this.playFrame(n); });
         to('edit', 'frame:rate', function (n) { return _this.setFrameRate(n); });
         to('edit', 'frame:replace', function (frames) { return _this.replaceFrames(frames); });
+        to('edit', 'frame:update', function (frames) { return _this.updateFrame(); });
         to('edit', 'file:save', function () { return _this.save(); });
         to('edit', 'file:open', function () { return _this.open(); });
         to('edit', 'file:new', function () { return _this.createBlankCanvasFromModal(React.createElement(canvas_setting_component_1.default, null)); });
@@ -1199,9 +1193,8 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
         _super.apply(this, arguments);
     }
     class_1.prototype.draw = function (x, y, color) {
-        console.log('draw', x, y, color);
         this.ie.setPixel(x, y, color.number, true);
-        this.updateFrame();
+        this.dispatch('frame:update');
     };
     class_1.prototype.drawOnce = function (points, color) {
         var _this = this;
@@ -1210,7 +1203,7 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
             return _this.ie.setPixel(x, y, color.number);
         });
         this.ie.update();
-        this.updateFrame();
+        this.dispatch('frame:update');
     };
     class_1.prototype.scaleStep = function (direction, x, y) {
         var scale = this.state.scale;
@@ -1525,12 +1518,12 @@ exports.FrameMixin = function (superclass) { return (function (_super) {
         var id = setInterval(function () {
             _this.selectNextFrame();
         }, 1000 / frameRate);
-        setTimeout(function () {
-            $(window).bind('mousedown', function (e) {
-                e.preventDefault();
-                clearInterval(id);
-            });
-        }, 1);
+        var stop = function (e) {
+            e.preventDefault();
+            clearInterval(id);
+            $(window).unbind('mousedown', stop);
+        };
+        $(window).bind('mousedown', stop);
     };
     class_1.prototype.addFrame = function () {
         var _this = this;
