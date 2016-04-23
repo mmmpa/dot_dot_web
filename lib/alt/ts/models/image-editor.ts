@@ -77,15 +77,10 @@ export default class ImageEditor {
     return this.bitmapData.canvas.toDataURL("image/png");
   }
 
-  startSlide() {
-    let startX = this.container.x;
-    let startY = this.container.y;
-
-    return (xRange, yRange)=> {
-      this.container.x = startX + xRange;
-      this.container.y = startY + yRange;
-      this.update();
-    }
+  slide(x, y, update?) {
+    this.container.x += x;
+    this.container.y += y;
+    update && this.update();
   }
 
   posit({x, y}) {
@@ -209,13 +204,17 @@ export default class ImageEditor {
     return this.selectedCount !== 0;
   }
 
-  addSelection(x, y, update?:boolean) {
-    if (this.isCellSelected(x, y)) {
-      this.selectedCount--;
-      this.selectionBitmap.setPixel32(x, y, 0);
+  addSelection(x, y, add = true, update?:boolean) {
+    if (add) {
+      if (!this.isCellSelected(x, y)) {
+        this.selectedCount++;
+        this.selectionBitmap.setPixel32(x, y, 0x5500ff00);
+      }
     } else {
-      this.selectedCount++;
-      this.selectionBitmap.setPixel32(x, y, 0x5500ff00);
+      if (this.isCellSelected(x, y)) {
+        this.selectedCount--;
+        this.selectionBitmap.setPixel32(x, y, 0);
+      }
     }
 
     if (update) {
@@ -237,27 +236,27 @@ export default class ImageEditor {
     return new ActionHistory('setPixel', {x, y, color: old}, {x, y, color});
   }
 
-  showSelection(){
+  showSelection() {
     this.selection.visible = true;
     this.update();
   }
 
-  hideSelection(){
+  hideSelection() {
     this.selection.visible = false;
     this.update();
   }
 
-  setSelection(rawX, rawY, update?:boolean) {
+  setSelection(rawX, rawY, add = true, update?:boolean) {
     let {x, y} = this.normalizePixel(rawX, rawY);
 
-    return this.addSelection(x, y, update)
+    return this.addSelection(x, y, add, update)
   }
 
-  setSelectionPixelToPixel(rawX, rawY, endRawX, endRawY, update?:boolean) {
+  setSelectionPixelToPixel(rawX, rawY, endRawX, endRawY, add = true, update?:boolean) {
     let {x, y} = this.normalizePixel(rawX, rawY);
     let end = this.normalizePixel(endRawX, endRawY);
 
-    ImageEditor.pToP(x, y, end.x, end.y).map(({x, y})=> this.addSelection(x, y));
+    ImageEditor.pToP(x, y, end.x, end.y).map(({x, y})=> this.addSelection(x, y, add));
 
     update && this.update();
   }

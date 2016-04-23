@@ -7,36 +7,21 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var React = require("react");
 var cell_component_1 = require("./cell-component");
-var CanvasState;
-(function (CanvasState) {
-    CanvasState[CanvasState["Starting"] = 0] = "Starting";
-    CanvasState[CanvasState["Started"] = 1] = "Started";
-})(CanvasState || (CanvasState = {}));
 var CanvasComponent = (function (_super) {
     __extends(CanvasComponent, _super);
     function CanvasComponent() {
         _super.apply(this, arguments);
     }
     CanvasComponent.prototype.componentWillMount = function () {
-        var _this = this;
-        this.setState({
-            src: this.props.src || null,
-            width: 1000,
-            height: 1000
-        });
-        $(window).on('mousemove', function (e) { return _this.recordPosition(e); });
-    };
-    CanvasComponent.prototype.recordPosition = function (e) {
-        var _a = this.mousePosition(e), x = _a.x, y = _a.y;
-        this.nowX = x;
-        this.nowY = y;
+        var _a = this.layoutStyle, width = _a.width, height = _a.height;
+        this.setState({ width: width, height: height });
     };
     CanvasComponent.prototype.componentDidMount = function () {
         var _this = this;
         _super.prototype.componentDidMount.call(this);
         var _a = this.layoutStyle, width = _a.width, height = _a.height;
-        this.dispatch('canvas:resize', parseInt(width), parseInt(height));
-        this.dispatch('canvas:mounted', this.refs['canvas']);
+        this.dispatch('component:canvas:resize', parseInt(width), parseInt(height));
+        this.dispatch('component:canvas:mounted', this.refs['canvas']);
         this.initializeCommand();
         this.refs['container'].addEventListener('mousewheel', this.onMouseWheel.bind(this));
         $(this.refs['container']).on('dblclick', function (e) { return _this.call('onDoubleClick')(e); });
@@ -45,44 +30,14 @@ var CanvasComponent = (function (_super) {
         var _this = this;
         this.commands['onMouseDownRight'] = function (x, y) { return _this.onPressRight(x, y); };
         this.commands['onMouseDown'] = function (x, y) { return _this.onPress(x, y); };
-        this.commands['onMouseWheel'] = function (x, y) { return y > 0 ? _this.scaleStep(-1) : _this.scaleStep(1); };
+        this.commands['onMouseWheel'] = function (x, y, deltaX, deltaY) { return _this.onWheel(x, y, deltaY); };
         this.commands['onDoubleClick'] = function (x, y) { return _this.onPressDouble(x, y); };
     };
-    Object.defineProperty(CanvasComponent.prototype, "commands", {
-        get: function () {
-            return this.props.commands;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    CanvasComponent.prototype.onPress = function (x, y) {
-        this.dispatch('canvas:press', this.canvas, x, y);
-    };
-    CanvasComponent.prototype.onPressRight = function (x, y) {
-        this.dispatch('canvas:press:right', this.canvas, x, y);
-    };
-    CanvasComponent.prototype.onPressDouble = function (x, y) {
-        this.dispatch('canvas:press:double', this.canvas, x, y);
-    };
-    CanvasComponent.prototype.draw = function (x, y) {
-        switch (this.props.mode) {
-            case 'slide':
-                return this.startSlide(x, y);
-            case 'select':
-                return this.startSelect(x, y);
-            default:
-                return this.startDraw(x, y, this.leftColor);
-        }
-    };
-    CanvasComponent.prototype.drawRight = function (x, y) {
-        this.startDraw(x, y, this.rightColor);
-    };
-    CanvasComponent.prototype.scaleStep = function (direction) {
-        if (direction > 0) {
-            this.dispatch('canvas:scale:plus', this.nowX, this.nowY);
-        }
-        else {
-            this.dispatch('canvas:scale:minus', this.nowX, this.nowY);
+    CanvasComponent.prototype.componentWillReceiveProps = function (props) {
+        var _a = this.pickLayout(props), width = _a.width, height = _a.height;
+        if (this.state.width !== width || this.state.height !== height) {
+            this.setState({ width: width, height: height });
+            this.dispatch('component:canvas:resize', parseInt(width), parseInt(height));
         }
     };
     CanvasComponent.prototype.call = function (name) {
@@ -94,18 +49,6 @@ var CanvasComponent = (function (_super) {
             return null;
         });
     };
-    CanvasComponent.prototype.onMouseWheel = function (e) {
-        e.preventDefault();
-        var _a = this.mousePosition(e), x = _a.x, y = _a.y;
-        this.call('onMouseWheel')(e.deltaX, e.deltaY);
-    };
-    CanvasComponent.prototype.onMouseDown = function (e, isRight) {
-        if (isRight === void 0) { isRight = false; }
-        e.preventDefault();
-        var _a = this.mousePosition(e), x = _a.x, y = _a.y;
-        console.log(e, isRight);
-        isRight ? this.call('onMouseDownRight')(x, y) : this.call('onMouseDown')(x, y);
-    };
     Object.defineProperty(CanvasComponent.prototype, "canvas", {
         get: function () {
             return this.refs['canvas'];
@@ -113,6 +56,67 @@ var CanvasComponent = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(CanvasComponent.prototype, "commands", {
+        get: function () {
+            return this.props.commands;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    CanvasComponent.prototype.onMouseWheel = function (e) {
+        e.preventDefault();
+        var _a = this.mousePosition(e), x = _a.x, y = _a.y;
+        this.call('onMouseWheel')(x, y, e.deltaX, e.deltaY);
+    };
+    CanvasComponent.prototype.onMouseDown = function (e, isRight) {
+        if (isRight === void 0) { isRight = false; }
+        e.preventDefault();
+        var _a = this.mousePosition(e), x = _a.x, y = _a.y;
+        isRight ? this.call('onMouseDownRight')(x, y) : this.call('onMouseDown')(x, y);
+    };
+    CanvasComponent.prototype.onPress = function (x, y) {
+        this.dispatch('canvas:press', x, y);
+        this.startDragCanvas(x, y);
+    };
+    CanvasComponent.prototype.onPressRight = function (x, y) {
+        this.dispatch('canvas:press:right', x, y);
+        this.startDragCanvas(x, y, true);
+    };
+    CanvasComponent.prototype.onPressDouble = function (x, y) {
+        this.dispatch('canvas:press:double', x, y);
+    };
+    CanvasComponent.prototype.startDragCanvas = function (startX, startY, isRight) {
+        var _this = this;
+        if (isRight === void 0) { isRight = false; }
+        var pre = { x: startX, y: startY };
+        var move = function (e) {
+            var _a = _this.mousePosition(e), x = _a.x, y = _a.y;
+            if (isRight) {
+                _this.dispatch('canvas:drag:right', pre.x, pre.y, x, y);
+            }
+            else {
+                _this.dispatch('canvas:drag', pre.x, pre.y, x, y);
+            }
+            pre = { x: x, y: y };
+        };
+        $(window).on('mousemove', move);
+        $(window).on('mouseup', function () {
+            $(window).off('mousemove', move);
+        });
+    };
+    CanvasComponent.prototype.mousePosition = function (e) {
+        var x = e.pageX - this.canvas.offsetLeft;
+        var y = e.pageY - this.canvas.offsetTop;
+        return { x: x, y: y };
+    };
+    CanvasComponent.prototype.onWheel = function (x, y, direction) {
+        if (direction < 0) {
+            this.dispatch('canvas:wheel:up', x, y);
+        }
+        else {
+            this.dispatch('canvas:wheel:down', x, y);
+        }
+    };
     CanvasComponent.prototype.render = function () {
         var _this = this;
         return React.createElement("div", {style: this.layoutStyle, className: "cell canvas", ref: "container"}, React.createElement("canvas", {width: "2000", height: "2000", ref: "canvas", onMouseDown: function (e) { return _this.onMouseDown(e); }, onContextMenu: function (e) { return _this.onMouseDown(e, true); }}, "canvas"), React.createElement("div", {className: "controller"}, React.createElement("div", {className: "scale"}, this.props.scale * 100 + '%'), React.createElement("div", {className: "selection"}, React.createElement("label", null, React.createElement("input", {type: "checkbox", checked: this.props.selectionHidden, onChange: function (e) { return _this.dispatch('canvas:select:hidden', e.target.checked); }}), "選択範囲を非表示にする")), React.createElement("div", {className: "message"}, this.props.message)));
@@ -219,11 +223,14 @@ var Cell = (function (_super) {
     }
     Object.defineProperty(Cell.prototype, "layoutStyle", {
         get: function () {
-            return this.props.layout[this.props.name] || {};
+            return this.pickLayout(this.props);
         },
         enumerable: true,
         configurable: true
     });
+    Cell.prototype.pickLayout = function (props) {
+        return props.layout[this.props.name] || {};
+    };
     return Cell;
 }(parcel_1.Good));
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -928,12 +935,11 @@ var frame_mixin_1 = require("./editor-mixins/frame-mixin");
 var EditorContext = (function (_super) {
     __extends(EditorContext, _super);
     function EditorContext() {
-        var _this = this;
         _super.apply(this, arguments);
         this.version = 1;
         this.scaleNumbers = [1, 2, 4, 8, 16, 32, 64];
         this.commands = [];
-        this.keyControl = new key_control_1.default(function (mode) { return mode !== _this.state.mode && _this.setState({ mode: mode }); });
+        this.keyControl = new key_control_1.default();
         this.intervals = [];
         this.gen = new data_url_generator_1.default();
     }
@@ -1057,6 +1063,8 @@ var EditorContext = (function (_super) {
     };
     EditorContext.prototype.listen = function (to) {
         var _this = this;
+        to(null, 'component:canvas:mounted', function (canvas) { return _this.initializeStage(canvas); });
+        to(null, 'component:canvas:resize', function (w, h) { return _this.setState({ canvasComponentWidth: w, canvasComponentHeight: h }); });
         to('edit', 'color:switch', function (i) { return _this.selectFromTip(i); });
         to('edit', 'color:select', function (color) { return _this.selectColor(color); });
         to('edit', 'color:add', function (color) { return _this.addColor(color); });
@@ -1068,19 +1076,13 @@ var EditorContext = (function (_super) {
         to('edit', 'gradation:change:color2', function (gradation, color) { return _this.changeGradationColor('color2', gradation, color); });
         to('edit', 'floater:select', function (callback) { return _this.selectColorFromFloater(callback); });
         to('edit', 'floater:rise', function (e, floatingCallback) { return _this.riseFloater(e, floatingCallback); });
-        to('edit', 'canvas:mounted', function (canvas) { return _this.initializeStage(canvas); });
-        to('edit', 'canvas:press', function (canvas, x, y) { return _this.pressCanvas(canvas, x, y); });
-        to('edit', 'canvas:press:right', function (canvas, x, y) { return _this.pressCanvas(canvas, x, y, true); });
-        to('edit', 'canvas:draw', function (x, y, color) { return _this.draw(x, y, color); });
-        to('edit', 'canvas:draw:once', function (points, color) { return _this.drawOnce(points, color); });
-        to('edit', 'canvas:select', function (x, y) { return _this.select(x, y); });
-        to('edit', 'canvas:select:line', function (x, y, endX, endY) { return _this.selectLine(x, y, endX, endY); });
+        to('edit', 'canvas:press', function (x, y) { return _this.pressCanvas(x, y); });
+        to('edit', 'canvas:press:right', function (x, y) { return _this.pressCanvas(x, y, true); });
+        to('edit', 'canvas:drag', function (x, y, endX, endY) { return _this.dragCanvas(x, y, endX, endY); });
+        to('edit', 'canvas:drag:right', function (x, y, endX, endY) { return _this.dragCanvas(x, y, endX, endY, true); });
         to('edit', 'canvas:select:hidden', function (hidden) { return _this.hideSelection(hidden); });
-        to('edit', 'canvas:resize', function (w, h) { return _this.setState({ canvasComponentWidth: w, canvasComponentHeight: h }); });
-        to('edit', 'canvas:scale:plus', function (x, y) { return _this.scaleStep(+1, x, y); });
-        to('edit', 'canvas:scale:minus', function (x, y) { return _this.scaleStep(-1, x, y); });
-        to('edit', 'canvas:slide:start', function (x, y) { return _this.slide = _this.ie.startSlide(); });
-        to('edit', 'canvas:slide', function (x, y) { return _this.slide(x, y); });
+        to('edit', 'canvas:wheel:up', function (x, y) { return _this.scaleStep(+1, x, y); });
+        to('edit', 'canvas:wheel:down', function (x, y) { return _this.scaleStep(-1, x, y); });
         to('edit', 'canvas:center', function () { return _this.center(); });
         to('edit', 'canvas:grid:toggle', function () { return _this.toggleGrid(); });
         to('edit', 'canvas:size', function () { return _this.resizeCanvasFromModal(React.createElement(canvas_resize_component_1.default, null)); });
@@ -1140,50 +1142,68 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
         enumerable: true,
         configurable: true
     });
-    class_1.prototype.pressCanvas = function (canvas, mouseX, mouseY, isRight) {
+    class_1.prototype.pressCanvas = function (x, y, isRight) {
         if (isRight === void 0) { isRight = false; }
-        var _a = this.mousePosition(canvas, mouseX, mouseY), x = _a.x, y = _a.y;
-        this.detectMouseAction(isRight)(x, y);
-        this.dragCanvas(canvas, x, y);
+        this.detectPressAction(isRight)(x, y);
     };
-    class_1.prototype.dragCanvas = function (canvas, startX, startY, props) {
-        var _this = this;
-        this.draw(startX, startY, props);
-        var pre = { x: startX, y: startY };
-        var move = function (e) {
-            var _a = _this.mousePosition(canvas, e), x = _a.x, y = _a.y;
-            _this.drawLine(pre.x, pre.y, x, y, props);
-            pre = { x: x, y: y };
-        };
-        $(window).on('mousemove', move);
-        $(window).on('mouseup', function () {
-            $(window).off('mousemove', move);
-        });
+    class_1.prototype.dragCanvas = function (x, y, endX, endY, isRight) {
+        if (isRight === void 0) { isRight = false; }
+        this.detectDragAction(isRight)(x, y, endX, endY);
     };
-    class_1.prototype.detectMouseAction = function (isRight) {
+    class_1.prototype.detectPressAction = function (isRight) {
         var _this = this;
         if (isRight === void 0) { isRight = false; }
-        switch (this.state.mode) {
-            case 'slide':
-                return this.startSlide(x, y);
-            case 'select':
-                return this.select.bind(this);
+        switch (true) {
+            case this.isSlideMode():
+                return function () {
+                    var args = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        args[_i - 0] = arguments[_i];
+                    }
+                    return null;
+                };
+            case this.isSelectMode():
+                return isRight
+                    ? function (x, y) { return _this.select(x, y, false); }
+                    : function (x, y) { return _this.select(x, y); };
             default:
                 return isRight
                     ? function (x, y) { return _this.draw(x, y, _this.rightColor); }
                     : function (x, y) { return _this.draw(x, y, _this.leftColor); };
         }
     };
-    class_1.prototype.mousePosition = function (canvas, mouseX, mouseY) {
-        var x = mouseX - canvas.offsetLeft;
-        var y = mouseY - canvas.offsetTop;
-        return { x: x, y: y };
+    class_1.prototype.detectDragAction = function (isRight) {
+        var _this = this;
+        if (isRight === void 0) { isRight = false; }
+        switch (true) {
+            case this.isSlideMode():
+                return function (x, y, endX, endY) { return _this.slide(x, y, endX, endY); };
+            case this.isSelectMode():
+                return isRight
+                    ? function (x, y, endX, endY) { return _this.selectLine(x, y, endX, endY, false); }
+                    : function (x, y, endX, endY) { return _this.selectLine(x, y, endX, endY); };
+            default:
+                return isRight
+                    ? function (x, y, endX, endY) { return _this.drawLine(x, y, endX, endY, _this.rightColor); }
+                    : function (x, y, endX, endY) { return _this.drawLine(x, y, endX, endY, _this.leftColor); };
+        }
     };
-    class_1.prototype.select = function (x, y) {
-        this.ie.setSelection(x, y, true);
+    class_1.prototype.isSlideMode = function () {
+        return this.state.keyControl.isDown('Space');
     };
-    class_1.prototype.selectLine = function (x, y, endX, endY) {
-        this.ie.setSelectionPixelToPixel(x, y, endX, endY, true);
+    class_1.prototype.isSelectMode = function () {
+        return this.state.keyControl.isDown('Shift');
+    };
+    class_1.prototype.slide = function (x, y, endX, endY) {
+        this.ie.slide(endX - x, endY - y, true);
+    };
+    class_1.prototype.select = function (x, y, add) {
+        if (add === void 0) { add = true; }
+        this.ie.setSelection(x, y, add, true);
+    };
+    class_1.prototype.selectLine = function (x, y, endX, endY, add) {
+        if (add === void 0) { add = true; }
+        this.ie.setSelectionPixelToPixel(x, y, endX, endY, add, true);
     };
     class_1.prototype.draw = function (x, y, color) {
         this.ie.setPixel(x, y, color.number, true);
@@ -2199,15 +2219,10 @@ var ImageEditor = (function () {
     ImageEditor.prototype.exportPng = function () {
         return this.bitmapData.canvas.toDataURL("image/png");
     };
-    ImageEditor.prototype.startSlide = function () {
-        var _this = this;
-        var startX = this.container.x;
-        var startY = this.container.y;
-        return function (xRange, yRange) {
-            _this.container.x = startX + xRange;
-            _this.container.y = startY + yRange;
-            _this.update();
-        };
+    ImageEditor.prototype.slide = function (x, y, update) {
+        this.container.x += x;
+        this.container.y += y;
+        update && this.update();
     };
     ImageEditor.prototype.posit = function (_a) {
         var x = _a.x, y = _a.y;
@@ -2316,14 +2331,19 @@ var ImageEditor = (function () {
     ImageEditor.prototype.isSelected = function () {
         return this.selectedCount !== 0;
     };
-    ImageEditor.prototype.addSelection = function (x, y, update) {
-        if (this.isCellSelected(x, y)) {
-            this.selectedCount--;
-            this.selectionBitmap.setPixel32(x, y, 0);
+    ImageEditor.prototype.addSelection = function (x, y, add, update) {
+        if (add === void 0) { add = true; }
+        if (add) {
+            if (!this.isCellSelected(x, y)) {
+                this.selectedCount++;
+                this.selectionBitmap.setPixel32(x, y, 0x5500ff00);
+            }
         }
         else {
-            this.selectedCount++;
-            this.selectionBitmap.setPixel32(x, y, 0x5500ff00);
+            if (this.isCellSelected(x, y)) {
+                this.selectedCount--;
+                this.selectionBitmap.setPixel32(x, y, 0);
+            }
         }
         if (update) {
             this.update();
@@ -2350,17 +2370,19 @@ var ImageEditor = (function () {
         this.selection.visible = false;
         this.update();
     };
-    ImageEditor.prototype.setSelection = function (rawX, rawY, update) {
+    ImageEditor.prototype.setSelection = function (rawX, rawY, add, update) {
+        if (add === void 0) { add = true; }
         var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;
-        return this.addSelection(x, y, update);
+        return this.addSelection(x, y, add, update);
     };
-    ImageEditor.prototype.setSelectionPixelToPixel = function (rawX, rawY, endRawX, endRawY, update) {
+    ImageEditor.prototype.setSelectionPixelToPixel = function (rawX, rawY, endRawX, endRawY, add, update) {
         var _this = this;
+        if (add === void 0) { add = true; }
         var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;
         var end = this.normalizePixel(endRawX, endRawY);
         ImageEditor.pToP(x, y, end.x, end.y).map(function (_a) {
             var x = _a.x, y = _a.y;
-            return _this.addSelection(x, y);
+            return _this.addSelection(x, y, add);
         });
         update && this.update();
     };
@@ -2414,17 +2436,16 @@ exports.default = ImageEditor;
 },{"./action-history":31}],38:[function(require,module,exports){
 "use strict";
 var KeyControl = (function () {
-    function KeyControl(callback) {
+    function KeyControl() {
         var _this = this;
-        this.callback = callback;
         this.downStore = {};
         $(window).keydown(function (e) {
-            _this.down(e.keyCode);
+            _this.down(e.code);
             _this.down(e.keyIdentifier);
             _this.check(e);
         });
         $(window).keyup(function (e) {
-            _this.up(e.keyCode);
+            _this.up(e.code);
             _this.up(e.keyIdentifier);
             _this.strike(null, e);
         });
@@ -2439,12 +2460,6 @@ var KeyControl = (function () {
         return this.downStore[code];
     };
     KeyControl.prototype.check = function (e) {
-        if (this.isDown(32)) {
-            return this.strike('slide', e);
-        }
-        if (this.isDown('Shift')) {
-            return this.strike('select', e);
-        }
         var string = 'on';
         if (e.altKey) {
             string += 'Alt';
@@ -2459,24 +2474,12 @@ var KeyControl = (function () {
         this.strike(string, e);
     };
     KeyControl.prototype.strike = function (name, e) {
-        console.log(name, e);
-        this.callback(name);
         this.hook && this.hook(name, e);
-    };
-    KeyControl.prototype.codeEnum = function (code) {
-        switch (code) {
-            case 'Space':
-                return Code.Space;
-        }
     };
     return KeyControl;
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = KeyControl;
-var Code;
-(function (Code) {
-    Code[Code["Space"] = 0] = "Space";
-})(Code || (Code = {}));
 
 },{}],39:[function(require,module,exports){
 "use strict";

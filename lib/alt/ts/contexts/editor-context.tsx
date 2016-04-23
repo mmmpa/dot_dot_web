@@ -35,7 +35,7 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
   private scaleNumbers:number[] = [1, 2, 4, 8, 16, 32, 64];
   private slide:(x, y)=>void;
   private commands:any = [];
-  private keyControl:KeyControl = new KeyControl((mode)=> mode !== this.state.mode && this.setState({mode}))
+  private keyControl:KeyControl = new KeyControl();
   private configuration:Configuration;
   private intervals:number[] = [];
   private gen:DataUrlGenerator = new DataUrlGenerator();
@@ -153,6 +153,9 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
   }
 
   listen(to) {
+    to(null, 'component:canvas:mounted', (canvas)=> this.initializeStage(canvas));
+    to(null, 'component:canvas:resize', (w, h)=> this.setState({canvasComponentWidth: w, canvasComponentHeight: h}));
+
     to('edit', 'color:switch', (i)=> this.selectFromTip(i));
     to('edit', 'color:select', (color)=> this.selectColor(color));
     to('edit', 'color:add', (color)=> this.addColor(color));
@@ -167,19 +170,13 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     to('edit', 'floater:select', (callback)=> this.selectColorFromFloater(callback));
     to('edit', 'floater:rise', (e, floatingCallback)=> this.riseFloater(e, floatingCallback));
 
-    to('edit', 'canvas:mounted', (canvas)=> this.initializeStage(canvas));
-    to('edit', 'canvas:press', (canvas, x, y)=> this.pressCanvas(canvas, x, y));
-    to('edit', 'canvas:press:right', (canvas, x, y)=> this.pressCanvas(canvas, x, y, true));
-    to('edit', 'canvas:draw', (x, y, color)=> this.draw(x, y, color));
-    to('edit', 'canvas:draw:once', (points, color)=> this.drawOnce(points, color));
-    to('edit', 'canvas:select', (x, y)=> this.select(x, y));
-    to('edit', 'canvas:select:line', (x, y, endX, endY)=> this.selectLine(x, y, endX, endY));
+    to('edit', 'canvas:press', (x, y)=> this.pressCanvas(x, y));
+    to('edit', 'canvas:press:right', (x, y)=> this.pressCanvas(x, y, true));
+    to('edit', 'canvas:drag', (x, y, endX, endY)=> this.dragCanvas(x, y, endX, endY));
+    to('edit', 'canvas:drag:right', (x, y, endX, endY)=> this.dragCanvas(x, y, endX, endY, true));
     to('edit', 'canvas:select:hidden', (hidden)=> this.hideSelection(hidden));
-    to('edit', 'canvas:resize', (w, h)=> this.setState({canvasComponentWidth: w, canvasComponentHeight: h}));
-    to('edit', 'canvas:scale:plus', (x, y)=> this.scaleStep(+1, x, y));
-    to('edit', 'canvas:scale:minus', (x, y)=> this.scaleStep(-1, x, y));
-    to('edit', 'canvas:slide:start', (x, y)=> this.slide = this.ie.startSlide());
-    to('edit', 'canvas:slide', (x, y)=> this.slide(x, y));
+    to('edit', 'canvas:wheel:up', (x, y)=> this.scaleStep(+1, x, y));
+    to('edit', 'canvas:wheel:down', (x, y)=> this.scaleStep(-1, x, y));
     to('edit', 'canvas:center', ()=> this.center());
     to('edit', 'canvas:grid:toggle', ()=> this.toggleGrid());
     to('edit', 'canvas:size', ()=> this.resizeCanvasFromModal(<CanvasResizeComponent/>));

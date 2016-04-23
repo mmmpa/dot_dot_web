@@ -1,45 +1,23 @@
-import {Good} from "../libs/parcel";
 import * as React from "react";
 import * as ReactDOM from 'react-dom';
-import ImageEditor from "../models/image-editor";
 import Cell from "./cell-component";
-declare const createjs;
-
 
 interface P {
 }
 
-enum CanvasState{
-  Starting,
-  Started
-}
-
 export default class CanvasComponent extends Cell<P,{}> {
-  private nowX;
-  private nowY;
-
   componentWillMount() {
-    this.setState({
-      src: this.props.src || null,
-      width: 1000,
-      height: 1000
-    });
-
-    $(window).on('mousemove', (e)=> this.recordPosition(e));
-  }
-
-  recordPosition(e:JQueryMouseEventObject) {
-    let {x, y} = this.mousePosition(e);
-    this.nowX = x;
-    this.nowY = y;
+    let {width, height} = this.layoutStyle;
+    this.setState({width, height});
   }
 
   componentDidMount() {
     super.componentDidMount();
 
     let {width, height} = this.layoutStyle;
-    this.dispatch('canvas:resize', parseInt(width), parseInt(height));
-    this.dispatch('canvas:mounted', this.refs['canvas']);
+
+    this.dispatch('component:canvas:resize', parseInt(width), parseInt(height));
+    this.dispatch('component:canvas:mounted', this.refs['canvas']);
 
     this.initializeCommand();
     this.refs['container'].addEventListener('mousewheel', this.onMouseWheel.bind(this));
@@ -49,46 +27,15 @@ export default class CanvasComponent extends Cell<P,{}> {
   initializeCommand() {
     this.commands['onMouseDownRight'] = (x, y)=> this.onPressRight(x, y);
     this.commands['onMouseDown'] = (x, y)=> this.onPress(x, y);
-    this.commands['onMouseWheel'] = (x, y)=> y > 0 ? this.scaleStep(-1) : this.scaleStep(1);
+    this.commands['onMouseWheel'] = (x, y, deltaX, deltaY)=> this.onWheel(x, y, deltaY);
     this.commands['onDoubleClick'] = (x, y)=> this.onPressDouble(x, y);
   }
 
-  get commands() {
-    return this.props.commands;
-  }
-
-  onPress(x, y) {
-    this.dispatch('canvas:press', this.canvas, x, y);
-  }
-
-  onPressRight(x, y) {
-    this.dispatch('canvas:press:right', this.canvas, x, y);
-  }
-
-  onPressDouble(x, y) {
-    this.dispatch('canvas:press:double', this.canvas, x, y);
-  }
-
-  draw(x, y) {
-    switch (this.props.mode) {
-      case 'slide':
-        return this.startSlide(x, y);
-      case 'select':
-        return this.startSelect(x, y);
-      default:
-        return this.startDraw(x, y, this.leftColor);
-    }
-  }
-
-  drawRight(x, y) {
-    this.startDraw(x, y, this.rightColor);
-  }
-
-  scaleStep(direction) {
-    if (direction > 0) {
-      this.dispatch('canvas:scale:plus', this.nowX, this.nowY);
-    } else {
-      this.dispatch('canvas:scale:minus', this.nowX, this.nowY);
+  componentWillReceiveProps(props) {
+    let {width, height} = this.pickLayout(props);
+    if(this.state.width !== width || this.state.height !== height){
+      this.setState({width, height});
+      this.dispatch('component:canvas:resize', parseInt(width), parseInt(height));
     }
   }
 
@@ -96,22 +43,73 @@ export default class CanvasComponent extends Cell<P,{}> {
     return this.commands[name] || ((...args) => null)
   }
 
+  get canvas() {
+    return this.refs['canvas'];
+  }
+
+  get commands() {
+    return this.props.commands;
+  }
+
   onMouseWheel(e:WheelEvent) {
     e.preventDefault();
     let {x, y} = this.mousePosition(e);
-    this.call('onMouseWheel')(e.deltaX, e.deltaY);
+    this.call('onMouseWheel')(x, y, e.deltaX, e.deltaY);
   }
 
   onMouseDown(e:MouseEvent, isRight = false) {
     e.preventDefault();
     let {x, y} = this.mousePosition(e);
 
-    console.log(e, isRight)
     isRight ? this.call('onMouseDownRight')(x, y) : this.call('onMouseDown')(x, y);
   }
 
-  get canvas() {
-    return this.refs['canvas'];
+  onPress(x, y) {
+    this.dispatch('canvas:press', x, y);
+    this.startDragCanvas(x, y);
+  }
+
+  onPressRight(x, y) {
+    this.dispatch('canvas:press:right', x, y);
+    this.startDragCanvas(x, y, true);
+  }
+
+  onPressDouble(x, y) {
+    this.dispatch('canvas:press:double', x, y);
+  }
+
+  startDragCanvas(startX, startY, isRight = false) {
+    let pre = {x: startX, y: startY};
+
+    let move = (e:MouseEvent)=> {
+      let {x, y} = this.mousePosition(e);
+      if (isRight) {
+        this.dispatch('canvas:drag:right', pre.x, pre.y, x, y);
+      } else {
+        this.dispatch('canvas:drag', pre.x, pre.y, x, y);
+      }
+      pre = {x, y}
+    };
+
+    $(window).on('mousemove', move);
+    $(window).on('mouseup', ()=> {
+      $(window).off('mousemove', move);
+    });
+  }
+
+  mousePosition(e:MouseEvent) {
+    var x = e.pageX - this.canvas.offsetLeft;
+    var y = e.pageY - this.canvas.offsetTop;
+
+    return {x, y};
+  }
+
+  onWheel(x, y, direction) {
+    if (direction < 0) {
+      this.dispatch('canvas:wheel:up', x, y);
+    } else {
+      this.dispatch('canvas:wheel:down', x, y);
+    }
   }
 
   render() {

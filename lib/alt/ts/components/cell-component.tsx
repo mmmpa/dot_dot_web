@@ -14,6 +14,10 @@ interface SellS{
 
 export default class Cell<P,S> extends Good<SellP&P,SellS&S> {
   get layoutStyle(){
-    return this.props.layout[this.props.name] || {}
+    return this.pickLayout(this.props)
+  }
+
+  pickLayout(props){
+    return props.layout[this.props.name] || {}
   }
 }

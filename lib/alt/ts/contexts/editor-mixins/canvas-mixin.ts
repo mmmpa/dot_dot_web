@@ -11,34 +11,22 @@ export let CanvasMixin = (superclass) => class extends superclass {
     return colors[selectedColorNumber ^ 1];
   }
 
-  pressCanvas(canvas, mouseX, mouseY, isRight = false) {
-    let {x, y} = this.mousePosition(canvas, mouseX, mouseY);
-    this.detectMouseAction(isRight)(x, y);
-    this.dragCanvas(canvas, x, y);
+  pressCanvas(x, y, isRight = false) {
+    this.detectPressAction(isRight)(x, y);
   }
 
-  dragCanvas(canvas, startX, startY, props?) {
-    this.draw(startX, startY, props);
-    let pre = {x: startX, y: startY};
-
-    let move = (e:JQueryMouseEventObject)=> {
-      let {x, y} = this.mousePosition(canvas, e);
-      this.drawLine(pre.x, pre.y, x, y, props);
-      pre = {x, y}
-    };
-
-    $(window).on('mousemove', move);
-    $(window).on('mouseup', ()=> {
-      $(window).off('mousemove', move);
-    });
+  dragCanvas(x, y, endX, endY, isRight = false) {
+    this.detectDragAction(isRight)(x, y, endX, endY);
   }
 
-  detectMouseAction(isRight = false) {
-    switch (this.state.mode) {
-      case 'slide':
-        return this.startSlide(x, y);
-      case 'select':
-        return this.select.bind(this);
+  detectPressAction(isRight = false) {
+    switch (true) {
+      case this.isSlideMode():
+        return (...args)=> null;
+      case this.isSelectMode():
+        return isRight
+          ? (x, y)=> this.select(x, y, false)
+          : (x, y)=> this.select(x, y);
       default:
         return isRight
           ? (x, y)=> this.draw(x, y, this.rightColor)
@@ -46,20 +34,39 @@ export let CanvasMixin = (superclass) => class extends superclass {
     }
   }
 
-  mousePosition(canvas, mouseX, mouseY) {
-    var x = mouseX - canvas.offsetLeft;
-    var y = mouseY - canvas.offsetTop;
-
-    return {x, y};
+  detectDragAction(isRight = false) {
+    switch (true) {
+      case this.isSlideMode():
+        return (x, y, endX, endY)=> this.slide(x, y, endX, endY);
+      case this.isSelectMode():
+        return isRight
+          ? (x, y, endX, endY)=> this.selectLine(x, y, endX, endY, false)
+          : (x, y, endX, endY)=> this.selectLine(x, y, endX, endY);
+      default:
+        return isRight
+          ? (x, y, endX, endY)=> this.drawLine(x, y, endX, endY, this.rightColor)
+          : (x, y, endX, endY)=> this.drawLine(x, y, endX, endY, this.leftColor);
+    }
   }
 
-
-  select(x, y) {
-    this.ie.setSelection(x, y, true);
+  isSlideMode() {
+    return this.state.keyControl.isDown('Space')
   }
 
-  selectLine(x, y, endX, endY) {
-    this.ie.setSelectionPixelToPixel(x, y, endX, endY, true);
+  isSelectMode() {
+    return this.state.keyControl.isDown('Shift')
+  }
+
+  slide(x, y, endX, endY) {
+    this.ie.slide(endX - x, endY - y, true)
+  }
+
+  select(x, y, add = true) {
+    this.ie.setSelection(x, y, add, true);
+  }
+
+  selectLine(x, y, endX, endY, add = true) {
+    this.ie.setSelectionPixelToPixel(x, y, endX, endY, add, true);
   }
 
   draw(x, y, color) {
