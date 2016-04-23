@@ -47,30 +47,34 @@ export default class CanvasComponent extends Cell<P,{}> {
   }
 
   initializeCommand() {
-    this.commands['onMouseDownRight'] = this.drawRight.bind(this);
-    this.commands['onMouseDown'] = this.draw.bind(this);
+    this.commands['onMouseDownRight'] = (x, y)=> this.onPressRight(x, y);
+    this.commands['onMouseDown'] = (x, y)=> this.onPress(x, y);
     this.commands['onMouseWheel'] = (x, y)=> y > 0 ? this.scaleStep(-1) : this.scaleStep(1);
-    this.commands['onDoubleClick'] = this.drawDouble.bind(this);
+    this.commands['onDoubleClick'] = (x, y)=> this.onPressDouble(x, y);
   }
 
   get commands() {
     return this.props.commands;
   }
 
-  get leftColor() {
-    let {colors, selectedColorNumber} = this.props;
-    return colors[selectedColorNumber];
+  onPress(x, y) {
+    this.dispatch('canvas:press', this.canvas, x, y);
   }
 
-  get rightColor() {
-    let {colors, selectedColorNumber} = this.props;
-    return colors[selectedColorNumber ^ 1];
+  onPressRight(x, y) {
+    this.dispatch('canvas:press:right', this.canvas, x, y);
+  }
+
+  onPressDouble(x, y) {
+    this.dispatch('canvas:press:double', this.canvas, x, y);
   }
 
   draw(x, y) {
     switch (this.props.mode) {
       case 'slide':
         return this.startSlide(x, y);
+      case 'select':
+        return this.startSelect(x, y);
       default:
         return this.startDraw(x, y, this.leftColor);
     }
@@ -78,74 +82,6 @@ export default class CanvasComponent extends Cell<P,{}> {
 
   drawRight(x, y) {
     this.startDraw(x, y, this.rightColor);
-  }
-
-  drawDouble(x, y) {
-    switch (this.props.mode) {
-      case 'slide':
-        return this.dispatch('canvas:center');
-      default:
-        return null;
-    }
-  }
-
-  startDraw(startX, startY, color) {
-    //this.dispatch('canvas:draw', startX, startY);
-    this.props.draw(startX, startY, color);
-    let pre = {x: startX, y: startY};
-
-    let move = (e:JQueryMouseEventObject)=> {
-      //let {x, y} = this.mousePosition(e);
-      //this.props.draw(x, y, color);
-      let {x, y} = this.mousePosition(e);
-      let points = [{x, y}];
-
-      if (Math.abs(x - pre.x) > 1 || Math.abs(y - pre.y) > 1) {
-        let moveX = x - pre.x;
-        let moveY = y - pre.y;
-        let power = moveY / moveX;
-
-        if (moveX > 0) {
-          for (let i = moveX; i--;) {
-            points.push({x: x - i, y: y - i * power});
-          }
-        } else if (moveX < 0) {
-          for (let i = moveX; i++;) {
-            points.push({x: x - i, y: y - i * power});
-          }
-        }
-
-        if (moveY > 0) {
-          for (let i = moveY; i--;) {
-            points.push({x: x - i / power, y: y - i});
-          }
-        } else if (moveY < 0) {
-          for (let i = moveY; i++;) {
-            points.push({x: x - i / power, y: y - i});
-          }
-        }
-      }
-      this.dispatch('canvas:draw:once', points, color);
-      pre = {x, y}
-    };
-
-    $(window).on('mousemove', move);
-    $(window).on('mouseup', ()=> {
-      $(window).off('mousemove', move);
-    });
-  }
-
-  startSlide(startX, startY) {
-    this.dispatch('canvas:slide:start', startX, startY);
-
-    let move = (e:JQueryMouseEventObject)=> {
-      let {x, y} = this.mousePosition(e);
-      this.dispatch('canvas:slide', x - startX, y - startY);
-    };
-    $(window).on('mousemove', move);
-    $(window).on('mouseup', ()=> {
-      $(window).off('mousemove', move);
-    });
   }
 
   scaleStep(direction) {
@@ -178,16 +114,20 @@ export default class CanvasComponent extends Cell<P,{}> {
     return this.refs['canvas'];
   }
 
-  mousePosition(e) {
-    var x = e.pageX - this.canvas.offsetLeft;
-    var y = e.pageY - this.canvas.offsetTop;
-
-    return {x, y};
-  }
-
   render() {
     return <div style={this.layoutStyle} className="cell canvas" ref="container">
       <canvas width="2000" height="2000" ref="canvas" onMouseDown={(e)=> this.onMouseDown(e)} onContextMenu={(e)=> this.onMouseDown(e, true)}>canvas</canvas>
+      <div className="controller">
+        <div className="scale">
+          {this.props.scale * 100 + '%'}
+        </div>
+        <div className="selection">
+          <label><input type="checkbox" checked={this.props.selectionHidden} onChange={(e)=> this.dispatch('canvas:select:hidden', e.target.checked)}/>選択範囲を非表示にする</label>
+        </div>
+        <div className="message">
+          {this.props.message}
+        </div>
+      </div>
     </div>
   }
 }

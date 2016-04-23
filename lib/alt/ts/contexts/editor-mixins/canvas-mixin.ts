@@ -1,15 +1,80 @@
 import LayeredImage from "../../models/layered-image";
 
 export let CanvasMixin = (superclass) => class extends superclass {
+  get leftColor() {
+    let {colors, selectedColorNumber} = this.state;
+    return colors[selectedColorNumber];
+  }
+
+  get rightColor() {
+    let {colors, selectedColorNumber} = this.state;
+    return colors[selectedColorNumber ^ 1];
+  }
+
+  pressCanvas(canvas, mouseX, mouseY, isRight = false) {
+    let {x, y} = this.mousePosition(canvas, mouseX, mouseY);
+    this.detectMouseAction(isRight)(x, y);
+    this.dragCanvas(canvas, x, y);
+  }
+
+  dragCanvas(canvas, startX, startY, props?) {
+    this.draw(startX, startY, props);
+    let pre = {x: startX, y: startY};
+
+    let move = (e:JQueryMouseEventObject)=> {
+      let {x, y} = this.mousePosition(canvas, e);
+      this.drawLine(pre.x, pre.y, x, y, props);
+      pre = {x, y}
+    };
+
+    $(window).on('mousemove', move);
+    $(window).on('mouseup', ()=> {
+      $(window).off('mousemove', move);
+    });
+  }
+
+  detectMouseAction(isRight = false) {
+    switch (this.state.mode) {
+      case 'slide':
+        return this.startSlide(x, y);
+      case 'select':
+        return this.select.bind(this);
+      default:
+        return isRight
+          ? (x, y)=> this.draw(x, y, this.rightColor)
+          : (x, y)=> this.draw(x, y, this.leftColor);
+    }
+  }
+
+  mousePosition(canvas, mouseX, mouseY) {
+    var x = mouseX - canvas.offsetLeft;
+    var y = mouseY - canvas.offsetTop;
+
+    return {x, y};
+  }
+
+
+  select(x, y) {
+    this.ie.setSelection(x, y, true);
+  }
+
+  selectLine(x, y, endX, endY) {
+    this.ie.setSelectionPixelToPixel(x, y, endX, endY, true);
+  }
+
   draw(x, y, color) {
     this.ie.setPixel(x, y, color.number, true);
     this.dispatch('frame:update');
   }
 
-  drawOnce(points, color) {
-    points.forEach(({x, y})=> this.ie.setPixel(x, y, color.number));
-    this.ie.update();
+  drawLine(x, y, endX, endY, color) {
+    this.ie.setPixelToPixel(x, y, endX, endY, color.number, true);
     this.dispatch('frame:update');
+  }
+
+  hideSelection(selectionHidden) {
+    selectionHidden ? this.ie.hideSelection() : this.ie.showSelection()
+    this.setState({selectionHidden})
   }
 
   scaleStep(direction, x?, y?) {

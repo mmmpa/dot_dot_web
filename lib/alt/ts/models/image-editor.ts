@@ -15,9 +15,15 @@ export default class ImageEditor {
   private bg:any;
   private canvas:any;
 
+  private selectedCount:number = 0;
+  private selection:any;
+  private selectionBitmap:any;
+
   private bitmapData:any;
 
   public mode:string;
+
+  private selectionColor = 0x2200ff00
 
   static genId() {
     return this.id++;
@@ -28,7 +34,7 @@ export default class ImageEditor {
 
     this.container = new createjs.Container();
 
-    this.bg = new createjs.Bitmap(new createjs.BitmapData(null, stage.canvas.width, stage.canvas.height, 0x01ffffff).canvas);
+    this.bg = new createjs.Bitmap(new createjs.BitmapData(null, stage.canvas.width, stage.canvas.height, 0x01000000).canvas);
 
     if (imageElement) {
       this.bitmapData = new createjs.BitmapData(imageElement);
@@ -39,8 +45,13 @@ export default class ImageEditor {
     this.width = this.bitmapData.width;
     this.height = this.bitmapData.height;
 
+    this.selectionBitmap = new createjs.BitmapData(null, this.width, this.height);
+    this.selection = new createjs.Bitmap(this.selectionBitmap.canvas);
+
     this.canvas = new createjs.Bitmap(this.bitmapData.canvas);
+
     this.container.addChild(this.canvas);
+    this.container.addChild(this.selection);
 
     stage.addChild(this.bg);
     stage.addChild(this.container);
@@ -153,8 +164,6 @@ export default class ImageEditor {
     height *= this._scale;
     this.container.x = (displayWidth - width) / 2;
     this.container.y = (displayHeight - height) / 2;
-    //this.container.x = 0
-    //this.container.y = 0
     this.update();
   }
 
@@ -174,11 +183,13 @@ export default class ImageEditor {
     }
 
     this.canvas.scaleX = this.canvas.scaleY = this._scale;
+    this.selection.scaleX = this.selection.scaleY = this._scale;
     this.drawGrid();
     this.stage.update();
   }
 
   update() {
+    this.selectionBitmap.updateContext();
     this.bitmapData.updateContext();
     this.stage.update();
   }
@@ -190,9 +201,34 @@ export default class ImageEditor {
     return {x, y};
   }
 
-  setPixel(rawX, rawY, color, update?:boolean) {
-    let {x, y} = this.normalizePixel(rawX, rawY);
+  isCellSelected(x, y) {
+    return this.selectionBitmap.getPixel32(x, y) !== 0;
+  }
 
+  isSelected() {
+    return this.selectedCount !== 0;
+  }
+
+  addSelection(x, y, update?:boolean) {
+    if (this.isCellSelected(x, y)) {
+      this.selectedCount--;
+      this.selectionBitmap.setPixel32(x, y, 0);
+    } else {
+      this.selectedCount++;
+      this.selectionBitmap.setPixel32(x, y, 0x5500ff00);
+    }
+
+    if (update) {
+      this.update();
+    }
+  }
+
+  draw(x, y, color, update?:boolean) {
+    if (this.isSelected()) {
+      if (!this.isCellSelected(x, y)) {
+        return;
+      }
+    }
     let old = this.bitmapData.getPixel32(x, y);
     this.bitmapData.setPixel32(x, y, color);
     if (update) {
@@ -201,7 +237,80 @@ export default class ImageEditor {
     return new ActionHistory('setPixel', {x, y, color: old}, {x, y, color});
   }
 
+  showSelection(){
+    this.selection.visible = true;
+    this.update();
+  }
+
+  hideSelection(){
+    this.selection.visible = false;
+    this.update();
+  }
+
+  setSelection(rawX, rawY, update?:boolean) {
+    let {x, y} = this.normalizePixel(rawX, rawY);
+
+    return this.addSelection(x, y, update)
+  }
+
+  setSelectionPixelToPixel(rawX, rawY, endRawX, endRawY, update?:boolean) {
+    let {x, y} = this.normalizePixel(rawX, rawY);
+    let end = this.normalizePixel(endRawX, endRawY);
+
+    ImageEditor.pToP(x, y, end.x, end.y).map(({x, y})=> this.addSelection(x, y));
+
+    update && this.update();
+  }
+
+  setPixel(rawX, rawY, color, update?:boolean) {
+    let {x, y} = this.normalizePixel(rawX, rawY);
+
+    return this.draw(x, y, color, update)
+  }
+
+  setPixelToPixel(rawX, rawY, endRawX, endRawY, color, update?:boolean) {
+    let {x, y} = this.normalizePixel(rawX, rawY);
+    let end = this.normalizePixel(endRawX, endRawY);
+
+    let points = ImageEditor.pToP(x, y, end.x, end.y);
+    let histories = points.map(({x, y})=> this.draw(x, y, color));
+
+    update && this.update();
+
+    return histories;
+  }
+
   static create(stage, w, h, imageElement?) {
     return new ImageEditor(stage, w, h, imageElement);
+  }
+
+  static pToP(x, y, endX, endY) {
+    let points = []
+
+    let moveX = x - endX;
+    let moveY = y - endY;
+
+    let getSupport = (n)=> {
+      let minus = (i) => i - 1;
+      let plus = (i) => i + 1;
+
+      return n < 0 ? plus : minus;
+    };
+
+    if (moveX !== 0 || moveY !== 0) {
+      let power = moveY / moveX;
+
+      let xSupport = getSupport(moveX);
+      for (let i = moveX; i; i = xSupport(i)) {
+        points.push({x: x - i, y: Math.round(y - i * power)})
+      }
+
+      let ySupport = getSupport(moveY);
+      for (let i = moveY; i; i = ySupport(i)) {
+        points.push({x: Math.round(x - i / power), y: y - i})
+      }
+    }
+
+    return points
   }
 }

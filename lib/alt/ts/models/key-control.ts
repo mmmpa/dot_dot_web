@@ -5,11 +5,13 @@ export default class KeyControl {
   constructor(public callback) {
     $(window).keydown((e:JQueryKeyEventObject)=> {
       this.down(e.keyCode);
+      this.down(e.keyIdentifier);
       this.check(e);
     });
 
     $(window).keyup((e:JQueryKeyEventObject)=> {
       this.up(e.keyCode);
+      this.up(e.keyIdentifier);
       this.strike(null, e);
     });
   }
@@ -29,6 +31,10 @@ export default class KeyControl {
   check(e:JQueryKeyEventObject) {
     if (this.isDown(32)) {
       return this.strike('slide', e)
+    }
+
+    if (this.isDown('Shift')) {
+      return this.strike('select', e)
     }
 
     let string = 'on';

@@ -5,6 +5,7 @@ export let FrameMixin = (superclass) => class extends superclass {
   replaceIeByImageElement(imageElement) {
     this.ie && this.ie.close();
     this.ie = ImageEditor.create(this.stage, 0, 0, imageElement);
+    //this.state.selectionHidden ? this.ie.hideSelection() : this.ie.showSelection()
     this.scale();
     this.ie.switchGrid(this.state.grid);
   }

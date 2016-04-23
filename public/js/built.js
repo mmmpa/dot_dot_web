@@ -43,10 +43,10 @@ var CanvasComponent = (function (_super) {
     };
     CanvasComponent.prototype.initializeCommand = function () {
         var _this = this;
-        this.commands['onMouseDownRight'] = this.drawRight.bind(this);
-        this.commands['onMouseDown'] = this.draw.bind(this);
+        this.commands['onMouseDownRight'] = function (x, y) { return _this.onPressRight(x, y); };
+        this.commands['onMouseDown'] = function (x, y) { return _this.onPress(x, y); };
         this.commands['onMouseWheel'] = function (x, y) { return y > 0 ? _this.scaleStep(-1) : _this.scaleStep(1); };
-        this.commands['onDoubleClick'] = this.drawDouble.bind(this);
+        this.commands['onDoubleClick'] = function (x, y) { return _this.onPressDouble(x, y); };
     };
     Object.defineProperty(CanvasComponent.prototype, "commands", {
         get: function () {
@@ -55,95 +55,27 @@ var CanvasComponent = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(CanvasComponent.prototype, "leftColor", {
-        get: function () {
-            var _a = this.props, colors = _a.colors, selectedColorNumber = _a.selectedColorNumber;
-            return colors[selectedColorNumber];
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(CanvasComponent.prototype, "rightColor", {
-        get: function () {
-            var _a = this.props, colors = _a.colors, selectedColorNumber = _a.selectedColorNumber;
-            return colors[selectedColorNumber ^ 1];
-        },
-        enumerable: true,
-        configurable: true
-    });
+    CanvasComponent.prototype.onPress = function (x, y) {
+        this.dispatch('canvas:press', this.canvas, x, y);
+    };
+    CanvasComponent.prototype.onPressRight = function (x, y) {
+        this.dispatch('canvas:press:right', this.canvas, x, y);
+    };
+    CanvasComponent.prototype.onPressDouble = function (x, y) {
+        this.dispatch('canvas:press:double', this.canvas, x, y);
+    };
     CanvasComponent.prototype.draw = function (x, y) {
         switch (this.props.mode) {
             case 'slide':
                 return this.startSlide(x, y);
+            case 'select':
+                return this.startSelect(x, y);
             default:
                 return this.startDraw(x, y, this.leftColor);
         }
     };
     CanvasComponent.prototype.drawRight = function (x, y) {
         this.startDraw(x, y, this.rightColor);
-    };
-    CanvasComponent.prototype.drawDouble = function (x, y) {
-        switch (this.props.mode) {
-            case 'slide':
-                return this.dispatch('canvas:center');
-            default:
-                return null;
-        }
-    };
-    CanvasComponent.prototype.startDraw = function (startX, startY, color) {
-        var _this = this;
-        //this.dispatch('canvas:draw', startX, startY);
-        this.props.draw(startX, startY, color);
-        var pre = { x: startX, y: startY };
-        var move = function (e) {
-            //let {x, y} = this.mousePosition(e);
-            //this.props.draw(x, y, color);
-            var _a = _this.mousePosition(e), x = _a.x, y = _a.y;
-            var points = [{ x: x, y: y }];
-            if (Math.abs(x - pre.x) > 1 || Math.abs(y - pre.y) > 1) {
-                var moveX = x - pre.x;
-                var moveY = y - pre.y;
-                var power = moveY / moveX;
-                if (moveX > 0) {
-                    for (var i = moveX; i--;) {
-                        points.push({ x: x - i, y: y - i * power });
-                    }
-                }
-                else if (moveX < 0) {
-                    for (var i = moveX; i++;) {
-                        points.push({ x: x - i, y: y - i * power });
-                    }
-                }
-                if (moveY > 0) {
-                    for (var i = moveY; i--;) {
-                        points.push({ x: x - i / power, y: y - i });
-                    }
-                }
-                else if (moveY < 0) {
-                    for (var i = moveY; i++;) {
-                        points.push({ x: x - i / power, y: y - i });
-                    }
-                }
-            }
-            _this.dispatch('canvas:draw:once', points, color);
-            pre = { x: x, y: y };
-        };
-        $(window).on('mousemove', move);
-        $(window).on('mouseup', function () {
-            $(window).off('mousemove', move);
-        });
-    };
-    CanvasComponent.prototype.startSlide = function (startX, startY) {
-        var _this = this;
-        this.dispatch('canvas:slide:start', startX, startY);
-        var move = function (e) {
-            var _a = _this.mousePosition(e), x = _a.x, y = _a.y;
-            _this.dispatch('canvas:slide', x - startX, y - startY);
-        };
-        $(window).on('mousemove', move);
-        $(window).on('mouseup', function () {
-            $(window).off('mousemove', move);
-        });
     };
     CanvasComponent.prototype.scaleStep = function (direction) {
         if (direction > 0) {
@@ -181,14 +113,9 @@ var CanvasComponent = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    CanvasComponent.prototype.mousePosition = function (e) {
-        var x = e.pageX - this.canvas.offsetLeft;
-        var y = e.pageY - this.canvas.offsetTop;
-        return { x: x, y: y };
-    };
     CanvasComponent.prototype.render = function () {
         var _this = this;
-        return React.createElement("div", {style: this.layoutStyle, className: "cell canvas", ref: "container"}, React.createElement("canvas", {width: "2000", height: "2000", ref: "canvas", onMouseDown: function (e) { return _this.onMouseDown(e); }, onContextMenu: function (e) { return _this.onMouseDown(e, true); }}, "canvas"));
+        return React.createElement("div", {style: this.layoutStyle, className: "cell canvas", ref: "container"}, React.createElement("canvas", {width: "2000", height: "2000", ref: "canvas", onMouseDown: function (e) { return _this.onMouseDown(e); }, onContextMenu: function (e) { return _this.onMouseDown(e, true); }}, "canvas"), React.createElement("div", {className: "controller"}, React.createElement("div", {className: "scale"}, this.props.scale * 100 + '%'), React.createElement("div", {className: "selection"}, React.createElement("label", null, React.createElement("input", {type: "checkbox", checked: this.props.selectionHidden, onChange: function (e) { return _this.dispatch('canvas:select:hidden', e.target.checked); }}), "選択範囲を非表示にする")), React.createElement("div", {className: "message"}, this.props.message)));
     };
     return CanvasComponent;
 }(cell_component_1.default));
@@ -1028,12 +955,12 @@ var EditorContext = (function (_super) {
                 }
                 return _this.draw.apply(_this, args);
             },
-            drawOnce: function () {
+            drawLine: function () {
                 var args = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
                     args[_i - 0] = arguments[_i];
                 }
-                return _this.drawOnce.apply(_this, args);
+                return _this.drawLine.apply(_this, args);
             },
             layerCount: 1,
             frameCount: 1,
@@ -1055,10 +982,10 @@ var EditorContext = (function (_super) {
         this.commands['onControlZ'] = function () { return _this.dispatch('work:undo'); };
         this.commands['onControlY'] = function () { return _this.dispatch('work:redo'); };
         this.commands['onControlShiftZ'] = function () { return _this.dispatch('work:redo'); };
-        this.commands['onControlArrowUp'] = function () { return _this.dispatch('canvas:size', 1, 0, 0, 0); };
-        this.commands['onControlArrowRight'] = function () { return _this.dispatch('canvas:size', 0, 1, 0, 0); };
-        this.commands['onControlArrowDown'] = function () { return _this.dispatch('canvas:size', 0, 0, 1, 0); };
-        this.commands['onControlArrowLeft'] = function () { return _this.dispatch('canvas:size', 0, 0, 0, 1); };
+        this.commands['onControlArrowUp'] = function () { return _this.dispatch('canvas:draw:move', 1, 0, 0, 0); };
+        this.commands['onControlArrowRight'] = function () { return _this.dispatch('canvas:draw:move', 0, 1, 0, 0); };
+        this.commands['onControlArrowDown'] = function () { return _this.dispatch('canvas:draw:move', 0, 0, 1, 0); };
+        this.commands['onControlArrowLeft'] = function () { return _this.dispatch('canvas:draw:move', 0, 0, 0, 1); };
         this.commands['onControlShiftArrowUp'] = function () { return _this.dispatch('canvas:size', -1, 0, 0, 0); };
         this.commands['onControlShiftArrowRight'] = function () { return _this.dispatch('canvas:size', 0, -1, 0, 0); };
         this.commands['onControlShiftArrowDown'] = function () { return _this.dispatch('canvas:size', 0, 0, -1, 0); };
@@ -1142,8 +1069,13 @@ var EditorContext = (function (_super) {
         to('edit', 'floater:select', function (callback) { return _this.selectColorFromFloater(callback); });
         to('edit', 'floater:rise', function (e, floatingCallback) { return _this.riseFloater(e, floatingCallback); });
         to('edit', 'canvas:mounted', function (canvas) { return _this.initializeStage(canvas); });
+        to('edit', 'canvas:press', function (canvas, x, y) { return _this.pressCanvas(canvas, x, y); });
+        to('edit', 'canvas:press:right', function (canvas, x, y) { return _this.pressCanvas(canvas, x, y, true); });
         to('edit', 'canvas:draw', function (x, y, color) { return _this.draw(x, y, color); });
         to('edit', 'canvas:draw:once', function (points, color) { return _this.drawOnce(points, color); });
+        to('edit', 'canvas:select', function (x, y) { return _this.select(x, y); });
+        to('edit', 'canvas:select:line', function (x, y, endX, endY) { return _this.selectLine(x, y, endX, endY); });
+        to('edit', 'canvas:select:hidden', function (hidden) { return _this.hideSelection(hidden); });
         to('edit', 'canvas:resize', function (w, h) { return _this.setState({ canvasComponentWidth: w, canvasComponentHeight: h }); });
         to('edit', 'canvas:scale:plus', function (x, y) { return _this.scaleStep(+1, x, y); });
         to('edit', 'canvas:scale:minus', function (x, y) { return _this.scaleStep(-1, x, y); });
@@ -1192,18 +1124,78 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
     function class_1() {
         _super.apply(this, arguments);
     }
+    Object.defineProperty(class_1.prototype, "leftColor", {
+        get: function () {
+            var _a = this.state, colors = _a.colors, selectedColorNumber = _a.selectedColorNumber;
+            return colors[selectedColorNumber];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(class_1.prototype, "rightColor", {
+        get: function () {
+            var _a = this.state, colors = _a.colors, selectedColorNumber = _a.selectedColorNumber;
+            return colors[selectedColorNumber ^ 1];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    class_1.prototype.pressCanvas = function (canvas, mouseX, mouseY, isRight) {
+        if (isRight === void 0) { isRight = false; }
+        var _a = this.mousePosition(canvas, mouseX, mouseY), x = _a.x, y = _a.y;
+        this.detectMouseAction(isRight)(x, y);
+        this.dragCanvas(canvas, x, y);
+    };
+    class_1.prototype.dragCanvas = function (canvas, startX, startY, props) {
+        var _this = this;
+        this.draw(startX, startY, props);
+        var pre = { x: startX, y: startY };
+        var move = function (e) {
+            var _a = _this.mousePosition(canvas, e), x = _a.x, y = _a.y;
+            _this.drawLine(pre.x, pre.y, x, y, props);
+            pre = { x: x, y: y };
+        };
+        $(window).on('mousemove', move);
+        $(window).on('mouseup', function () {
+            $(window).off('mousemove', move);
+        });
+    };
+    class_1.prototype.detectMouseAction = function (isRight) {
+        var _this = this;
+        if (isRight === void 0) { isRight = false; }
+        switch (this.state.mode) {
+            case 'slide':
+                return this.startSlide(x, y);
+            case 'select':
+                return this.select.bind(this);
+            default:
+                return isRight
+                    ? function (x, y) { return _this.draw(x, y, _this.rightColor); }
+                    : function (x, y) { return _this.draw(x, y, _this.leftColor); };
+        }
+    };
+    class_1.prototype.mousePosition = function (canvas, mouseX, mouseY) {
+        var x = mouseX - canvas.offsetLeft;
+        var y = mouseY - canvas.offsetTop;
+        return { x: x, y: y };
+    };
+    class_1.prototype.select = function (x, y) {
+        this.ie.setSelection(x, y, true);
+    };
+    class_1.prototype.selectLine = function (x, y, endX, endY) {
+        this.ie.setSelectionPixelToPixel(x, y, endX, endY, true);
+    };
     class_1.prototype.draw = function (x, y, color) {
         this.ie.setPixel(x, y, color.number, true);
         this.dispatch('frame:update');
     };
-    class_1.prototype.drawOnce = function (points, color) {
-        var _this = this;
-        points.forEach(function (_a) {
-            var x = _a.x, y = _a.y;
-            return _this.ie.setPixel(x, y, color.number);
-        });
-        this.ie.update();
+    class_1.prototype.drawLine = function (x, y, endX, endY, color) {
+        this.ie.setPixelToPixel(x, y, endX, endY, color.number, true);
         this.dispatch('frame:update');
+    };
+    class_1.prototype.hideSelection = function (selectionHidden) {
+        selectionHidden ? this.ie.hideSelection() : this.ie.showSelection();
+        this.setState({ selectionHidden: selectionHidden });
     };
     class_1.prototype.scaleStep = function (direction, x, y) {
         var scale = this.state.scale;
@@ -1465,6 +1457,7 @@ exports.FrameMixin = function (superclass) { return (function (_super) {
     class_1.prototype.replaceIeByImageElement = function (imageElement) {
         this.ie && this.ie.close();
         this.ie = image_editor_1.default.create(this.stage, 0, 0, imageElement);
+        //this.state.selectionHidden ? this.ie.hideSelection() : this.ie.showSelection()
         this.scale();
         this.ie.switchGrid(this.state.grid);
     };
@@ -2168,9 +2161,11 @@ var ImageEditor = (function () {
         this._gridElement = null;
         this._gridStore = [];
         this._gridColor = 0xff000000;
+        this.selectedCount = 0;
+        this.selectionColor = 0x2200ff00;
         this.id = ImageEditor.genId();
         this.container = new createjs.Container();
-        this.bg = new createjs.Bitmap(new createjs.BitmapData(null, stage.canvas.width, stage.canvas.height, 0x01ffffff).canvas);
+        this.bg = new createjs.Bitmap(new createjs.BitmapData(null, stage.canvas.width, stage.canvas.height, 0x01000000).canvas);
         if (imageElement) {
             this.bitmapData = new createjs.BitmapData(imageElement);
         }
@@ -2179,8 +2174,11 @@ var ImageEditor = (function () {
         }
         this.width = this.bitmapData.width;
         this.height = this.bitmapData.height;
+        this.selectionBitmap = new createjs.BitmapData(null, this.width, this.height);
+        this.selection = new createjs.Bitmap(this.selectionBitmap.canvas);
         this.canvas = new createjs.Bitmap(this.bitmapData.canvas);
         this.container.addChild(this.canvas);
+        this.container.addChild(this.selection);
         stage.addChild(this.bg);
         stage.addChild(this.container);
         this.update();
@@ -2282,8 +2280,6 @@ var ImageEditor = (function () {
         height *= this._scale;
         this.container.x = (displayWidth - width) / 2;
         this.container.y = (displayHeight - height) / 2;
-        //this.container.x = 0
-        //this.container.y = 0
         this.update();
     };
     ImageEditor.prototype.scale = function (n, baseX, baseY) {
@@ -2300,10 +2296,12 @@ var ImageEditor = (function () {
             this._scale = n;
         }
         this.canvas.scaleX = this.canvas.scaleY = this._scale;
+        this.selection.scaleX = this.selection.scaleY = this._scale;
         this.drawGrid();
         this.stage.update();
     };
     ImageEditor.prototype.update = function () {
+        this.selectionBitmap.updateContext();
         this.bitmapData.updateContext();
         this.stage.update();
     };
@@ -2312,8 +2310,31 @@ var ImageEditor = (function () {
         var y = (rawY - this.container.y) / this._scale >> 0;
         return { x: x, y: y };
     };
-    ImageEditor.prototype.setPixel = function (rawX, rawY, color, update) {
-        var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;
+    ImageEditor.prototype.isCellSelected = function (x, y) {
+        return this.selectionBitmap.getPixel32(x, y) !== 0;
+    };
+    ImageEditor.prototype.isSelected = function () {
+        return this.selectedCount !== 0;
+    };
+    ImageEditor.prototype.addSelection = function (x, y, update) {
+        if (this.isCellSelected(x, y)) {
+            this.selectedCount--;
+            this.selectionBitmap.setPixel32(x, y, 0);
+        }
+        else {
+            this.selectedCount++;
+            this.selectionBitmap.setPixel32(x, y, 0x5500ff00);
+        }
+        if (update) {
+            this.update();
+        }
+    };
+    ImageEditor.prototype.draw = function (x, y, color, update) {
+        if (this.isSelected()) {
+            if (!this.isCellSelected(x, y)) {
+                return;
+            }
+        }
         var old = this.bitmapData.getPixel32(x, y);
         this.bitmapData.setPixel32(x, y, color);
         if (update) {
@@ -2321,8 +2342,68 @@ var ImageEditor = (function () {
         }
         return new action_history_1.default('setPixel', { x: x, y: y, color: old }, { x: x, y: y, color: color });
     };
+    ImageEditor.prototype.showSelection = function () {
+        this.selection.visible = true;
+        this.update();
+    };
+    ImageEditor.prototype.hideSelection = function () {
+        this.selection.visible = false;
+        this.update();
+    };
+    ImageEditor.prototype.setSelection = function (rawX, rawY, update) {
+        var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;
+        return this.addSelection(x, y, update);
+    };
+    ImageEditor.prototype.setSelectionPixelToPixel = function (rawX, rawY, endRawX, endRawY, update) {
+        var _this = this;
+        var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;
+        var end = this.normalizePixel(endRawX, endRawY);
+        ImageEditor.pToP(x, y, end.x, end.y).map(function (_a) {
+            var x = _a.x, y = _a.y;
+            return _this.addSelection(x, y);
+        });
+        update && this.update();
+    };
+    ImageEditor.prototype.setPixel = function (rawX, rawY, color, update) {
+        var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;
+        return this.draw(x, y, color, update);
+    };
+    ImageEditor.prototype.setPixelToPixel = function (rawX, rawY, endRawX, endRawY, color, update) {
+        var _this = this;
+        var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;
+        var end = this.normalizePixel(endRawX, endRawY);
+        var points = ImageEditor.pToP(x, y, end.x, end.y);
+        var histories = points.map(function (_a) {
+            var x = _a.x, y = _a.y;
+            return _this.draw(x, y, color);
+        });
+        update && this.update();
+        return histories;
+    };
     ImageEditor.create = function (stage, w, h, imageElement) {
         return new ImageEditor(stage, w, h, imageElement);
+    };
+    ImageEditor.pToP = function (x, y, endX, endY) {
+        var points = [];
+        var moveX = x - endX;
+        var moveY = y - endY;
+        var getSupport = function (n) {
+            var minus = function (i) { return i - 1; };
+            var plus = function (i) { return i + 1; };
+            return n < 0 ? plus : minus;
+        };
+        if (moveX !== 0 || moveY !== 0) {
+            var power = moveY / moveX;
+            var xSupport = getSupport(moveX);
+            for (var i = moveX; i; i = xSupport(i)) {
+                points.push({ x: x - i, y: Math.round(y - i * power) });
+            }
+            var ySupport = getSupport(moveY);
+            for (var i = moveY; i; i = ySupport(i)) {
+                points.push({ x: Math.round(x - i / power), y: y - i });
+            }
+        }
+        return points;
     };
     ImageEditor.id = 0;
     return ImageEditor;
@@ -2339,10 +2420,12 @@ var KeyControl = (function () {
         this.downStore = {};
         $(window).keydown(function (e) {
             _this.down(e.keyCode);
+            _this.down(e.keyIdentifier);
             _this.check(e);
         });
         $(window).keyup(function (e) {
             _this.up(e.keyCode);
+            _this.up(e.keyIdentifier);
             _this.strike(null, e);
         });
     }
@@ -2358,6 +2441,9 @@ var KeyControl = (function () {
     KeyControl.prototype.check = function (e) {
         if (this.isDown(32)) {
             return this.strike('slide', e);
+        }
+        if (this.isDown('Shift')) {
+            return this.strike('select', e);
         }
         var string = 'on';
         if (e.altKey) {

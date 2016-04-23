@@ -53,7 +53,7 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
       floatingFrom: null,
       commands: this.commands,
       draw: (...args)=> this.draw(...args),
-      drawOnce: (...args)=> this.drawOnce(...args),
+      drawLine: (...args)=> this.drawLine(...args),
       layerCount: 1,
       frameCount: 1,
       fileName: 'noname',
@@ -75,10 +75,10 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     this.commands['onControlZ'] = ()=> this.dispatch('work:undo');
     this.commands['onControlY'] = ()=> this.dispatch('work:redo');
     this.commands['onControlShiftZ'] = ()=> this.dispatch('work:redo');
-    this.commands['onControlArrowUp'] = ()=> this.dispatch('canvas:size', 1, 0, 0, 0);
-    this.commands['onControlArrowRight'] = ()=> this.dispatch('canvas:size', 0, 1, 0, 0);
-    this.commands['onControlArrowDown'] = ()=> this.dispatch('canvas:size', 0, 0, 1, 0);
-    this.commands['onControlArrowLeft'] = ()=> this.dispatch('canvas:size', 0, 0, 0, 1);
+    this.commands['onControlArrowUp'] = ()=> this.dispatch('canvas:draw:move', 1, 0, 0, 0);
+    this.commands['onControlArrowRight'] = ()=> this.dispatch('canvas:draw:move', 0, 1, 0, 0);
+    this.commands['onControlArrowDown'] = ()=> this.dispatch('canvas:draw:move', 0, 0, 1, 0);
+    this.commands['onControlArrowLeft'] = ()=> this.dispatch('canvas:draw:move', 0, 0, 0, 1);
     this.commands['onControlShiftArrowUp'] = ()=> this.dispatch('canvas:size', -1, 0, 0, 0);
     this.commands['onControlShiftArrowRight'] = ()=> this.dispatch('canvas:size', 0, -1, 0, 0);
     this.commands['onControlShiftArrowDown'] = ()=> this.dispatch('canvas:size', 0, 0, -1, 0);
@@ -168,8 +168,13 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     to('edit', 'floater:rise', (e, floatingCallback)=> this.riseFloater(e, floatingCallback));
 
     to('edit', 'canvas:mounted', (canvas)=> this.initializeStage(canvas));
+    to('edit', 'canvas:press', (canvas, x, y)=> this.pressCanvas(canvas, x, y));
+    to('edit', 'canvas:press:right', (canvas, x, y)=> this.pressCanvas(canvas, x, y, true));
     to('edit', 'canvas:draw', (x, y, color)=> this.draw(x, y, color));
     to('edit', 'canvas:draw:once', (points, color)=> this.drawOnce(points, color));
+    to('edit', 'canvas:select', (x, y)=> this.select(x, y));
+    to('edit', 'canvas:select:line', (x, y, endX, endY)=> this.selectLine(x, y, endX, endY));
+    to('edit', 'canvas:select:hidden', (hidden)=> this.hideSelection(hidden));
     to('edit', 'canvas:resize', (w, h)=> this.setState({canvasComponentWidth: w, canvasComponentHeight: h}));
     to('edit', 'canvas:scale:plus', (x, y)=> this.scaleStep(+1, x, y));
     to('edit', 'canvas:scale:minus', (x, y)=> this.scaleStep(-1, x, y));

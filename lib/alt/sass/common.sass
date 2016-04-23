@@ -99,10 +99,21 @@ body
     overflow: auto
     overflow-x: hidden
     overflow-y: scroll
-  &.canvas
-    overflow: hidden
-    background: url("/img/stripe.png")
 
+.canvas
+  overflow: hidden
+  background: url("/img/stripe.png")
+  .controller
+    background: rgba(255, 255, 255, 0.7)
+    position: absolute
+    top: 0
+    padding: 10px 0
+    width: 100%
+    .selection,
+    .scale,
+    .massage
+      display: inline-block
+      padding: 0 10px
 .cell-header
   display: none
   position: fixed
