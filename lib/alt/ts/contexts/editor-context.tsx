@@ -68,6 +68,7 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     });
 
     this.commands['onG'] = ()=> this.dispatch('canvas:grid:toggle');
+    this.commands['onDelete'] = ()=> this.dispatch('canvas:delete');
     this.commands['onShiftG'] = ()=> this.dispatch('canvas:outline:toggle');
     this.commands['onControlS'] = ()=> this.dispatch('file:save');
     this.commands['onControlN'] = ()=> this.dispatch('file:new');
@@ -181,6 +182,7 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     to('edit', 'canvas:grid:toggle', ()=> this.toggleGrid());
     to('edit', 'canvas:size', ()=> this.resizeCanvasFromModal(<CanvasResizeComponent/>));
     to('edit', 'canvas:size:complete', (top, right, bottom, left)=> this.resizeCanvas(top, right, bottom, left));
+    to('edit', 'canvas:delete', (x, y)=> this.delSelection());
 
     to('edit', 'frame:select', (n)=> this.selectFrame(n));
     to('edit', 'frame:next', ()=> this.selectNextFrame());

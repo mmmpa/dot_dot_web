@@ -49,6 +49,7 @@ export default class KeyControl {
   }
 
   strike(name:string, e:JQueryKeyEventObject) {
+    console.log(name, e)
     this.hook && this.hook(name, e)
   }
 }

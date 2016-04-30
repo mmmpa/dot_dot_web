@@ -981,6 +981,7 @@ var EditorContext = (function (_super) {
             scale: scale, grid: grid, colors: colors, selectedColorNumber: selectedColorNumber, selectedColor: selectedColor, colorSet: colorSet, gradations: gradations, framesScale: framesScale
         });
         this.commands['onG'] = function () { return _this.dispatch('canvas:grid:toggle'); };
+        this.commands['onDelete'] = function () { return _this.dispatch('canvas:delete'); };
         this.commands['onShiftG'] = function () { return _this.dispatch('canvas:outline:toggle'); };
         this.commands['onControlS'] = function () { return _this.dispatch('file:save'); };
         this.commands['onControlN'] = function () { return _this.dispatch('file:new'); };
@@ -1087,6 +1088,7 @@ var EditorContext = (function (_super) {
         to('edit', 'canvas:grid:toggle', function () { return _this.toggleGrid(); });
         to('edit', 'canvas:size', function () { return _this.resizeCanvasFromModal(React.createElement(canvas_resize_component_1.default, null)); });
         to('edit', 'canvas:size:complete', function (top, right, bottom, left) { return _this.resizeCanvas(top, right, bottom, left); });
+        to('edit', 'canvas:delete', function (x, y) { return _this.delSelection(); });
         to('edit', 'frame:select', function (n) { return _this.selectFrame(n); });
         to('edit', 'frame:next', function () { return _this.selectNextFrame(); });
         to('edit', 'frame:previous', function () { return _this.selectPreviousFrame(); });
@@ -1193,6 +1195,9 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
     };
     class_1.prototype.isSelectMode = function () {
         return this.state.keyControl.isDown('Shift');
+    };
+    class_1.prototype.delSelection = function () {
+        this.ie.del();
     };
     class_1.prototype.slide = function (x, y, endX, endY) {
         this.ie.slide(endX - x, endY - y, true);
@@ -2182,7 +2187,7 @@ var ImageEditor = (function () {
         this._gridStore = [];
         this._gridColor = 0xff000000;
         this.selectedCount = 0;
-        this.selectionColor = 0x2200ff00;
+        this.selectionColor = 0x4400ff00;
         this.id = ImageEditor.genId();
         this.container = new createjs.Container();
         this.bg = new createjs.Bitmap(new createjs.BitmapData(null, stage.canvas.width, stage.canvas.height, 0x01000000).canvas);
@@ -2194,8 +2199,12 @@ var ImageEditor = (function () {
         }
         this.width = this.bitmapData.width;
         this.height = this.bitmapData.height;
+        this.blankBitmap = new createjs.BitmapData(null, this.width, this.height, 0x11ff0000);
+        this.blank = new createjs.Bitmap(this.blankBitmap.canvas);
         this.selectionBitmap = new createjs.BitmapData(null, this.width, this.height);
         this.selection = new createjs.Bitmap(this.selectionBitmap.canvas);
+        this.img = new Image;
+        this.img.src = this.blankBitmap.canvas.toDataURL();
         this.canvas = new createjs.Bitmap(this.bitmapData.canvas);
         this.container.addChild(this.canvas);
         this.container.addChild(this.selection);
@@ -2205,6 +2214,9 @@ var ImageEditor = (function () {
     }
     ImageEditor.genId = function () {
         return this.id++;
+    };
+    ImageEditor.find = function (id) {
+        return this.store[id];
     };
     ImageEditor.prototype.close = function () {
         this.stage.clear();
@@ -2239,6 +2251,48 @@ var ImageEditor = (function () {
         enumerable: true,
         configurable: true
     });
+    ImageEditor.prototype.floatSelection = function () {
+        this.floaterBitmap = new createjs.BitmapData(null, this.width, this.height);
+        this.floater = new createjs.Bitmap(this.floaterBitmap.canvas);
+    };
+    ImageEditor.prototype.doSelected = function (callback) {
+        if (!this.isSelected()) {
+            return;
+        }
+        var result = [];
+        var raw = this.selectionBitmap.context.getImageData(0, 0, this.width, this.height).data;
+        for (var i = raw.length - 1; i >= 0; i -= 4) {
+            if (raw[i] !== 0) {
+                var position = (i - 3) / 4;
+                var x = (position % this.width);
+                var y = position / this.width >> 0;
+                result.push(callback(x, y, color));
+            }
+        }
+        return result;
+    };
+    ImageEditor.prototype.del = function () {
+        var _this = this;
+        var result = this.doSelected(function (x, y, color) { return _this.draw(x, y, 0); });
+        console.log(result);
+        this.update();
+    };
+    ImageEditor.prototype.copy = function () {
+        if (!this.isSelected()) {
+            return;
+        }
+        this.bitmapData.copyPixels(this.blankBitmap, this.bitmapData.rect, { x: 0, y: 0 }, this.selectionBitmap, { x: 0, y: 0 }, true);
+        this.bitmapData.updateImageData();
+        this.update();
+    };
+    ImageEditor.prototype.fixFloater = function () {
+        if (!this.isFloated()) {
+            return;
+        }
+    };
+    ImageEditor.prototype.isFloated = function () {
+        return !!this.floater;
+    };
     ImageEditor.prototype.writeHistory = function (store) {
         return function () {
             var args = [];
@@ -2336,7 +2390,7 @@ var ImageEditor = (function () {
         if (add) {
             if (!this.isCellSelected(x, y)) {
                 this.selectedCount++;
-                this.selectionBitmap.setPixel32(x, y, 0x5500ff00);
+                this.selectionBitmap.setPixel32(x, y, this.selectionColor);
             }
         }
         else {
@@ -2428,6 +2482,7 @@ var ImageEditor = (function () {
         return points;
     };
     ImageEditor.id = 0;
+    ImageEditor.store = [];
     return ImageEditor;
 }());
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -2474,6 +2529,7 @@ var KeyControl = (function () {
         this.strike(string, e);
     };
     KeyControl.prototype.strike = function (name, e) {
+        console.log(name, e);
         this.hook && this.hook(name, e);
     };
     return KeyControl;

@@ -57,6 +57,10 @@ export let CanvasMixin = (superclass) => class extends superclass {
     return this.state.keyControl.isDown('Shift')
   }
 
+  delSelection(){
+    this.ie.del()
+  }
+
   slide(x, y, endX, endY) {
     this.ie.slide(endX - x, endY - y, true)
   }
@@ -128,7 +132,6 @@ export let CanvasMixin = (superclass) => class extends superclass {
     };
     this.dispatch('modal:rise', component, modalProps);
   }
-
 
   resizeCanvas(top, right, bottom, left) {
     let {canvasWidth, canvasHeight, frames} = this.state;

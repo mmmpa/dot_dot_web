@@ -3,6 +3,7 @@ declare const createjs;
 
 export default class ImageEditor {
   static id:number = 0;
+  static store:ImageEditor[] = [];
 
   public id:number;
   private _scale:number = 1;
@@ -19,14 +20,25 @@ export default class ImageEditor {
   private selection:any;
   private selectionBitmap:any;
 
+  private floater:any;
+  private floaterBitmap:any;
+
+  private blankBitmap:any;
+  private blank:any;
+
   private bitmapData:any;
+  private img;
 
   public mode:string;
 
-  private selectionColor = 0x2200ff00
+  private selectionColor = 0x4400ff00;
 
   static genId() {
     return this.id++;
+  }
+
+  static find(id) {
+    return this.store[id];
   }
 
   constructor(public stage, public width, public height, imageElement?) {
@@ -45,8 +57,14 @@ export default class ImageEditor {
     this.width = this.bitmapData.width;
     this.height = this.bitmapData.height;
 
+    this.blankBitmap = new createjs.BitmapData(null, this.width, this.height, 0x11ff0000);
+    this.blank = new createjs.Bitmap(this.blankBitmap.canvas);
     this.selectionBitmap = new createjs.BitmapData(null, this.width, this.height);
     this.selection = new createjs.Bitmap(this.selectionBitmap.canvas);
+
+    this.img = new Image;
+    this.img.src = this.blankBitmap.canvas.toDataURL();
+
 
     this.canvas = new createjs.Bitmap(this.bitmapData.canvas);
 
@@ -93,6 +111,55 @@ export default class ImageEditor {
       x: this.container.x,
       y: this.container.y
     }
+  }
+
+  floatSelection() {
+    this.floaterBitmap = new createjs.BitmapData(null, this.width, this.height);
+    this.floater = new createjs.Bitmap(this.floaterBitmap.canvas);
+  }
+
+  doSelected(callback):any[] {
+    if (!this.isSelected()) {
+      return;
+    }
+
+    let result = []
+    let raw = this.selectionBitmap.context.getImageData(0, 0, this.width, this.height).data
+    for (let i = raw.length - 1; i >= 0; i -= 4) {
+      if (raw[i] !== 0) {
+        let position = (i - 3) / 4;
+        let x = (position % this.width);
+        let y = position / this.width >> 0;
+
+        result.push(callback(x, y, color))
+      }
+    }
+    return result;
+  }
+
+  del() {
+    let result = this.doSelected((x, y, color)=> this.draw(x, y, 0));
+    console.log(result)
+    this.update();
+  }
+
+  copy() {
+    if (!this.isSelected()) {
+      return;
+    }
+    this.bitmapData.copyPixels(this.blankBitmap, this.bitmapData.rect, {x: 0, y: 0}, this.selectionBitmap, {x: 0, y: 0}, true);
+    this.bitmapData.updateImageData();
+    this.update();
+  }
+
+  fixFloater() {
+    if (!this.isFloated()) {
+      return;
+    }
+  }
+
+  isFloated() {
+    return !!this.floater;
   }
 
   writeHistory(store) {
@@ -208,7 +275,7 @@ export default class ImageEditor {
     if (add) {
       if (!this.isCellSelected(x, y)) {
         this.selectedCount++;
-        this.selectionBitmap.setPixel32(x, y, 0x5500ff00);
+        this.selectionBitmap.setPixel32(x, y, this.selectionColor);
       }
     } else {
       if (this.isCellSelected(x, y)) {
