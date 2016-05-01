@@ -3,11 +3,9 @@ import * as React from "react";
 import * as ReactDOM from 'react-dom';
 import Fa from "../mods/fa";
 import Cell from "./cell-component";
-import ColorSet from "../models/color-set";
-import ColorCellSet from "./color-cell-set";
-import {FloatingColorPaletteMode} from "../constants/constants";
 import LayeredImage from "../models/layered-image";
 import StepperInput from "./stepper-input";
+import DataURL from "../models/data-url";
 
 interface P {
   frames:LayeredImage[],
@@ -20,10 +18,12 @@ export default class FrameSelectorComponent extends Cell<P,{}> {
   }
 
   writeFrames() {
-    let scale = this.props.framesScale;
-    return this.props.frames.map((image, frameNumber)=> {
-      let onClick = ()=> this.dispatch('frame:select', frameNumber)
-      return <FrameSelectorCellComponent {...{scale, image, onClick, selected: frameNumber === this.props.selectedFrameNumber}}/>
+    let {selectedFrameNumber, framesScale, frames} = this.props;
+
+    let scale = framesScale;
+    return frames.map((image, frameNumber)=> {
+      let onClick = (layerNumber)=> this.dispatch('frame:select', frameNumber, layerNumber)
+      return <FrameSelectorCellComponent {...{scale, image, onClick, selected: frameNumber === selectedFrameNumber}}/>
     })
   }
 
@@ -90,9 +90,31 @@ class FrameSelectorCellComponent extends React.Component<{scale:number, image:La
     return "frame-cell" + (this.props.selected ? ' selected' : '');
   }
 
+  writeLayers() {
+    let {image, onClick} = this.props;
+    if(!image){
+      return
+    }
+    return image.dataURLs.map((dataURL, layerNumber)=> {
+      return <LayerSelectorCellComponent {...{dataURL, onClick, selected: layerNumber === selectedLayerNumber}}/>
+    })
+  }
+
   render() {
     let {image, onClick} = this.props;
 
-    return <div className={this.detectedClassName}><img src={image.raw(0)} style={image.scale(this.props.scale)} onClick={()=> onClick()}/></div>
+    return <div className={this.detectedClassName}><img src={image.combined} style={image.scale(this.props.scale)} onClick={()=> onClick()}/>{this.writeLayers()}</div>
+  }
+}
+
+class LayerSelectorCellComponent extends React.Component<{dataURL:DataURL, selected:boolean, onClick:()=>void},{}> {
+  get detectedClassName() {
+    return "frame-cell" + (this.props.selected ? ' selected' : '');
+  }
+
+  render() {
+    let {dataURL, onClick} = this.props;
+
+    return <div className={this.detectedClassName}><img src={dataURL} onClick={()=> onClick()}/></div>
   }
 }

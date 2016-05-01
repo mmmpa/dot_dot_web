@@ -9,7 +9,7 @@ import ImageEditor from "../models/image-editor";
 import FileInformation from "../models/file-information";
 import Configuration from "../records/configuration";
 import LayeredImage from "../models/layered-image";
-import DataUrlGenerator from "../models/data-url-generator";
+import DataURLGenerator from "../models/data-url-generator";
 import GradationColor from "../models/gradation-color";
 import CanvasSettingComponent from "../components/canvas-setting-component";
 import CanvasResizeComponent from "../components/canvas-resize-component";
@@ -20,6 +20,7 @@ import {GradationMixin} from "./editor-mixins/gradation-mixin"
 import {CanvasMixin} from "./editor-mixins/canvas-mixin"
 import {FloaterMixin} from "./editor-mixins/floater-mixin"
 import {FrameMixin} from "./editor-mixins/frame-mixin"
+import {LayerMixin} from "./editor-mixins/layer-mixin"
 
 interface P {
 }
@@ -28,7 +29,7 @@ interface S {
 }
 
 
-export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixin, GradationMixin, CanvasMixin, FloaterMixin, FrameMixin) {
+export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixin, GradationMixin, CanvasMixin, FloaterMixin, FrameMixin, LayerMixin) {
   private version:number = 1;
   private stage:any;
   private ie:ImageEditor;
@@ -38,7 +39,7 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
   private keyControl:KeyControl = new KeyControl();
   private configuration:Configuration;
   private intervals:number[] = [];
-  private gen:DataUrlGenerator = new DataUrlGenerator();
+  private gen:DataURLGenerator = new DataURLGenerator();
 
   componentWillMount() {
     this.initializeConfiguration();
@@ -54,14 +55,13 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
       commands: this.commands,
       draw: (...args)=> this.draw(...args),
       drawLine: (...args)=> this.drawLine(...args),
-      layerCount: 1,
       frameCount: 1,
       fileName: 'noname',
-      layers: [],
       canvasWidth: 0,
       canvasHeight: 0,
       frames: [],
       selectedFrameNumber: 0,
+      selectedLayerNumber: 0,
       frameRate: 60,
       // user state
       scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations, framesScale
@@ -125,7 +125,8 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
         colorSet: new ColorSet(nes),
         gradations: [],
         framesScale: 4,
-        frameRate: 60
+        frameRate: 60,
+        layerNumber: 0
       })
     }
 
@@ -193,6 +194,9 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     to('edit', 'canvas:size:complete', (top, right, bottom, left)=> this.resizeCanvas(top, right, bottom, left));
     to('edit', 'canvas:delete', (x, y)=> this.delSelection());
     to('edit', 'canvas:move', (...args)=> this.moveCanvas(...args));
+
+    to('edit', 'layer:add', ()=> this.addLayer());
+    to('edit', 'layer:remove', ()=> this.removeLayer());
 
     to('edit', 'frame:select', (n)=> this.selectFrame(n));
     to('edit', 'frame:next', ()=> this.selectNextFrame());

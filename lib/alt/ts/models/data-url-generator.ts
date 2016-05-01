@@ -1,4 +1,4 @@
-export default class DataUrlGenerator {
+export default class DataURLGenerator {
   public img:HTMLImageElement;
   public canvas:HTMLCanvasElement;
   public context:CanvasRenderingContext2D
@@ -38,6 +38,16 @@ export default class DataUrlGenerator {
     this.context.clearRect(0, 0, w, h);
     this.context.drawImage(image, trimX, trimY, w, h, offsetX, offsetY, w, h);
 
+    return this.canvas.toDataURL();
+  }
+
+  combineImages(images:HTMLImageElement[], w, h) {
+    this.canvas.width = w;
+    this.canvas.height = h;
+    this.context.clearRect(0, 0, w, h);
+    images.forEach((image)=>{
+      this.context.drawImage(image, 0, 0, w, h, 0, 0, w, h);
+    });
     return this.canvas.toDataURL();
   }
 

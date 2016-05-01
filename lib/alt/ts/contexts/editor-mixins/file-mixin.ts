@@ -7,7 +7,7 @@ export let FileMixin = (superclass) => class extends superclass {
     return `${fileName}_${new Date().getTime()}.${layerCount}.${frames.length}.png`
   }
 
-  get dataUrl() {
+  get dataURL() {
     let {canvasWidth, canvasHeight, frames} = this.state;
     let images = frames.map((frame)=> frame.image(0));
     return this.gen.join(images, canvasWidth, canvasHeight);
@@ -45,7 +45,7 @@ export let FileMixin = (superclass) => class extends superclass {
 
   save() {
     $('<a>')
-      .attr("href", this.dataUrl)
+      .attr("href", this.dataURL)
       .attr("download", this.fileName)
       .trigger('click');
   }
@@ -82,7 +82,11 @@ export let FileMixin = (superclass) => class extends superclass {
       let trimmer = this.gen.trimmer(e.target, baseWidth, baseHeight);
 
       let frames = _.times(information.frameCount, (n)=> {
-        return new LayeredImage(baseWidth, baseHeight, [trimmer(baseWidth * n, 0)])
+        return new LayeredImage(
+          baseWidth,
+          baseHeight,
+          _.times(information.layerCount, (nn)=> trimmer(baseWidth * n, baseHeight * nn))
+        )
       });
 
       this.setState({
