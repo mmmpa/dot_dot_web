@@ -179,8 +179,8 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
 
     to('edit', 'canvas:press', (x, y)=> this.pressCanvas(x, y));
     to('edit', 'canvas:press:right', (x, y)=> this.pressCanvas(x, y, true));
-    to('edit', 'canvas:drag', (x, y, endX, endY)=> this.dragCanvas(x, y, endX, endY));
-    to('edit', 'canvas:drag:right', (x, y, endX, endY)=> this.dragCanvas(x, y, endX, endY, true));
+    to('edit', 'canvas:drag', (...args)=> this.dragCanvas(...args));
+    to('edit', 'canvas:drag:right', (...args)=> this.dragCanvas(...args, true));
     to('edit', 'canvas:copy', (x, y)=> this.copyCanvas());
     to('edit', 'canvas:paste', (x, y)=> this.pasteCanvas());
     to('edit', 'canvas:cut', (x, y)=> this.cutCanvas());

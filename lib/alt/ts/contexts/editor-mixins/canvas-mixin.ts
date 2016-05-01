@@ -15,8 +15,8 @@ export let CanvasMixin = (superclass) => class extends superclass {
     this.detectPressAction(isRight)(x, y);
   }
 
-  dragCanvas(x, y, endX, endY, isRight = false) {
-    this.detectDragAction(isRight)(x, y, endX, endY);
+  dragCanvas(startX, startY, x, y, endX, endY, isRight = false) {
+    this.detectDragAction(isRight)(startX, startY, x, y, endX, endY);
   }
 
   copyCanvas() {
@@ -47,6 +47,8 @@ export let CanvasMixin = (superclass) => class extends superclass {
     switch (true) {
       case this.isSlideMode():
         return (...args)=> null;
+      case this.isSelectRectangleMode():
+        return (...args)=> null;
       case this.isSelectMode():
         return isRight
           ? (x, y)=> this.select(x, y, false)
@@ -61,15 +63,19 @@ export let CanvasMixin = (superclass) => class extends superclass {
   detectDragAction(isRight = false) {
     switch (true) {
       case this.isSlideMode():
-        return (x, y, endX, endY)=> this.slide(x, y, endX, endY);
+        return (startX, startY, x, y, endX, endY)=> this.slide(x, y, endX, endY);
+      case this.isSelectRectangleMode():
+        return isRight
+          ? (startX, startY, x, y, endX, endY)=> this.selectRectangle(startX, startY, endX, endY, false)
+          : (startX, startY, x, y, endX, endY)=> this.selectRectangle(startX, startY, endX, endY);
       case this.isSelectMode():
         return isRight
-          ? (x, y, endX, endY)=> this.selectLine(x, y, endX, endY, false)
-          : (x, y, endX, endY)=> this.selectLine(x, y, endX, endY);
+          ? (startX, startY, x, y, endX, endY)=> this.selectLine(x, y, endX, endY, false)
+          : (startX, startY, x, y, endX, endY)=> this.selectLine(x, y, endX, endY);
       default:
         return isRight
-          ? (x, y, endX, endY)=> this.drawLine(x, y, endX, endY, this.rightColor)
-          : (x, y, endX, endY)=> this.drawLine(x, y, endX, endY, this.leftColor);
+          ? (startX, startY, x, y, endX, endY)=> this.drawLine(x, y, endX, endY, this.rightColor)
+          : (startX, startY, x, y, endX, endY)=> this.drawLine(x, y, endX, endY, this.leftColor);
     }
   }
 
@@ -79,6 +85,10 @@ export let CanvasMixin = (superclass) => class extends superclass {
 
   isSelectMode() {
     return this.state.keyControl.isDown('Shift')
+  }
+
+  isSelectRectangleMode() {
+    return this.state.keyControl.isDown('Shift') && this.state.keyControl.isDown('Control')
   }
 
   slide(x, y, endX, endY) {
@@ -91,6 +101,10 @@ export let CanvasMixin = (superclass) => class extends superclass {
 
   selectLine(x, y, endX, endY, add = true) {
     this.ie.setSelectionPixelToPixel(x, y, endX, endY, add, true);
+  }
+
+  selectRectangle(x, y, endX, endY, add = true) {
+    this.ie.setRectangleSelection(x, y, endX, endY, add, true);
   }
 
   draw(x, y, color) {

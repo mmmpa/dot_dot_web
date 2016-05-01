@@ -92,10 +92,10 @@ var CanvasComponent = (function (_super) {
         var move = function (e) {
             var _a = _this.mousePosition(e), x = _a.x, y = _a.y;
             if (isRight) {
-                _this.dispatch('canvas:drag:right', pre.x, pre.y, x, y);
+                _this.dispatch('canvas:drag:right', startX, startY, pre.x, pre.y, x, y);
             }
             else {
-                _this.dispatch('canvas:drag', pre.x, pre.y, x, y);
+                _this.dispatch('canvas:drag', startX, startY, pre.x, pre.y, x, y);
             }
             pre = { x: x, y: y };
         };
@@ -1082,8 +1082,20 @@ var EditorContext = (function (_super) {
         to('edit', 'floater:rise', function (e, floatingCallback) { return _this.riseFloater(e, floatingCallback); });
         to('edit', 'canvas:press', function (x, y) { return _this.pressCanvas(x, y); });
         to('edit', 'canvas:press:right', function (x, y) { return _this.pressCanvas(x, y, true); });
-        to('edit', 'canvas:drag', function (x, y, endX, endY) { return _this.dragCanvas(x, y, endX, endY); });
-        to('edit', 'canvas:drag:right', function (x, y, endX, endY) { return _this.dragCanvas(x, y, endX, endY, true); });
+        to('edit', 'canvas:drag', function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i - 0] = arguments[_i];
+            }
+            return _this.dragCanvas.apply(_this, args);
+        });
+        to('edit', 'canvas:drag:right', function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i - 0] = arguments[_i];
+            }
+            return _this.dragCanvas.apply(_this, args.concat([true]));
+        });
         to('edit', 'canvas:copy', function (x, y) { return _this.copyCanvas(); });
         to('edit', 'canvas:paste', function (x, y) { return _this.pasteCanvas(); });
         to('edit', 'canvas:cut', function (x, y) { return _this.cutCanvas(); });
@@ -1161,9 +1173,9 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
         if (isRight === void 0) { isRight = false; }
         this.detectPressAction(isRight)(x, y);
     };
-    class_1.prototype.dragCanvas = function (x, y, endX, endY, isRight) {
+    class_1.prototype.dragCanvas = function (startX, startY, x, y, endX, endY, isRight) {
         if (isRight === void 0) { isRight = false; }
-        this.detectDragAction(isRight)(x, y, endX, endY);
+        this.detectDragAction(isRight)(startX, startY, x, y, endX, endY);
     };
     class_1.prototype.copyCanvas = function () {
         this.ie.copy();
@@ -1196,6 +1208,14 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
                     }
                     return null;
                 };
+            case this.isSelectRectangleMode():
+                return function () {
+                    var args = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        args[_i - 0] = arguments[_i];
+                    }
+                    return null;
+                };
             case this.isSelectMode():
                 return isRight
                     ? function (x, y) { return _this.select(x, y, false); }
@@ -1211,15 +1231,19 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
         if (isRight === void 0) { isRight = false; }
         switch (true) {
             case this.isSlideMode():
-                return function (x, y, endX, endY) { return _this.slide(x, y, endX, endY); };
+                return function (startX, startY, x, y, endX, endY) { return _this.slide(x, y, endX, endY); };
+            case this.isSelectRectangleMode():
+                return isRight
+                    ? function (startX, startY, x, y, endX, endY) { return _this.selectRectangle(startX, startY, endX, endY, false); }
+                    : function (startX, startY, x, y, endX, endY) { return _this.selectRectangle(startX, startY, endX, endY); };
             case this.isSelectMode():
                 return isRight
-                    ? function (x, y, endX, endY) { return _this.selectLine(x, y, endX, endY, false); }
-                    : function (x, y, endX, endY) { return _this.selectLine(x, y, endX, endY); };
+                    ? function (startX, startY, x, y, endX, endY) { return _this.selectLine(x, y, endX, endY, false); }
+                    : function (startX, startY, x, y, endX, endY) { return _this.selectLine(x, y, endX, endY); };
             default:
                 return isRight
-                    ? function (x, y, endX, endY) { return _this.drawLine(x, y, endX, endY, _this.rightColor); }
-                    : function (x, y, endX, endY) { return _this.drawLine(x, y, endX, endY, _this.leftColor); };
+                    ? function (startX, startY, x, y, endX, endY) { return _this.drawLine(x, y, endX, endY, _this.rightColor); }
+                    : function (startX, startY, x, y, endX, endY) { return _this.drawLine(x, y, endX, endY, _this.leftColor); };
         }
     };
     class_1.prototype.isSlideMode = function () {
@@ -1227,6 +1251,9 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
     };
     class_1.prototype.isSelectMode = function () {
         return this.state.keyControl.isDown('Shift');
+    };
+    class_1.prototype.isSelectRectangleMode = function () {
+        return this.state.keyControl.isDown('Shift') && this.state.keyControl.isDown('Control');
     };
     class_1.prototype.slide = function (x, y, endX, endY) {
         this.ie.slide(endX - x, endY - y, true);
@@ -1238,6 +1265,10 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
     class_1.prototype.selectLine = function (x, y, endX, endY, add) {
         if (add === void 0) { add = true; }
         this.ie.setSelectionPixelToPixel(x, y, endX, endY, add, true);
+    };
+    class_1.prototype.selectRectangle = function (x, y, endX, endY, add) {
+        if (add === void 0) { add = true; }
+        this.ie.setRectangleSelection(x, y, endX, endY, add, true);
     };
     class_1.prototype.draw = function (x, y, color) {
         this.ie.setPixel(x, y, color.number, true);
@@ -2542,6 +2573,27 @@ exports.Selection = function (superclass) { return (function (_super) {
     };
     class_1.prototype.hideSelection = function () {
         this.selection.visible = false;
+        this.update();
+    };
+    class_1.prototype.normalizeStart = function (start, end) {
+        if (start < end) {
+            return { start: start, end: end };
+        }
+        else {
+            return { start: end, end: start };
+        }
+    };
+    class_1.prototype.setRectangleSelection = function (startX, startY, endX, endY) {
+        this.clearSelection();
+        var start = this.normalizePixel(startX, startY);
+        var end = this.normalizePixel(endX, endY);
+        var x = this.normalizeStart(start.x, end.x);
+        var y = this.normalizeStart(start.y, end.y);
+        for (var i = x.end; i >= x.start; i--) {
+            for (var ii = y.end; ii >= y.start; ii--) {
+                this.addSelection(i, ii, true);
+            }
+        }
         this.update();
     };
     class_1.prototype.setSelection = function (rawX, rawY, add, update) {

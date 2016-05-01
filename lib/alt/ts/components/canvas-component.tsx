@@ -33,7 +33,7 @@ export default class CanvasComponent extends Cell<P,{}> {
 
   componentWillReceiveProps(props) {
     let {width, height} = this.pickLayout(props);
-    if(this.state.width !== width || this.state.height !== height){
+    if (this.state.width !== width || this.state.height !== height) {
       this.setState({width, height});
       this.dispatch('component:canvas:resize', parseInt(width), parseInt(height));
     }
@@ -84,9 +84,9 @@ export default class CanvasComponent extends Cell<P,{}> {
     let move = (e:MouseEvent)=> {
       let {x, y} = this.mousePosition(e);
       if (isRight) {
-        this.dispatch('canvas:drag:right', pre.x, pre.y, x, y);
+        this.dispatch('canvas:drag:right', startX, startY, pre.x, pre.y, x, y);
       } else {
-        this.dispatch('canvas:drag', pre.x, pre.y, x, y);
+        this.dispatch('canvas:drag', startX, startY, pre.x, pre.y, x, y);
       }
       pre = {x, y}
     };

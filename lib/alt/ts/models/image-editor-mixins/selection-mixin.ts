@@ -55,9 +55,9 @@ export let Selection = (superclass) => class extends superclass {
   }
 
   checkSelected() {
-    if(this.selectedCount !== 0){
+    if (this.selectedCount !== 0) {
       this.stateSelected();
-    }else{
+    } else {
       this.stateDrawing();
     }
   }
@@ -69,6 +69,31 @@ export let Selection = (superclass) => class extends superclass {
 
   hideSelection() {
     this.selection.visible = false;
+    this.update();
+  }
+
+  normalizeStart(start, end) {
+    if (start < end) {
+      return {start, end}
+    } else {
+      return {start: end, end: start}
+    }
+  }
+
+  setRectangleSelection(startX, startY, endX, endY) {
+    this.clearSelection();
+    let start = this.normalizePixel(startX, startY);
+    let end = this.normalizePixel(endX, endY);
+
+    let x = this.normalizeStart(start.x, end.x);
+    let y = this.normalizeStart(start.y, end.y);
+
+    for (let i = x.end; i >= x.start; i--) {
+      for (let ii = y.end; ii >= y.start; ii--) {
+        this.addSelection(i, ii, true)
+      }
+    }
+
     this.update();
   }
 
