@@ -1,11 +1,28 @@
 import ActionHistory from "./action-history";
+import IDMan from "../libs/id-man";
 declare const createjs;
+import {mix} from "../libs/mix"
+import {Drawing} from "./image-editor-mixins/drawer-mixin"
+import {Selection} from "./image-editor-mixins/selection-mixin"
+import {Display} from "./image-editor-mixins/display-mixin"
+import {Editor} from "./image-editor-mixins/editor-mixin"
+import {State} from "./image-editor-mixins/state-mixin"
 
-export default class ImageEditor {
+export enum ImageEditorState{
+  Drawing,
+  Selected,
+  Floating
+}
+
+export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Display, Editor, State) {
   static id:number = 0;
   static store:ImageEditor[] = [];
 
-  public id:number;
+  static floater:any;
+  static floaterBitmap:any;
+
+  public state:ImageEditorState
+
   private _scale:number = 1;
   private _grid:boolean = false;
   private _gridElement:any = null;
@@ -15,36 +32,28 @@ export default class ImageEditor {
   private container:any;
   private bg:any;
   private canvas:any;
+  private canvasContainer:any;
 
   private selectedCount:number = 0;
   private selection:any;
   private selectionBitmap:any;
 
-  private floater:any;
-  private floaterBitmap:any;
-
-  private blankBitmap:any;
-  private blank:any;
-
   private bitmapData:any;
-  private img;
+
+  private floater;
 
   public mode:string;
 
   private selectionColor = 0x4400ff00;
-
-  static genId() {
-    return this.id++;
-  }
 
   static find(id) {
     return this.store[id];
   }
 
   constructor(public stage, public width, public height, imageElement?) {
-    this.id = ImageEditor.genId();
 
     this.container = new createjs.Container();
+    this.canvasContainer = new createjs.Container();
 
     this.bg = new createjs.Bitmap(new createjs.BitmapData(null, stage.canvas.width, stage.canvas.height, 0x01000000).canvas);
 
@@ -57,24 +66,19 @@ export default class ImageEditor {
     this.width = this.bitmapData.width;
     this.height = this.bitmapData.height;
 
-    this.blankBitmap = new createjs.BitmapData(null, this.width, this.height, 0x11ff0000);
-    this.blank = new createjs.Bitmap(this.blankBitmap.canvas);
     this.selectionBitmap = new createjs.BitmapData(null, this.width, this.height);
     this.selection = new createjs.Bitmap(this.selectionBitmap.canvas);
 
-    this.img = new Image;
-    this.img.src = this.blankBitmap.canvas.toDataURL();
-
-
     this.canvas = new createjs.Bitmap(this.bitmapData.canvas);
 
-    this.container.addChild(this.canvas);
+    this.canvasContainer.addChild(this.canvas);
+    this.container.addChild(this.canvasContainer);
     this.container.addChild(this.selection);
-
     stage.addChild(this.bg);
     stage.addChild(this.container);
     this.update();
 
+    this.stateDrawing();
   }
 
   close() {
@@ -95,17 +99,6 @@ export default class ImageEditor {
     return this.bitmapData.canvas.toDataURL("image/png");
   }
 
-  slide(x, y, update?) {
-    this.container.x += x;
-    this.container.y += y;
-    update && this.update();
-  }
-
-  posit({x, y}) {
-    this.container.x = x;
-    this.container.y = y;
-  }
-
   get position() {
     return {
       x: this.container.x,
@@ -113,141 +106,10 @@ export default class ImageEditor {
     }
   }
 
-  floatSelection() {
-    this.floaterBitmap = new createjs.BitmapData(null, this.width, this.height);
-    this.floater = new createjs.Bitmap(this.floaterBitmap.canvas);
-  }
-
-  doSelected(callback):any[] {
-    if (!this.isSelected()) {
-      return;
-    }
-
-    let result = []
-    let raw = this.selectionBitmap.context.getImageData(0, 0, this.width, this.height).data
-    for (let i = raw.length - 1; i >= 0; i -= 4) {
-      if (raw[i] !== 0) {
-        let position = (i - 3) / 4;
-        let x = (position % this.width);
-        let y = position / this.width >> 0;
-
-        result.push(callback(x, y, color))
-      }
-    }
-    return result;
-  }
-
-  del() {
-    let result = this.doSelected((x, y, color)=> this.draw(x, y, 0));
-    console.log(result)
-    this.update();
-  }
-
-  copy() {
-    if (!this.isSelected()) {
-      return;
-    }
-    this.bitmapData.copyPixels(this.blankBitmap, this.bitmapData.rect, {x: 0, y: 0}, this.selectionBitmap, {x: 0, y: 0}, true);
-    this.bitmapData.updateImageData();
-    this.update();
-  }
-
-  fixFloater() {
-    if (!this.isFloated()) {
-      return;
-    }
-  }
-
-  isFloated() {
-    return !!this.floater;
-  }
-
   writeHistory(store) {
     return (...args)=> {
       store.historyGroup = args;
     }
-  }
-
-  switchGrid(bol:boolean) {
-    if (this._grid === bol) {
-      return;
-    }
-
-    this._grid = bol;
-    this.drawGrid();
-    this.stage.update();
-  }
-
-  drawGrid() {
-    this.container.removeChild(this._gridElement);
-
-    if (!this._grid) {
-      return;
-    }
-
-    let scale = this._scale;
-
-    if (scale <= 2) {
-      return;
-    }
-
-    if (this._gridElement = this._gridStore[scale]) {
-      this.container.addChild(this._gridElement);
-      this.stage.update();
-      return;
-    }
-
-    let {width, height} = this.bitmapData;
-
-    this._gridElement = new createjs.Shape();
-    let g = this._gridElement.graphics;
-    g.setStrokeStyle(0);
-    g.beginStroke('rgba(0,0,0,0.1)');
-    this._gridStore[scale] = this._gridElement;
-
-    _.times(height + 1, (h)=> {
-      let y = h * scale - 0.5
-      g.moveTo(-0.5, y);
-      g.lineTo(width * scale - 0.5, y);
-    });
-
-    _.times(width + 1, (w)=> {
-      let x = w * scale - 0.5
-      g.moveTo(x, -0.5);
-      g.lineTo(x, height * scale - 0.5);
-    });
-    this.container.addChild(this._gridElement);
-    this.stage.update();
-  }
-
-  center(displayWidth, displayHeight) {
-    let {width, height} = this;
-    width *= this._scale;
-    height *= this._scale;
-    this.container.x = (displayWidth - width) / 2;
-    this.container.y = (displayHeight - height) / 2;
-    this.update();
-  }
-
-  scale(n:number, baseX, baseY) {
-    if (baseX && baseY) {
-      let prePosition = this.normalizePixel(baseX, baseY);
-      this._scale = n;
-      let nextPosition = this.normalizePixel(baseX, baseY);
-
-      let x = prePosition.x - nextPosition.x;
-      let y = prePosition.y - nextPosition.y;
-
-      this.container.x -= x * this._scale;
-      this.container.y -= y * this._scale;
-    } else {
-      this._scale = n;
-    }
-
-    this.canvas.scaleX = this.canvas.scaleY = this._scale;
-    this.selection.scaleX = this.selection.scaleY = this._scale;
-    this.drawGrid();
-    this.stage.update();
   }
 
   update() {
@@ -263,87 +125,25 @@ export default class ImageEditor {
     return {x, y};
   }
 
-  isCellSelected(x, y) {
-    return this.selectionBitmap.getPixel32(x, y) !== 0;
+  static clearClip() {
+    this.floaterBitmap && this.floaterBitmap.dispose();
+    this.floaterBitmap = null;
   }
 
-  isSelected() {
-    return this.selectedCount !== 0;
+  static prepareClip(w, h) {
+    this.floaterBitmap && this.floaterBitmap.dispose();
+    this.floaterBitmap = new createjs.BitmapData(null, w, h);
+    return this.floaterBitmap;
   }
 
-  addSelection(x, y, add = true, update?:boolean) {
-    if (add) {
-      if (!this.isCellSelected(x, y)) {
-        this.selectedCount++;
-        this.selectionBitmap.setPixel32(x, y, this.selectionColor);
-      }
-    } else {
-      if (this.isCellSelected(x, y)) {
-        this.selectedCount--;
-        this.selectionBitmap.setPixel32(x, y, 0);
-      }
+  static prepareFloater() {
+    if (!this.floaterBitmap) {
+      return null;
     }
-
-    if (update) {
-      this.update();
-    }
-  }
-
-  draw(x, y, color, update?:boolean) {
-    if (this.isSelected()) {
-      if (!this.isCellSelected(x, y)) {
-        return;
-      }
-    }
-    let old = this.bitmapData.getPixel32(x, y);
-    this.bitmapData.setPixel32(x, y, color);
-    if (update) {
-      this.update();
-    }
-    return new ActionHistory('setPixel', {x, y, color: old}, {x, y, color});
-  }
-
-  showSelection() {
-    this.selection.visible = true;
-    this.update();
-  }
-
-  hideSelection() {
-    this.selection.visible = false;
-    this.update();
-  }
-
-  setSelection(rawX, rawY, add = true, update?:boolean) {
-    let {x, y} = this.normalizePixel(rawX, rawY);
-
-    return this.addSelection(x, y, add, update)
-  }
-
-  setSelectionPixelToPixel(rawX, rawY, endRawX, endRawY, add = true, update?:boolean) {
-    let {x, y} = this.normalizePixel(rawX, rawY);
-    let end = this.normalizePixel(endRawX, endRawY);
-
-    ImageEditor.pToP(x, y, end.x, end.y).map(({x, y})=> this.addSelection(x, y, add));
-
-    update && this.update();
-  }
-
-  setPixel(rawX, rawY, color, update?:boolean) {
-    let {x, y} = this.normalizePixel(rawX, rawY);
-
-    return this.draw(x, y, color, update)
-  }
-
-  setPixelToPixel(rawX, rawY, endRawX, endRawY, color, update?:boolean) {
-    let {x, y} = this.normalizePixel(rawX, rawY);
-    let end = this.normalizePixel(endRawX, endRawY);
-
-    let points = ImageEditor.pToP(x, y, end.x, end.y);
-    let histories = points.map(({x, y})=> this.draw(x, y, color));
-
-    update && this.update();
-
-    return histories;
+    this.floaterBitmap.updateContext();
+    this.floater = new createjs.Bitmap(this.floaterBitmap.canvas);
+    this.floater.shadow = new createjs.Shadow("#ff0000", 2, 2, 0);
+    return this.floater;
   }
 
   static create(stage, w, h, imageElement?) {

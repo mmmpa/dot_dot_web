@@ -73,17 +73,23 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     this.commands['onControlS'] = ()=> this.dispatch('file:save');
     this.commands['onControlN'] = ()=> this.dispatch('file:new');
     this.commands['onControlO'] = ()=> this.dispatch('file:open');
+
     this.commands['onControlZ'] = ()=> this.dispatch('work:undo');
     this.commands['onControlY'] = ()=> this.dispatch('work:redo');
     this.commands['onControlShiftZ'] = ()=> this.dispatch('work:redo');
-    this.commands['onControlArrowUp'] = ()=> this.dispatch('canvas:draw:move', 1, 0, 0, 0);
-    this.commands['onControlArrowRight'] = ()=> this.dispatch('canvas:draw:move', 0, 1, 0, 0);
-    this.commands['onControlArrowDown'] = ()=> this.dispatch('canvas:draw:move', 0, 0, 1, 0);
-    this.commands['onControlArrowLeft'] = ()=> this.dispatch('canvas:draw:move', 0, 0, 0, 1);
-    this.commands['onControlShiftArrowUp'] = ()=> this.dispatch('canvas:size', -1, 0, 0, 0);
-    this.commands['onControlShiftArrowRight'] = ()=> this.dispatch('canvas:size', 0, -1, 0, 0);
-    this.commands['onControlShiftArrowDown'] = ()=> this.dispatch('canvas:size', 0, 0, -1, 0);
-    this.commands['onControlShiftArrowLeft'] = ()=> this.dispatch('canvas:size', 0, 0, 0, -1);
+
+    this.commands['onControlC'] = ()=> this.dispatch('canvas:copy');
+    this.commands['onControlV'] = ()=> this.dispatch('canvas:paste');
+    this.commands['onControlX'] = ()=> this.dispatch('canvas:cut');
+
+    this.commands['onArrowUp'] = ()=> this.dispatch('canvas:move', 1, 0, 0, 0);
+    this.commands['onArrowRight'] = ()=> this.dispatch('canvas:move', 0, 1, 0, 0);
+    this.commands['onArrowDown'] = ()=> this.dispatch('canvas:move', 0, 0, 1, 0);
+    this.commands['onArrowLeft'] = ()=> this.dispatch('canvas:move', 0, 0, 0, 1);
+    this.commands['onControlArrowUp'] = ()=> this.dispatch('canvas:move', 1, 0, 0, 0);
+    this.commands['onControlArrowRight'] = ()=> this.dispatch('canvas:move', 0, 1, 0, 0);
+    this.commands['onControlArrowDown'] = ()=> this.dispatch('canvas:move', 0, 0, 1, 0);
+    this.commands['onControlArrowLeft'] = ()=> this.dispatch('canvas:move', 0, 0, 0, 1);
 
     this.keyControl.hook = (name, e:JQueryKeyEventObject)=> {
       this.call(name, e)()
@@ -175,6 +181,9 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     to('edit', 'canvas:press:right', (x, y)=> this.pressCanvas(x, y, true));
     to('edit', 'canvas:drag', (x, y, endX, endY)=> this.dragCanvas(x, y, endX, endY));
     to('edit', 'canvas:drag:right', (x, y, endX, endY)=> this.dragCanvas(x, y, endX, endY, true));
+    to('edit', 'canvas:copy', (x, y)=> this.copyCanvas());
+    to('edit', 'canvas:paste', (x, y)=> this.pasteCanvas());
+    to('edit', 'canvas:cut', (x, y)=> this.cutCanvas());
     to('edit', 'canvas:select:hidden', (hidden)=> this.hideSelection(hidden));
     to('edit', 'canvas:wheel:up', (x, y)=> this.scaleStep(+1, x, y));
     to('edit', 'canvas:wheel:down', (x, y)=> this.scaleStep(-1, x, y));
@@ -183,6 +192,7 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     to('edit', 'canvas:size', ()=> this.resizeCanvasFromModal(<CanvasResizeComponent/>));
     to('edit', 'canvas:size:complete', (top, right, bottom, left)=> this.resizeCanvas(top, right, bottom, left));
     to('edit', 'canvas:delete', (x, y)=> this.delSelection());
+    to('edit', 'canvas:move', (...args)=> this.moveCanvas(...args));
 
     to('edit', 'frame:select', (n)=> this.selectFrame(n));
     to('edit', 'frame:next', ()=> this.selectNextFrame());

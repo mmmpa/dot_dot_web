@@ -19,6 +19,30 @@ export let CanvasMixin = (superclass) => class extends superclass {
     this.detectDragAction(isRight)(x, y, endX, endY);
   }
 
+  copyCanvas() {
+    this.ie.copy();
+    this.dispatch('frame:update');
+  }
+  
+  cutCanvas() {
+    this.ie.cut();
+    this.dispatch('frame:update');
+  }
+
+  pasteCanvas() {
+    this.ie.paste();
+    this.dispatch('frame:update');
+  }
+
+  delSelection() {
+    this.ie.del();
+    this.dispatch('frame:update');
+  }
+
+  moveCanvas(t,r,b,l){
+    this.ie.move(t,r,b,l);
+  }
+
   detectPressAction(isRight = false) {
     switch (true) {
       case this.isSlideMode():
@@ -55,10 +79,6 @@ export let CanvasMixin = (superclass) => class extends superclass {
 
   isSelectMode() {
     return this.state.keyControl.isDown('Shift')
-  }
-
-  delSelection(){
-    this.ie.del()
   }
 
   slide(x, y, endX, endY) {
