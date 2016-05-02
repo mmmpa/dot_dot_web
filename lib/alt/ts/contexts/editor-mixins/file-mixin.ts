@@ -4,13 +4,13 @@ import LayeredImage from "../../models/layered-image";
 export let FileMixin = (superclass) => class extends superclass {
   get fileName() {
     let {fileName, layerCount, frames} = this.state;
-    return `${fileName}_${new Date().getTime()}.${layerCount}.${frames.length}.png`
+    return `${fileName}_${new Date().getTime()}.${frames[0].layerCount}.${frames.length}.png`
   }
 
   get dataURL() {
     let {canvasWidth, canvasHeight, frames} = this.state;
-    let images = frames.map((frame)=> frame.image(0));
-    return this.gen.join(images, canvasWidth, canvasHeight);
+    let images = frames.map((frame)=> frame.joinedImageElement);
+    return this.gen.join(images, canvasWidth, canvasHeight * frames[0].layerCount);
   }
 
   parseFileName(fileName) {

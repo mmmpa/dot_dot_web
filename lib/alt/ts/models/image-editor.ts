@@ -7,6 +7,7 @@ import {Selection} from "./image-editor-mixins/selection-mixin"
 import {Display} from "./image-editor-mixins/display-mixin"
 import {Editor} from "./image-editor-mixins/editor-mixin"
 import {State} from "./image-editor-mixins/state-mixin"
+import LayeredImage from "./layered-image";
 
 export enum ImageEditorState{
   Drawing,
@@ -50,7 +51,7 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
     return this.store[id];
   }
 
-  constructor(public stage, public width, public height, imageElement?) {
+  constructor(public stage, public width, public height, imageElement?, overlayElement?, underlayElement?) {
 
     this.container = new createjs.Container();
     this.canvasContainer = new createjs.Container();
@@ -63,6 +64,9 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
       this.bitmapData = new createjs.BitmapData(null, width, height, 0xffffffff);
     }
 
+    let overlay = overlayElement ? new createjs.Bitmap(new createjs.BitmapData(overlayElement).canvas) : null;
+    let underlay = underlayElement ? new createjs.Bitmap(new createjs.BitmapData(underlayElement).canvas) : null;
+
     this.width = this.bitmapData.width;
     this.height = this.bitmapData.height;
 
@@ -71,7 +75,9 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
 
     this.canvas = new createjs.Bitmap(this.bitmapData.canvas);
 
+    underlay && this.canvasContainer.addChild(underlay);
     this.canvasContainer.addChild(this.canvas);
+    overlay && this.canvasContainer.addChild(overlay);
     this.container.addChild(this.canvasContainer);
     this.container.addChild(this.selection);
     stage.addChild(this.bg);
@@ -82,6 +88,7 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
   }
 
   close() {
+    this.fixFloater();
     this.stage.clear();
     this.stage.removeAllChildren();
   }
@@ -148,6 +155,10 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
 
   static create(stage, w, h, imageElement?) {
     return new ImageEditor(stage, w, h, imageElement);
+  }
+
+  static createLayered(stage, layeredImage:LayeredImage) {
+    return new ImageEditor(stage, layeredImage.width, layeredImage.height, layeredImage.selectedElement, layeredImage.overlayElement, layeredImage.underlayElement);
   }
 
   static pToP(x, y, endX, endY) {

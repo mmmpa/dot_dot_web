@@ -18,7 +18,7 @@ export default class ARGB {
   }
 
   get number() {
-    return (this.a << 24) + (this.r << 16) + (this.g << 8) + this.b;
+    return ((this.a << 24) + (this.r << 16) + (this.g << 8) + this.b) >>> 0;
   }
 
   get hex() {

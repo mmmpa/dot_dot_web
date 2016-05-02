@@ -240,17 +240,30 @@ body
   height: $icon-button-size
   overflow: hidden
   line-height: 30px
+  white-space: nowrap
   padding: 0
-
+  i.fa
+    margin: 0 -2px
 .tool-selector
   li
     display: inline-block
 
 .frame-selector
+  .controller
+    position: fixed
+    margin: -5px 0 0 0
+    left: 0
+    width: 80px
+  .frames
+    padding-left: 80px
+    box-sizing: border-box
   .frame-cell
     display: inline-block
     border: 1px solid #ccc
-    margin-right: 1px
+    &.selected
+      border: 1px solid #000
+  .layer-cell
+    border: 1px solid #ccc
     background: url("/img/stripe.png")
     line-height: 1px
     img

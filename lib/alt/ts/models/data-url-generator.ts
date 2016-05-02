@@ -23,12 +23,12 @@ export default class DataURLGenerator {
     let offsetX = left;
     let offsetY = top;
 
-    if(offsetX < 0){
+    if (offsetX < 0) {
       trimX = -offsetX;
       offsetX = 0;
     }
 
-    if(offsetY < 0){
+    if (offsetY < 0) {
       trimY = -offsetY;
       offsetY = 0;
     }
@@ -45,7 +45,7 @@ export default class DataURLGenerator {
     this.canvas.width = w;
     this.canvas.height = h;
     this.context.clearRect(0, 0, w, h);
-    images.forEach((image)=>{
+    images.reverse().forEach((image)=> {
       this.context.drawImage(image, 0, 0, w, h, 0, 0, w, h);
     });
     return this.canvas.toDataURL();
@@ -73,4 +73,24 @@ export default class DataURLGenerator {
     });
     return this.canvas.toDataURL();
   }
+
+  joinFromImageElements(images:HTMLImageElement[], baseWidth, baseHeight, vertical:boolean = false) {
+    let {length} = images
+    if (vertical) {
+      this.canvas.width = baseWidth;
+      this.canvas.height = baseHeight * length;
+      images.forEach((image, i)=> {
+        this.context.drawImage(image, 0, 0, baseWidth, baseHeight, 0, baseHeight * i, baseWidth, baseHeight);
+      });
+    } else {
+      this.canvas.width = baseWidth * length;
+      this.canvas.height = baseHeight;
+      images.forEach((image, i)=> {
+        this.context.drawImage(image, 0, 0, baseWidth, baseHeight, baseWidth * i, 0, baseWidth, baseHeight);
+      });
+    }
+
+    return this.canvas.toDataURL();
+  }
+
 }

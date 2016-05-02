@@ -68,9 +68,11 @@ export let Editor = (superclass) => class extends superclass {
     this.stateDrawing();
     this.canvasContainer.removeChild(this.floater);
     this.floater = null;
+    this.bitmapData.updateContext();
   }
 
   move(t, r, b, l) {
+    console.log(this.isFloating)
     if (!this.isFloating) {
       return;
     }

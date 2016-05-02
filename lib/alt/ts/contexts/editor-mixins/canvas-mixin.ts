@@ -23,7 +23,7 @@ export let CanvasMixin = (superclass) => class extends superclass {
     this.ie.copy();
     this.dispatch('frame:update');
   }
-  
+
   cutCanvas() {
     this.ie.cut();
     this.dispatch('frame:update');
@@ -39,8 +39,8 @@ export let CanvasMixin = (superclass) => class extends superclass {
     this.dispatch('frame:update');
   }
 
-  moveCanvas(t,r,b,l){
-    this.ie.move(t,r,b,l);
+  moveCanvas(t, r, b, l) {
+    this.ie.move(t, r, b, l);
   }
 
   detectPressAction(isRight = false) {
@@ -53,6 +53,10 @@ export let CanvasMixin = (superclass) => class extends superclass {
         return isRight
           ? (x, y)=> this.select(x, y, false)
           : (x, y)=> this.select(x, y);
+      case this.isFillMode():
+        return isRight
+          ? (x, y)=> this.fill(x, y, this.rightColor)
+          : (x, y)=> this.fill(x, y, this.leftColor);
       default:
         return isRight
           ? (x, y)=> this.draw(x, y, this.rightColor)
@@ -79,6 +83,10 @@ export let CanvasMixin = (superclass) => class extends superclass {
     }
   }
 
+  isFillMode() {
+    return this.state.keyControl.isDown('KeyF')
+  }
+
   isSlideMode() {
     return this.state.keyControl.isDown('Space')
   }
@@ -97,6 +105,11 @@ export let CanvasMixin = (superclass) => class extends superclass {
 
   select(x, y, add = true) {
     this.ie.setSelection(x, y, add, true);
+  }
+
+  fill(x, y, color) {
+    this.ie.fill(x, y, color.number, true);
+    this.dispatch('frame:update');
   }
 
   selectLine(x, y, endX, endY, add = true) {

@@ -20,7 +20,6 @@ import {GradationMixin} from "./editor-mixins/gradation-mixin"
 import {CanvasMixin} from "./editor-mixins/canvas-mixin"
 import {FloaterMixin} from "./editor-mixins/floater-mixin"
 import {FrameMixin} from "./editor-mixins/frame-mixin"
-import {LayerMixin} from "./editor-mixins/layer-mixin"
 
 interface P {
 }
@@ -29,7 +28,7 @@ interface S {
 }
 
 
-export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixin, GradationMixin, CanvasMixin, FloaterMixin, FrameMixin, LayerMixin) {
+export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixin, GradationMixin, CanvasMixin, FloaterMixin, FrameMixin) {
   private version:number = 1;
   private stage:any;
   private ie:ImageEditor;
@@ -198,7 +197,7 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     to('edit', 'layer:add', ()=> this.addLayer());
     to('edit', 'layer:remove', ()=> this.removeLayer());
 
-    to('edit', 'frame:select', (n)=> this.selectFrame(n));
+    to('edit', 'frame:select', (...args)=> this.selectFrame(...args));
     to('edit', 'frame:next', ()=> this.selectNextFrame());
     to('edit', 'frame:previous', ()=> this.selectPreviousFrame());
     to('edit', 'frame:add', ()=> this.addFrame());
