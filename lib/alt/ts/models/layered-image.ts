@@ -10,7 +10,8 @@ export default class LayeredImage extends IDMan {
   private underlay:DataURL;
   private locked:boolean = false;
   private storedCombined:DataURL;
-  private selectedIndex:number = 0;
+  public selectedIndex:number = 0;
+  public dataURLs:DataURL[];
 
   constructor(public width, public height, public dataURLs:DataURL[], public version = 0) {
     super();
@@ -57,9 +58,17 @@ export default class LayeredImage extends IDMan {
     this.locked = false;
   }
 
-  update(index:number, dataURL) {
+  update(index:number, dataURL:DataURL) {
     this.dataURLs[index] = dataURL;
     this.version++;
+  }
+
+  get activeUpdater() {
+    let active = this.dataURLs[this.selectedIndex];
+    return (dataURL:DataURL)=>{
+      active.update(dataURL);
+      this.version++;
+    }
   }
 
   scale(n:number = 4) {
@@ -76,10 +85,10 @@ export default class LayeredImage extends IDMan {
     return this.combine();
   }
 
-  get layerCount():number{
+  get layerCount():number {
     return this.dataURLs.length;
   }
-  
+
   get selectedElement() {
     return this.genImage(this.raw(this.selectedIndex))
   }
@@ -91,38 +100,38 @@ export default class LayeredImage extends IDMan {
   get underlayElement() {
     return this.underlay ? this.genImage(this.underlay) : null;
   }
-  
-  get joinedDataURL():DataURL{
+
+  get joinedDataURL():DataURL {
     return gen.joinFromImageElements(this.imageElements, this.width, this.height, true)
   }
-  
-  get joinedImageElement():HTMLImageElement{
+
+  get joinedImageElement():HTMLImageElement {
     return this.genImage(this.joinedDataURL)
   }
-  
-  get imageElements():HTMLImageElement[]{
+
+  get imageElements():HTMLImageElement[] {
     return this.dataURLs.map((d)=> this.genImage(d));
   }
 
-  combine() {
+  combine():DataURL {
     return gen.combineImages(this.dataURLs.map((dataURL)=> this.genImage(dataURL)), this.width, this.height);
   }
 
   genImage(dataURL:DataURL):HTMLImageElement {
     let element = document.createElement('img');
-    element.setAttribute('src', dataURL as string);
+    element.setAttribute('src', dataURL.data);
     return element;
   }
 
   clone() {
-    return new LayeredImage(this.width, this.height, this.dataURLs.concat());
+    return new LayeredImage(this.width, this.height, this.dataURLs.map((d)=> new DataURL(d.data)));
   }
 
   image(index:number):HTMLImageElement {
     return this.genImage(this.raw(index));
   }
 
-  raw(index:number):string {
-    return this.dataURLs[index] as string;
+  raw(index:number):DataURL {
+    return this.dataURLs[index];
   }
 }

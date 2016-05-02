@@ -1,3 +1,4 @@
+import DataURL from "../../test/src/models/data-url";
 export default class DataURLGenerator {
   public img:HTMLImageElement;
   public canvas:HTMLCanvasElement;
@@ -9,12 +10,12 @@ export default class DataURLGenerator {
     this.context = this.canvas.getContext("2d");
   }
 
-  blankDataUrl(w, h) {
+  blankDataUrl(w, h):DataURL {
     this.canvas.width = w;
     this.canvas.height = h;
     this.context.clearRect(0, 0, w, h);
 
-    return this.canvas.toDataURL();
+    return new DataURL(this.canvas.toDataURL());
   }
 
   fromImage(image, w, h, top = 0, left = 0) {
@@ -48,7 +49,7 @@ export default class DataURLGenerator {
     images.reverse().forEach((image)=> {
       this.context.drawImage(image, 0, 0, w, h, 0, 0, w, h);
     });
-    return this.canvas.toDataURL();
+    return new DataURL(this.canvas.toDataURL());
   }
 
 
@@ -90,7 +91,7 @@ export default class DataURLGenerator {
       });
     }
 
-    return this.canvas.toDataURL();
+    return new DataURL(this.canvas.toDataURL());
   }
 
 }

@@ -112,7 +112,7 @@ class FrameSelectorCellComponent extends React.Component<{scale:number, image:La
     let style = image.scale(this.props.scale);
 
     return <div className={this.classes}>
-      <div className="layer-cell first"><img src={image.combined} style={style} onClick={()=> onClick()}/></div>
+      <div className="layer-cell first"><img src={image.combined.data} style={style} onClick={()=> onClick()}/></div>
       {this.writeLayers()}
     </div>
   }
@@ -128,7 +128,6 @@ class LayerSelectorCellComponent extends React.Component<{dataURL:DataURL, selec
 
   render() {
     let {dataURL, onClick, layerNumber, style} = this.props;
-
-    return <div className={this.classes}><img src={dataURL} style={style} onClick={()=> onClick(layerNumber)}/></div>
+    return <div className={this.classes}><img src={dataURL.data} style={style} onClick={()=> onClick(layerNumber)}/></div>
   }
 }

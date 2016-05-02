@@ -5,6 +5,10 @@ export let FrameMixin = (superclass) => class extends superclass {
   replaceIeByLayeredImage(layeredImage:LayeredImage) {
     this.ie && this.ie.close();
     this.ie = ImageEditor.createLayered(this.stage, layeredImage);
+    let updateActive = layeredImage.activeUpdater;
+    this.ie.onChange = (ie:ImageEditor)=> {
+      updateActive(ie.exportPng());
+    };
     this.scale();
     this.ie.switchGrid(this.state.grid);
   }
@@ -22,13 +26,6 @@ export let FrameMixin = (superclass) => class extends superclass {
       return;
     }
 
-    if(this.ie && (this.state.selectedFrameNumber !== selectedFrameNumber || this.state.selectedLayerNumber !== selectedLayerNumber )){
-      let {frames, selectedFrameNumber, selectedLayerNumber} = this.state;
-      this.ie.fixFloater();
-
-      frames[selectedFrameNumber].update(selectedLayerNumber, this.ie.exportPng());
-    }
-
     frame.select(selectedLayerNumber);
     let ie = this.replaceIeByLayeredImage(frame);
     this.setState({ie, selectedFrameNumber, selectedLayerNumber});
@@ -42,7 +39,6 @@ export let FrameMixin = (superclass) => class extends superclass {
 
   updateFrame() {
     let {frames, selectedFrameNumber, selectedLayerNumber} = this.state;
-    frames[selectedFrameNumber].update(selectedLayerNumber, this.ie.exportPng());
 
     this.setState({frames});
   }
@@ -84,13 +80,13 @@ export let FrameMixin = (superclass) => class extends superclass {
     $(window).bind('mousedown', stop);
   }
 
-  addLayer(){
+  addLayer() {
     let {frames, selectedLayerNumber, selectedFrameNumber} = this.state;
     frames.forEach((layeredImage)=>layeredImage.add(selectedLayerNumber));
     this.dispatch('frame:select', selectedFrameNumber, selectedLayerNumber);
   }
 
-  removeLayer(){
+  removeLayer() {
     let {frames, selectedLayerNumber, selectedFrameNumber} = this.state;
     frames.forEach((layeredImage)=>layeredImage.remove(selectedLayerNumber))
     this.dispatch('frame:select', selectedFrameNumber, selectedLayerNumber);

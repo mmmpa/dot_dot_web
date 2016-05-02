@@ -8,6 +8,7 @@ import {Display} from "./image-editor-mixins/display-mixin"
 import {Editor} from "./image-editor-mixins/editor-mixin"
 import {State} from "./image-editor-mixins/state-mixin"
 import LayeredImage from "./layered-image";
+import DataURL from "../../test/src/models/data-url";
 
 export enum ImageEditorState{
   Drawing,
@@ -46,6 +47,8 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
   public mode:string;
 
   private selectionColor = 0x4400ff00;
+
+  public onChange:(id:ImageEditor)=>void;
 
   static find(id) {
     return this.store[id];
@@ -89,6 +92,7 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
 
   close() {
     this.fixFloater();
+    this.onChange && this.onChange(this);
     this.stage.clear();
     this.stage.removeAllChildren();
   }
@@ -103,7 +107,7 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
   }
 
   exportPng() {
-    return this.bitmapData.canvas.toDataURL("image/png");
+    return new DataURL(this.bitmapData.canvas.toDataURL("image/png"));
   }
 
   get position() {
@@ -123,6 +127,7 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
     this.selectionBitmap.updateContext();
     this.bitmapData.updateContext();
     this.stage.update();
+    this.onChange && this.onChange(this);
   }
 
   normalizePixel(rawX, rawY) {
