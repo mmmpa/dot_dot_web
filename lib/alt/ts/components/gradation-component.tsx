@@ -6,6 +6,7 @@ import ColorSet from "../models/color-set";
 import ColorCellSet from "./color-cell-set";
 import {FloatingColorPaletteMode} from "../constants/constants";
 import GradationColor from "../models/gradation-color";
+import BlurButton from "./blur-button";
 
 interface P {
   gradations:ColorSet[]
@@ -17,18 +18,18 @@ export default class GradationSelectorComponent extends Cell<P,{}> {
     return this.props.gradations.map((colorSet)=> {
       return <div className="gradation-line" key={colorSet.id}>
         <div className="button-container">
-          <button className="change icon-button" onClick={(e)=> this.dispatch('floater:rise', e,(color)=> this.dispatch('gradation:change:color1', colorSet, color))}>
+          <BlurButton className="change icon-button" onClick={(e)=> this.dispatch('floater:rise', e,(color)=> this.dispatch('gradation:change:color1', colorSet, color))}>
             <Fa icon="eyedropper"/>
-          </button>
+          </BlurButton>
         </div>
         <div className="color-container"><ColorCellSet {...{colorSet, onClick}}/></div>
         <div className="button-container">
-          <button className="change icon-button" onClick={(e)=> this.dispatch('floater:rise', e,(color)=> this.dispatch('gradation:change:color2', colorSet, color))}>
+          <BlurButton className="change icon-button" onClick={(e)=> this.dispatch('floater:rise', e,(color)=> this.dispatch('gradation:change:color2', colorSet, color))}>
             <Fa icon="eyedropper"/>
-          </button>
-          <button className="delete icon-button" onClick={(e)=> this.dispatch('gradation:delete', colorSet)}>
+          </BlurButton>
+          <BlurButton className="delete icon-button" onClick={(e)=> this.dispatch('gradation:delete', colorSet)}>
             <Fa icon="trash"/>
-          </button>
+          </BlurButton>
         </div>
       </div>
     })
@@ -42,9 +43,9 @@ export default class GradationSelectorComponent extends Cell<P,{}> {
       <section className="cell-body">
         {this.writeGradations()}
         <div className="controller">
-          <button className="add icon-button" onClick={()=> this.dispatch('gradation:add', color1, color2)}>
+          <BlurButton className="add icon-button" onClick={()=> this.dispatch('gradation:add', color1, color2)}>
             <Fa icon="plus-circle"/>
-          </button>
+          </BlurButton>
         </div>
       </section>
     </div>

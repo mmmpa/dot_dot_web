@@ -3,12 +3,13 @@ import * as React from "react";
 import * as ReactDOM from 'react-dom';
 import Fa from "../mods/fa";
 import Cell from "./cell-component";
+import BlurButton from "./blur-button";
 
 export default class ToolSelectorComponent extends Cell<{},{}> {
   writeButton(name) {
     let key = name.replace(/\s/ig, '-');
     return <li>
-      <button key={key} className={key} onClick={(e)=> this.fire(e, key)}>{name}</button>
+      <BlurButton key={key} className={key} onClick={(e)=> this.fire(e, key)}>{name}</BlurButton>
     </li>
   }
 

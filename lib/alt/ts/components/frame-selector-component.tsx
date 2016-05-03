@@ -7,6 +7,7 @@ import LayeredImage from "../models/layered-image";
 import StepperInput from "./stepper-input";
 import DataURL from "../models/data-url";
 import * as ReactAddons from "react-addons";
+import BlurButton from "./blur-button";
 const classSet = ReactAddons.classSet;
 
 interface P {
@@ -64,30 +65,30 @@ export default class FrameSelectorComponent extends Cell<P,{}> {
             </button>
           </div>
           <div className="edit">
-            <button className="add icon-button" onClick={()=> this.dispatch('frame:add')}>
+            <BlurButton className="add icon-button" onClick={()=> this.dispatch('frame:add')}>
               <Fa icon="film"/> <Fa icon="plus-circle"/>
-            </button>
-            <button className="delete icon-button" onClick={(e)=> this.dispatch('frame:delete')}>
+            </BlurButton>
+            <BlurButton className="delete icon-button" onClick={(e)=> this.dispatch('frame:delete')}>
               <Fa icon="film"/> <Fa icon="trash"/>
-            </button>
-            <button className="add icon-button" onClick={()=> this.dispatch('layer:add')}>
+            </BlurButton>
+            <BlurButton className="add icon-button" onClick={()=> this.dispatch('layer:add')}>
               <Fa icon="copy"/> <Fa icon="plus-circle"/>
-            </button>
-            <button className="delete icon-button" onClick={(e)=> this.dispatch('layer:remove')}>
+            </BlurButton>
+            <BlurButton className="delete icon-button" onClick={(e)=> this.dispatch('layer:remove')}>
               <Fa icon="copy"/> <Fa icon="trash"/>
-            </button>
-            <button className="add icon-button" onClick={()=> this.dispatch('frame:move:backward')}>
+            </BlurButton>
+            <BlurButton className="add icon-button" onClick={()=> this.dispatch('frame:move:backward')}>
               <Fa icon="hand-o-left"/>
-            </button>
-            <button className="add icon-button" onClick={()=> this.dispatch('frame:move:forward')}>
+            </BlurButton>
+            <BlurButton className="add icon-button" onClick={()=> this.dispatch('frame:move:forward')}>
               <Fa icon="hand-o-right"/>
-            </button>
-            <button className="add icon-button" onClick={()=> this.dispatch('layer:move:upward')}>
+            </BlurButton>
+            <BlurButton className="add icon-button" onClick={()=> this.dispatch('layer:move:upward')}>
               <Fa icon="hand-o-up"/>
-            </button>
-            <button className="add icon-button" onClick={()=> this.dispatch('layer:move:downward')}>
+            </BlurButton>
+            <BlurButton className="add icon-button" onClick={()=> this.dispatch('layer:move:downward')}>
               <Fa icon="hand-o-down"/>
-            </button>
+            </BlurButton>
           </div>
         </div>
         <div className="frames">

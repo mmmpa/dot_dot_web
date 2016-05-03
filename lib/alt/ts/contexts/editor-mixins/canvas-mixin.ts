@@ -58,9 +58,9 @@ export let CanvasMixin = (superclass) => class extends superclass {
       case this.isSelectRectangleMode():
         return (...args)=> null;
       case this.isSelectMode():
-        return (x, y)=> this.select(x, y, !isRight)
+        return (x, y)=> this.select(x, y, !isRight);
       case this.isSpuitMode():
-        return (x, y)=> this.spuitCanvas(x, y, isRight)
+        return (x, y)=> this.spuitCanvas(x, y, isRight);
       case this.isFillMode():
         return isRight
           ? (x, y)=> this.fill(x, y, this.rightColor)
