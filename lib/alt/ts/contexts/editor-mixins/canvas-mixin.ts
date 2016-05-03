@@ -1,4 +1,5 @@
 import LayeredImage from "../../models/layered-image";
+import ARGB from "../../models/argb";
 
 export let CanvasMixin = (superclass) => class extends superclass {
   get leftColor() {
@@ -17,6 +18,12 @@ export let CanvasMixin = (superclass) => class extends superclass {
 
   dragCanvas(startX, startY, x, y, endX, endY, isRight = false) {
     this.detectDragAction(isRight)(startX, startY, x, y, endX, endY);
+  }
+
+  spuitCanvas(x, y, isRight = false) {
+    let color = ARGB.number(this.ie.getPixel(x, y));
+    console.log(color);
+    this.dispatch('color:select', color, isRight);
   }
 
   copyCanvas() {
@@ -50,9 +57,9 @@ export let CanvasMixin = (superclass) => class extends superclass {
       case this.isSelectRectangleMode():
         return (...args)=> null;
       case this.isSelectMode():
-        return isRight
-          ? (x, y)=> this.select(x, y, false)
-          : (x, y)=> this.select(x, y);
+        return (x, y)=> this.select(x, y, !isRight)
+      case this.isSpuitMode():
+        return (x, y)=> this.spuitCanvas(x, y, isRight)
       case this.isFillMode():
         return isRight
           ? (x, y)=> this.fill(x, y, this.rightColor)
@@ -93,6 +100,10 @@ export let CanvasMixin = (superclass) => class extends superclass {
 
   isSelectMode() {
     return this.state.keyControl.isDown('Shift')
+  }
+
+  isSpuitMode() {
+    return this.state.keyControl.isDown('Control')
   }
 
   isSelectRectangleMode() {

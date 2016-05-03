@@ -57,8 +57,9 @@ export default class CanvasComponent extends Cell<P,{}> {
     this.call('onMouseWheel')(x, y, e.deltaX, e.deltaY);
   }
 
-  onMouseDown(e:MouseEvent, isRight = false) {
+  onMouseDown(e:MouseEvent) {
     e.preventDefault();
+    let isRight = e.nativeEvent.which === 3;
     let {x, y} = this.mousePosition(e);
 
     isRight ? this.call('onMouseDownRight')(x, y) : this.call('onMouseDown')(x, y);
@@ -117,7 +118,7 @@ export default class CanvasComponent extends Cell<P,{}> {
 
   render() {
     return <div style={this.layoutStyle} className="cell canvas" ref="container">
-      <canvas width="2000" height="2000" ref="canvas" onMouseDown={(e)=> this.onMouseDown(e)} onContextMenu={(e)=> this.onMouseDown(e, true)}>canvas</canvas>
+      <canvas width="2000" height="2000" ref="canvas" onMouseDown={(e)=> this.onMouseDown(e)} onContextMenu={(e)=> e.preventDefault()}>canvas</canvas>
       <div className="controller">
         <div className="scale">
           {this.props.scale * 100 + '%'}

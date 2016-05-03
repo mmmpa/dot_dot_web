@@ -176,7 +176,7 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     to(null, 'component:resize', (...args)=> this.resizeComponent(...args));
 
     to('edit', 'color:switch', (i)=> this.selectFromTip(i));
-    to('edit', 'color:select', (color)=> this.selectColor(color));
+    to('edit', 'color:select', (...args)=> this.selectColor(...args));
     to('edit', 'color:add', (color)=> this.addColor(color));
     to('edit', 'color:delete', (color)=> this.deleteColor(color));
     to('edit', 'color:arrange', (argb)=>this.arrangeColor(argb));

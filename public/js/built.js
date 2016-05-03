@@ -85,9 +85,9 @@ var CanvasComponent = (function (_super) {
         var _a = this.mousePosition(e), x = _a.x, y = _a.y;
         this.call('onMouseWheel')(x, y, e.deltaX, e.deltaY);
     };
-    CanvasComponent.prototype.onMouseDown = function (e, isRight) {
-        if (isRight === void 0) { isRight = false; }
+    CanvasComponent.prototype.onMouseDown = function (e) {
         e.preventDefault();
+        var isRight = e.nativeEvent.which === 3;
         var _a = this.mousePosition(e), x = _a.x, y = _a.y;
         isRight ? this.call('onMouseDownRight')(x, y) : this.call('onMouseDown')(x, y);
     };
@@ -138,7 +138,7 @@ var CanvasComponent = (function (_super) {
     };
     CanvasComponent.prototype.render = function () {
         var _this = this;
-        return React.createElement("div", {style: this.layoutStyle, className: "cell canvas", ref: "container"}, React.createElement("canvas", {width: "2000", height: "2000", ref: "canvas", onMouseDown: function (e) { return _this.onMouseDown(e); }, onContextMenu: function (e) { return _this.onMouseDown(e, true); }}, "canvas"), React.createElement("div", {className: "controller"}, React.createElement("div", {className: "scale"}, this.props.scale * 100 + '%'), React.createElement("div", {className: "selection"}, React.createElement("label", null, React.createElement("input", {type: "checkbox", checked: this.props.selectionHidden, onChange: function (e) { return _this.dispatch('canvas:select:hidden', e.target.checked); }}), "選択範囲を非表示にする")), React.createElement("div", {className: "message"}, this.props.message)));
+        return React.createElement("div", {style: this.layoutStyle, className: "cell canvas", ref: "container"}, React.createElement("canvas", {width: "2000", height: "2000", ref: "canvas", onMouseDown: function (e) { return _this.onMouseDown(e); }, onContextMenu: function (e) { return e.preventDefault(); }}, "canvas"), React.createElement("div", {className: "controller"}, React.createElement("div", {className: "scale"}, this.props.scale * 100 + '%'), React.createElement("div", {className: "selection"}, React.createElement("label", null, React.createElement("input", {type: "checkbox", checked: this.props.selectionHidden, onChange: function (e) { return _this.dispatch('canvas:select:hidden', e.target.checked); }}), "選択範囲を非表示にする")), React.createElement("div", {className: "message"}, this.props.message)));
     };
     return CanvasComponent;
 }(cell_component_1.default));
@@ -1154,7 +1154,13 @@ var EditorContext = (function (_super) {
             return _this.resizeComponent.apply(_this, args);
         });
         to('edit', 'color:switch', function (i) { return _this.selectFromTip(i); });
-        to('edit', 'color:select', function (color) { return _this.selectColor(color); });
+        to('edit', 'color:select', function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i - 0] = arguments[_i];
+            }
+            return _this.selectColor.apply(_this, args);
+        });
         to('edit', 'color:add', function (color) { return _this.addColor(color); });
         to('edit', 'color:delete', function (color) { return _this.deleteColor(color); });
         to('edit', 'color:arrange', function (argb) { return _this.arrangeColor(argb); });
@@ -1242,6 +1248,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var layered_image_1 = require("../../models/layered-image");
+var argb_1 = require("../../models/argb");
 exports.CanvasMixin = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
     function class_1() {
@@ -1270,6 +1277,12 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
     class_1.prototype.dragCanvas = function (startX, startY, x, y, endX, endY, isRight) {
         if (isRight === void 0) { isRight = false; }
         this.detectDragAction(isRight)(startX, startY, x, y, endX, endY);
+    };
+    class_1.prototype.spuitCanvas = function (x, y, isRight) {
+        if (isRight === void 0) { isRight = false; }
+        var color = argb_1.default.number(this.ie.getPixel(x, y));
+        console.log(color);
+        this.dispatch('color:select', color, isRight);
     };
     class_1.prototype.copyCanvas = function () {
         this.ie.copy();
@@ -1311,9 +1324,9 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
                     return null;
                 };
             case this.isSelectMode():
-                return isRight
-                    ? function (x, y) { return _this.select(x, y, false); }
-                    : function (x, y) { return _this.select(x, y); };
+                return function (x, y) { return _this.select(x, y, !isRight); };
+            case this.isSpuitMode():
+                return function (x, y) { return _this.spuitCanvas(x, y, isRight); };
             case this.isFillMode():
                 return isRight
                     ? function (x, y) { return _this.fill(x, y, _this.rightColor); }
@@ -1352,6 +1365,9 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
     };
     class_1.prototype.isSelectMode = function () {
         return this.state.keyControl.isDown('Shift');
+    };
+    class_1.prototype.isSpuitMode = function () {
+        return this.state.keyControl.isDown('Control');
     };
     class_1.prototype.isSelectRectangleMode = function () {
         return this.state.keyControl.isDown('Shift') && this.state.keyControl.isDown('Control');
@@ -1444,7 +1460,7 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
     return class_1;
 }(superclass)); };
 
-},{"../../models/layered-image":48}],21:[function(require,module,exports){
+},{"../../models/argb":34,"../../models/layered-image":48}],21:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -1468,8 +1484,10 @@ exports.ColorMixin = function (superclass) { return (function (_super) {
         colors[selectedColorNumber] = selectedColor;
         this.setState({ colors: colors, selectedColor: selectedColor });
     };
-    class_1.prototype.selectColor = function (selectedColor) {
+    class_1.prototype.selectColor = function (selectedColor, isRight) {
+        if (isRight === void 0) { isRight = false; }
         var _a = this.state, colors = _a.colors, selectedColorNumber = _a.selectedColorNumber;
+        isRight && (selectedColorNumber = selectedColorNumber ^ 1);
         colors = colors.concat();
         colors[selectedColorNumber] = selectedColor;
         this.setState({ colors: colors, selectedColor: selectedColor });
@@ -2618,38 +2636,16 @@ exports.Drawing = function (superclass) { return (function (_super) {
         if (update) {
             this.update();
         }
-        console.log(old, color);
         return new action_history_1.default('setPixel', { x: x, y: y, color: old }, { x: x, y: y, color: color });
     };
     class_1.prototype.fill = function (rawX, rawY, color, update) {
         var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;
-        var targetColor = this.bitmapData.getPixel32(x, y);
-        if (targetColor === color) {
-            return;
-        }
-        this.fillLine(x, y, targetColor, color);
+        this.bitmapData.floodFill(x, y, color);
         update && this.update();
     };
-    class_1.prototype.fillLine = function (x, y, targetColor, color, from) {
-        if (from === void 0) { from = 0; }
-        this.bitmapData.setPixel32(x, y, color);
-        for (var fx = x + 1; fx < this.width && this.bitmapData.getPixel32(fx, y) === targetColor; fx++) {
-            this.bitmapData.setPixel32(fx, y, color);
-            this.fillLineUpDown(fx, y, targetColor, color, from);
-        }
-        for (var fx = x - 1; fx >= 0 && this.bitmapData.getPixel32(fx, y) === targetColor; fx--) {
-            this.bitmapData.setPixel32(fx, y, color);
-            this.fillLineUpDown(fx, y, targetColor, color, from);
-        }
-    };
-    class_1.prototype.fillLineUpDown = function (x, y, targetColor, color, from) {
-        if (from === void 0) { from = 0; }
-        if (from !== -1 && y - 1 >= 0 && this.bitmapData.getPixel32(x, y - 1) === targetColor) {
-            this.fillLine(x, y - 1, targetColor, color, 0);
-        }
-        if (from !== 1 && y + 1 <= this.height && this.bitmapData.getPixel32(x, y + 1) === targetColor) {
-            this.fillLine(x, y + 1, targetColor, color, 0);
-        }
+    class_1.prototype.getPixel = function (rawX, rawY) {
+        var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;
+        return this.bitmapData.getPixel32(x, y);
     };
     class_1.prototype.setPixel = function (rawX, rawY, color, update) {
         var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;

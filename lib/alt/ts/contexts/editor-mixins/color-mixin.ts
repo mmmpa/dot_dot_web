@@ -1,7 +1,7 @@
 import ARGB from "../../models/argb";
 
 export let ColorMixin = (superclass) => class extends superclass {
-  selectFromTip(i){
+  selectFromTip(i) {
     this.setState({selectedColorNumber: i, selectedColor: this.state.colors[i]})
   }
 
@@ -13,8 +13,9 @@ export let ColorMixin = (superclass) => class extends superclass {
     this.setState({colors, selectedColor});
   }
 
-  selectColor(selectedColor:ARGB) {
+  selectColor(selectedColor:ARGB, isRight:bolean = false) {
     let {colors, selectedColorNumber} = this.state;
+    isRight && (selectedColorNumber = selectedColorNumber ^ 1);
     colors = colors.concat();
     colors[selectedColorNumber] = selectedColor;
     this.setState({colors, selectedColor})
