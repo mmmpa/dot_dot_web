@@ -20,6 +20,7 @@ import {GradationMixin} from "./editor-mixins/gradation-mixin"
 import {CanvasMixin} from "./editor-mixins/canvas-mixin"
 import {FloaterMixin} from "./editor-mixins/floater-mixin"
 import {FrameMixin} from "./editor-mixins/frame-mixin"
+import ComponentSize from "../models/component-size";
 
 interface P {
 }
@@ -47,6 +48,7 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     let {scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations, framesScale} = this.configuration.readOnce('scale', 'grid', 'colors', 'selectedColorNumber', 'selectedColor', 'colorSet', 'gradations', 'framesScale');
 
     this.setState({
+      componentSize: new ComponentSize({}),
       keyControl: this.keyControl,
       mode: null,
       floatingCallback: null,
@@ -159,9 +161,19 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     this.stage = new createjs.Stage(canvas);
   }
 
+  resizeComponent(target:string, moveX:number, moveY:number){
+    let {componentSize} = this.state;
+    let newSize = {}
+    newSize[target] = componentSize[target] + moveY;
+    componentSize.update(newSize);
+    this.setState({componentSize});
+  }
+
   listen(to) {
     to(null, 'component:canvas:mounted', (canvas)=> this.initializeStage(canvas));
     to(null, 'component:canvas:resize', (w, h)=> this.setState({canvasComponentWidth: w, canvasComponentHeight: h}));
+
+    to(null, 'component:resize', (...args)=> this.resizeComponent(...args));
 
     to('edit', 'color:switch', (i)=> this.selectFromTip(i));
     to('edit', 'color:select', (color)=> this.selectColor(color));

@@ -114,6 +114,7 @@ body
     .massage
       display: inline-block
       padding: 0 10px
+
 .cell-header
   display: none
   position: fixed
@@ -244,6 +245,7 @@ body
   padding: 0
   i.fa
     margin: 0 -2px
+
 .tool-selector
   li
     display: inline-block
@@ -259,17 +261,27 @@ body
     box-sizing: border-box
   .frame-cell
     display: inline-block
-    border: 1px solid #ccc
+    border: 2px solid #ccc
     &.selected
-      border: 1px solid #000
+      border: 2px solid #000
   .layer-cell
-    border: 1px solid #ccc
+    border: 2px solid #ccc
     background: url("/img/stripe.png")
     line-height: 1px
     img
-      border: 1px solid #fff
+      border: 2px solid #fff
     &.selected
-      border: 1px solid #000
+      border: 2px solid #000
+
+.resize-bar
+  position: relative
+  z-index: 100
+  top: -5px
+  height: 10px
+  background: rgba(0, 0, 0, 0.1)
+  width: 100%
+  margin-bottom: -5px
+  cursor: pointer
 
 .color-palette
   .colors

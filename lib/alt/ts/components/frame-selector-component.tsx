@@ -30,8 +30,30 @@ export default class FrameSelectorComponent extends Cell<P,{}> {
     })
   }
 
+  resize(e){
+    e.preventDefault();
+    let pre = {x: e.pageX, y: e.pageY};
+
+    let move = (e:MouseEvent)=> {
+      let {pageX, pageY} = e;
+      let moveX = pageX - pre.x;
+      let moveY = pageY - pre.y;
+      this.dispatch('component:resize', 'frameSelectorHeight', moveX, -moveY);
+      pre = {x: pageX, y: pageY};
+    };
+
+    let clear = (e)=>{
+      $(window).unbind('mouseup', clear);
+      $(window).unbind('mousemove', move);
+    };
+
+    $(window).bind('mousemove', move);
+    $(window).bind('mouseup', clear);
+  }
+
   render() {
     return <div className="cell x frame-selector" style={this.layoutStyle}>
+      <div className="resize-bar" onMouseDown={(e)=> this.resize(e)}>&nbsp;</div>
       <header className="cell-header">{this.myName}</header>
       <section className="cell-body">
         <div className="controller">

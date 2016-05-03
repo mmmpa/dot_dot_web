@@ -91,10 +91,13 @@ export default class CanvasComponent extends Cell<P,{}> {
       pre = {x, y}
     };
 
-    $(window).on('mousemove', move);
-    $(window).on('mouseup', ()=> {
-      $(window).off('mousemove', move);
-    });
+    let clear = (e)=>{
+      $(window).unbind('mouseup', clear);
+      $(window).unbind('mousemove', move);
+    };
+
+    $(window).bind('mousemove', move);
+    $(window).bind('mouseup', clear);
   }
 
   mousePosition(e:MouseEvent) {
