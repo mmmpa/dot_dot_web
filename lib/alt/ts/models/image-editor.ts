@@ -158,12 +158,8 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
     return this.floater;
   }
 
-  static create(stage, w, h, imageElement?) {
-    return new ImageEditor(stage, w, h, imageElement);
-  }
-
-  static createLayered(stage, layeredImage:LayeredImage) {
-    return new ImageEditor(stage, layeredImage.width, layeredImage.height, layeredImage.selectedElement, layeredImage.overlayElement, layeredImage.underlayElement);
+  static create(stage, w, h, imageElement?, overlayElement?, underlayElement?) {
+    return new ImageEditor(stage, w, h, imageElement, overlayElement, underlayElement);
   }
 
   static pToP(x, y, endX, endY) {

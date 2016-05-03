@@ -39,10 +39,10 @@ export default class DataURLGenerator {
     this.context.clearRect(0, 0, w, h);
     this.context.drawImage(image, trimX, trimY, w, h, offsetX, offsetY, w, h);
 
-    return this.canvas.toDataURL();
+    return new DataURL(this.canvas.toDataURL());
   }
 
-  combineImages(images:HTMLImageElement[], w, h) {
+  combineImages(images:HTMLImageElement[], w, h):DataURL {
     this.canvas.width = w;
     this.canvas.height = h;
     this.context.clearRect(0, 0, w, h);
@@ -52,6 +52,10 @@ export default class DataURLGenerator {
     return new DataURL(this.canvas.toDataURL());
   }
 
+  combineDataURLs(dataURLs:DataURL[], w, h):DataURL {
+    let images = dataURLs.map((d)=> this.convertToImage(d));
+    return this.combineImages(images, w, h);
+  }
 
   trimmer(image, baseWidth, baseHeight) {
     this.canvas.width = baseWidth;
@@ -60,7 +64,7 @@ export default class DataURLGenerator {
     return (offsetX, offsetY)=> {
       this.context.clearRect(0, 0, baseWidth, baseHeight);
       this.context.drawImage(image, offsetX, offsetY, baseWidth, baseHeight, 0, 0, baseWidth, baseHeight);
-      return this.canvas.toDataURL();
+      return new DataURL(this.canvas.toDataURL());
     }
   }
 
@@ -72,11 +76,13 @@ export default class DataURLGenerator {
     images.forEach((image, i)=> {
       this.context.drawImage(image, 0, 0, baseWidth, baseHeight, baseWidth * i, 0, baseWidth, baseHeight);
     });
-    return this.canvas.toDataURL();
+    return new DataURL(this.canvas.toDataURL());
   }
 
-  joinFromImageElements(images:HTMLImageElement[], baseWidth, baseHeight, vertical:boolean = false) {
-    let {length} = images
+  joinDataURLs(dataURLs:DataURL[], baseWidth, baseHeight, vertical:boolean = false) {
+    let {length} = dataURLs;
+    let images = dataURLs.map((d)=> this.convertToImage(d));
+
     if (vertical) {
       this.canvas.width = baseWidth;
       this.canvas.height = baseHeight * length;
@@ -94,4 +100,12 @@ export default class DataURLGenerator {
     return new DataURL(this.canvas.toDataURL());
   }
 
+  convertToImage(dataURL:DataURL):HTMLImageElement {
+    if(!dataURL){
+      return;
+    }
+    let element = document.createElement('img');
+    element.setAttribute('src', dataURL.data);
+    return element;
+  }
 }

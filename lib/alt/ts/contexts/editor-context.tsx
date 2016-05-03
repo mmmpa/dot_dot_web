@@ -196,6 +196,8 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
 
     to('edit', 'layer:add', ()=> this.addLayer());
     to('edit', 'layer:remove', ()=> this.removeLayer());
+    to('edit', 'layer:move:upward', ()=> this.moveLayerUpward());
+    to('edit', 'layer:move:downward', ()=> this.moveLayerDownward());
 
     to('edit', 'frame:select', (...args)=> this.selectFrame(...args));
     to('edit', 'frame:next', ()=> this.selectNextFrame());

@@ -9,8 +9,8 @@ export let FileMixin = (superclass) => class extends superclass {
 
   get dataURL() {
     let {canvasWidth, canvasHeight, frames} = this.state;
-    let images = frames.map((frame)=> frame.joinedImageElement);
-    return this.gen.join(images, canvasWidth, canvasHeight * frames[0].layerCount);
+    let joinedDataURLs = frames.map((frame)=> frame.joinedDataURL);
+    return this.gen.joinDataURLs(joinedDataURLs, canvasWidth, canvasHeight * frames[0].layerCount).data;
   }
 
   parseFileName(fileName) {

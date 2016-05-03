@@ -597,7 +597,7 @@ var FrameSelectorComponent = (function (_super) {
     };
     FrameSelectorComponent.prototype.render = function () {
         var _this = this;
-        return React.createElement("div", {className: "cell x frame-selector", style: this.layoutStyle}, React.createElement("header", {className: "cell-header"}, this.myName), React.createElement("section", {className: "cell-body"}, React.createElement("div", {className: "controller"}, React.createElement("div", {className: "edit"}, React.createElement(stepper_input_1.default, {value: this.props.framesScale, onChange: function (v) { return _this.dispatch('frame:scale', v); }}), React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('frame:play', _this.props.frameRate); }}, React.createElement(fa_1.default, {icon: "play"}))), React.createElement("div", {className: "edit"}, React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('frame:add'); }}, React.createElement(fa_1.default, {icon: "film"}), " ", React.createElement(fa_1.default, {icon: "plus-circle"})), React.createElement("button", {className: "delete icon-button", onClick: function (e) { return _this.dispatch('frame:delete'); }}, React.createElement(fa_1.default, {icon: "film"}), " ", React.createElement(fa_1.default, {icon: "trash"})), React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('layer:add'); }}, React.createElement(fa_1.default, {icon: "copy"}), " ", React.createElement(fa_1.default, {icon: "plus-circle"})), React.createElement("button", {className: "delete icon-button", onClick: function (e) { return _this.dispatch('layer:remove'); }}, React.createElement(fa_1.default, {icon: "copy"}), " ", React.createElement(fa_1.default, {icon: "trash"})), React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('frame:move:backward'); }}, React.createElement(fa_1.default, {icon: "hand-o-left"})), React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('frame:move:forward'); }}, React.createElement(fa_1.default, {icon: "hand-o-right"})))), React.createElement("div", {className: "frames"}, this.writeFrames())));
+        return React.createElement("div", {className: "cell x frame-selector", style: this.layoutStyle}, React.createElement("header", {className: "cell-header"}, this.myName), React.createElement("section", {className: "cell-body"}, React.createElement("div", {className: "controller"}, React.createElement("div", {className: "edit"}, React.createElement(stepper_input_1.default, {value: this.props.framesScale, onChange: function (v) { return _this.dispatch('frame:scale', v); }}), React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('frame:play', _this.props.frameRate); }}, React.createElement(fa_1.default, {icon: "play"}))), React.createElement("div", {className: "edit"}, React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('frame:add'); }}, React.createElement(fa_1.default, {icon: "film"}), " ", React.createElement(fa_1.default, {icon: "plus-circle"})), React.createElement("button", {className: "delete icon-button", onClick: function (e) { return _this.dispatch('frame:delete'); }}, React.createElement(fa_1.default, {icon: "film"}), " ", React.createElement(fa_1.default, {icon: "trash"})), React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('layer:add'); }}, React.createElement(fa_1.default, {icon: "copy"}), " ", React.createElement(fa_1.default, {icon: "plus-circle"})), React.createElement("button", {className: "delete icon-button", onClick: function (e) { return _this.dispatch('layer:remove'); }}, React.createElement(fa_1.default, {icon: "copy"}), " ", React.createElement(fa_1.default, {icon: "trash"})), React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('frame:move:backward'); }}, React.createElement(fa_1.default, {icon: "hand-o-left"})), React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('frame:move:forward'); }}, React.createElement(fa_1.default, {icon: "hand-o-right"})), React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('layer:move:upward'); }}, React.createElement(fa_1.default, {icon: "hand-o-up"})), React.createElement("button", {className: "add icon-button", onClick: function () { return _this.dispatch('layer:move:downward'); }}, React.createElement(fa_1.default, {icon: "hand-o-down"})))), React.createElement("div", {className: "frames"}, this.writeFrames())));
     };
     return FrameSelectorComponent;
 }(cell_component_1.default));
@@ -1171,6 +1171,8 @@ var EditorContext = (function (_super) {
         });
         to('edit', 'layer:add', function () { return _this.addLayer(); });
         to('edit', 'layer:remove', function () { return _this.removeLayer(); });
+        to('edit', 'layer:move:upward', function () { return _this.moveLayerUpward(); });
+        to('edit', 'layer:move:downward', function () { return _this.moveLayerDownward(); });
         to('edit', 'frame:select', function () {
             var args = [];
             for (var _i = 0; _i < arguments.length; _i++) {
@@ -1481,8 +1483,8 @@ exports.FileMixin = function (superclass) { return (function (_super) {
     Object.defineProperty(class_1.prototype, "dataURL", {
         get: function () {
             var _a = this.state, canvasWidth = _a.canvasWidth, canvasHeight = _a.canvasHeight, frames = _a.frames;
-            var images = frames.map(function (frame) { return frame.joinedImageElement; });
-            return this.gen.join(images, canvasWidth, canvasHeight * frames[0].layerCount);
+            var joinedDataURLs = frames.map(function (frame) { return frame.joinedDataURL; });
+            return this.gen.joinDataURLs(joinedDataURLs, canvasWidth, canvasHeight * frames[0].layerCount).data;
         },
         enumerable: true,
         configurable: true
@@ -1607,6 +1609,8 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var image_editor_1 = require("../../models/image-editor");
+var data_url_generator_1 = require("../../models/data-url-generator");
+var gen = new data_url_generator_1.default();
 exports.FrameMixin = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
     function class_1() {
@@ -1614,10 +1618,10 @@ exports.FrameMixin = function (superclass) { return (function (_super) {
     }
     class_1.prototype.replaceIeByLayeredImage = function (layeredImage) {
         this.ie && this.ie.close();
-        this.ie = image_editor_1.default.createLayered(this.stage, layeredImage);
-        var updateActive = layeredImage.activeUpdater;
+        this.ie = image_editor_1.default.create(this.stage, layeredImage.width, layeredImage.height, gen.convertToImage(layeredImage.selected), gen.convertToImage(layeredImage.overlay), gen.convertToImage(layeredImage.underlay));
+        var target = layeredImage.selected;
         this.ie.onChange = function (ie) {
-            updateActive(ie.exportPng());
+            target.update(ie.exportPng());
         };
         this.scale();
         this.ie.switchGrid(this.state.grid);
@@ -1691,6 +1695,20 @@ exports.FrameMixin = function (superclass) { return (function (_super) {
         frames.forEach(function (layeredImage) { return layeredImage.remove(selectedLayerNumber); });
         this.dispatch('frame:select', selectedFrameNumber, selectedLayerNumber);
     };
+    class_1.prototype.moveLayerUpward = function () {
+        var _this = this;
+        var _a = this.state, selectedLayerNumber = _a.selectedLayerNumber, selectedFrameNumber = _a.selectedFrameNumber;
+        this.frameNow.moveUpward(selectedLayerNumber, function (movedLayerNumber) {
+            _this.dispatch('frame:select', selectedFrameNumber, movedLayerNumber);
+        });
+    };
+    class_1.prototype.moveLayerDownward = function () {
+        var _this = this;
+        var _a = this.state, selectedLayerNumber = _a.selectedLayerNumber, selectedFrameNumber = _a.selectedFrameNumber;
+        this.frameNow.moveDownward(selectedLayerNumber, function (movedLayerNumber) {
+            _this.dispatch('frame:select', selectedFrameNumber, movedLayerNumber);
+        });
+    };
     class_1.prototype.addFrame = function () {
         var _this = this;
         var _a = this.state, frames = _a.frames, selectedFrameNumber = _a.selectedFrameNumber;
@@ -1735,7 +1753,7 @@ exports.FrameMixin = function (superclass) { return (function (_super) {
     return class_1;
 }(superclass)); };
 
-},{"../../models/image-editor":45}],25:[function(require,module,exports){
+},{"../../models/data-url-generator":36,"../../models/image-editor":45}],25:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -2251,7 +2269,7 @@ var DataURLGenerator = (function () {
         this.canvas.height = h;
         this.context.clearRect(0, 0, w, h);
         this.context.drawImage(image, trimX, trimY, w, h, offsetX, offsetY, w, h);
-        return this.canvas.toDataURL();
+        return new data_url_1.default(this.canvas.toDataURL());
     };
     DataURLGenerator.prototype.combineImages = function (images, w, h) {
         var _this = this;
@@ -2263,6 +2281,11 @@ var DataURLGenerator = (function () {
         });
         return new data_url_1.default(this.canvas.toDataURL());
     };
+    DataURLGenerator.prototype.combineDataURLs = function (dataURLs, w, h) {
+        var _this = this;
+        var images = dataURLs.map(function (d) { return _this.convertToImage(d); });
+        return this.combineImages(images, w, h);
+    };
     DataURLGenerator.prototype.trimmer = function (image, baseWidth, baseHeight) {
         var _this = this;
         this.canvas.width = baseWidth;
@@ -2270,7 +2293,7 @@ var DataURLGenerator = (function () {
         return function (offsetX, offsetY) {
             _this.context.clearRect(0, 0, baseWidth, baseHeight);
             _this.context.drawImage(image, offsetX, offsetY, baseWidth, baseHeight, 0, 0, baseWidth, baseHeight);
-            return _this.canvas.toDataURL();
+            return new data_url_1.default(_this.canvas.toDataURL());
         };
     };
     DataURLGenerator.prototype.join = function (images, baseWidth, baseHeight) {
@@ -2281,12 +2304,13 @@ var DataURLGenerator = (function () {
         images.forEach(function (image, i) {
             _this.context.drawImage(image, 0, 0, baseWidth, baseHeight, baseWidth * i, 0, baseWidth, baseHeight);
         });
-        return this.canvas.toDataURL();
+        return new data_url_1.default(this.canvas.toDataURL());
     };
-    DataURLGenerator.prototype.joinFromImageElements = function (images, baseWidth, baseHeight, vertical) {
+    DataURLGenerator.prototype.joinDataURLs = function (dataURLs, baseWidth, baseHeight, vertical) {
         var _this = this;
         if (vertical === void 0) { vertical = false; }
-        var length = images.length;
+        var length = dataURLs.length;
+        var images = dataURLs.map(function (d) { return _this.convertToImage(d); });
         if (vertical) {
             this.canvas.width = baseWidth;
             this.canvas.height = baseHeight * length;
@@ -2302,6 +2326,14 @@ var DataURLGenerator = (function () {
             });
         }
         return new data_url_1.default(this.canvas.toDataURL());
+    };
+    DataURLGenerator.prototype.convertToImage = function (dataURL) {
+        if (!dataURL) {
+            return;
+        }
+        var element = document.createElement('img');
+        element.setAttribute('src', dataURL.data);
+        return element;
     };
     return DataURLGenerator;
 }());
@@ -2964,11 +2996,8 @@ var ImageEditor = (function (_super) {
         this.floater.shadow = new createjs.Shadow("#ff0000", 2, 2, 0);
         return this.floater;
     };
-    ImageEditor.create = function (stage, w, h, imageElement) {
-        return new ImageEditor(stage, w, h, imageElement);
-    };
-    ImageEditor.createLayered = function (stage, layeredImage) {
-        return new ImageEditor(stage, layeredImage.width, layeredImage.height, layeredImage.selectedElement, layeredImage.overlayElement, layeredImage.underlayElement);
+    ImageEditor.create = function (stage, w, h, imageElement, overlayElement, underlayElement) {
+        return new ImageEditor(stage, w, h, imageElement, overlayElement, underlayElement);
     };
     ImageEditor.pToP = function (x, y, endX, endY) {
         var points = [];
@@ -3069,73 +3098,21 @@ var LayeredImage = (function (_super) {
         this.dataURLs = dataURLs;
         this.version = version;
         this.locked = false;
-        this.selectedIndex = 0;
+        this.select(0);
     }
-    LayeredImage.prototype.add = function (index) {
-        var blank = gen.blankDataUrl(this.width, this.height);
-        this.dataURLs.splice(index, 0, blank);
-        this.select(index + 1);
-    };
-    LayeredImage.prototype.remove = function (index) {
-        if (this.dataURLs.length === 1) {
-            return;
-        }
-        this.dataURLs.splice(index, 1);
-    };
-    LayeredImage.prototype.select = function (index) {
-        var _this = this;
-        this.selectedIndex = index;
-        if (index === 0) {
-            this.overlay = null;
-        }
-        else {
-            this.overlay = gen.combineImages(this.dataURLs.slice(0, index).map(function (d) { return _this.genImage(d); }), this.width, this.height);
-        }
-        if (index === this.dataURLs.length - 1) {
-            this.underlay = null;
-        }
-        else {
-            this.underlay = gen.combineImages(this.dataURLs.slice(index + 1, this.dataURLs.length).map(function (d) { return _this.genImage(d); }), this.width, this.height);
-        }
-        return this.raw(index);
-    };
-    LayeredImage.prototype.lock = function () {
-        this.storedCombined = this.combine();
-        this.locked = true;
-    };
-    LayeredImage.prototype.unlock = function () {
-        this.storedCombined = null;
-        this.locked = false;
-    };
-    LayeredImage.prototype.update = function (index, dataURL) {
-        this.dataURLs[index] = dataURL;
-        this.version++;
-    };
-    Object.defineProperty(LayeredImage.prototype, "activeUpdater", {
-        get: function () {
-            var _this = this;
-            var active = this.dataURLs[this.selectedIndex];
-            return function (dataURL) {
-                active.update(dataURL);
-                _this.version++;
-            };
-        },
-        enumerable: true,
-        configurable: true
-    });
-    LayeredImage.prototype.scale = function (n) {
-        if (n === void 0) { n = 4; }
-        return {
-            width: this.width * n,
-            height: this.height * n
-        };
-    };
     Object.defineProperty(LayeredImage.prototype, "combined", {
         get: function () {
             if (this.locked) {
                 return this.storedCombined;
             }
             return this.combine();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(LayeredImage.prototype, "joinedDataURL", {
+        get: function () {
+            return gen.joinDataURLs(this.dataURLs, this.width, this.height, true);
         },
         enumerable: true,
         configurable: true
@@ -3147,63 +3124,79 @@ var LayeredImage = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(LayeredImage.prototype, "selectedElement", {
-        get: function () {
-            return this.genImage(this.raw(this.selectedIndex));
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LayeredImage.prototype, "overlayElement", {
-        get: function () {
-            return this.overlay ? this.genImage(this.overlay) : null;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LayeredImage.prototype, "underlayElement", {
-        get: function () {
-            return this.underlay ? this.genImage(this.underlay) : null;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LayeredImage.prototype, "joinedDataURL", {
-        get: function () {
-            return gen.joinFromImageElements(this.imageElements, this.width, this.height, true);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LayeredImage.prototype, "joinedImageElement", {
-        get: function () {
-            return this.genImage(this.joinedDataURL);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LayeredImage.prototype, "imageElements", {
-        get: function () {
-            var _this = this;
-            return this.dataURLs.map(function (d) { return _this.genImage(d); });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    LayeredImage.prototype.combine = function () {
-        var _this = this;
-        return gen.combineImages(this.dataURLs.map(function (dataURL) { return _this.genImage(dataURL); }), this.width, this.height);
+    LayeredImage.prototype.add = function (index) {
+        var blank = gen.blankDataUrl(this.width, this.height);
+        this.dataURLs.splice(index, 0, blank);
+        this.select(index + 1);
     };
-    LayeredImage.prototype.genImage = function (dataURL) {
-        var element = document.createElement('img');
-        element.setAttribute('src', dataURL.data);
-        return element;
+    LayeredImage.prototype.remove = function (index) {
+        if (this.dataURLs.length === 1) {
+            return;
+        }
+        this.dataURLs.splice(index, 1);
+    };
+    LayeredImage.prototype.moveUpward = function (index, callback) {
+        if (index === 0) {
+            return;
+        }
+        var target = this.raw(index);
+        this.dataURLs.splice(index, 1);
+        this.dataURLs.splice(index - 1, 0, target);
+        callback && callback(index - 1);
+    };
+    LayeredImage.prototype.moveDownward = function (index, callback) {
+        if (index === this.dataURLs.length - 1) {
+            return;
+        }
+        var target = this.raw(index);
+        this.dataURLs.splice(index, 1);
+        this.dataURLs.splice(index + 1, 0, target);
+        callback && callback(index + 1);
+    };
+    LayeredImage.prototype.select = function (index, force) {
+        if (force === void 0) { force = false; }
+        if (!force && this.selectedIndex === index) {
+            return;
+        }
+        this.selectedIndex = index;
+        if (index === 0) {
+            this.overlay = null;
+        }
+        else {
+            this.overlay = gen.combineDataURLs(this.dataURLs.slice(0, index), this.width, this.height);
+        }
+        if (index === this.dataURLs.length - 1) {
+            this.underlay = null;
+        }
+        else {
+            this.underlay = gen.combineDataURLs(this.dataURLs.slice(index + 1, this.dataURLs.length), this.width, this.height);
+        }
+        this.selected = this.raw(index);
+    };
+    LayeredImage.prototype.lock = function () {
+        this.storedCombined = this.combine();
+        this.locked = true;
+    };
+    LayeredImage.prototype.unlock = function () {
+        this.storedCombined = null;
+        this.locked = false;
+    };
+    LayeredImage.prototype.update = function (index, dataURL) {
+        this.dataURLs[index].update(dataURL);
+        this.version++;
+    };
+    LayeredImage.prototype.scale = function (n) {
+        if (n === void 0) { n = 4; }
+        return {
+            width: this.width * n,
+            height: this.height * n
+        };
+    };
+    LayeredImage.prototype.combine = function () {
+        return gen.combineDataURLs(this.dataURLs, this.width, this.height);
     };
     LayeredImage.prototype.clone = function () {
         return new LayeredImage(this.width, this.height, this.dataURLs.map(function (d) { return new data_url_1.default(d.data); }));
-    };
-    LayeredImage.prototype.image = function (index) {
-        return this.genImage(this.raw(index));
     };
     LayeredImage.prototype.raw = function (index) {
         return this.dataURLs[index];

@@ -1,13 +1,23 @@
 import ImageEditor from "../../models/image-editor";
 import LayeredImage from "../../models/layered-image";
+import DataURLGenerator from "../../models/data-url-generator";
+
+const gen = new DataURLGenerator();
 
 export let FrameMixin = (superclass) => class extends superclass {
   replaceIeByLayeredImage(layeredImage:LayeredImage) {
     this.ie && this.ie.close();
-    this.ie = ImageEditor.createLayered(this.stage, layeredImage);
-    let updateActive = layeredImage.activeUpdater;
+    this.ie = ImageEditor.create(
+      this.stage,
+      layeredImage.width,
+      layeredImage.height,
+      gen.convertToImage(layeredImage.selected),
+      gen.convertToImage(layeredImage.overlay),
+      gen.convertToImage(layeredImage.underlay)
+    );
+    let target = layeredImage.selected;
     this.ie.onChange = (ie:ImageEditor)=> {
-      updateActive(ie.exportPng());
+      target.update(ie.exportPng());
     };
     this.scale();
     this.ie.switchGrid(this.state.grid);
@@ -90,6 +100,20 @@ export let FrameMixin = (superclass) => class extends superclass {
     let {frames, selectedLayerNumber, selectedFrameNumber} = this.state;
     frames.forEach((layeredImage)=>layeredImage.remove(selectedLayerNumber))
     this.dispatch('frame:select', selectedFrameNumber, selectedLayerNumber);
+  }
+
+  moveLayerUpward(){
+    let {selectedLayerNumber, selectedFrameNumber} = this.state;
+    this.frameNow.moveUpward(selectedLayerNumber, (movedLayerNumber)=>{
+      this.dispatch('frame:select', selectedFrameNumber, movedLayerNumber);
+    });
+  }
+
+  moveLayerDownward(){
+    let {selectedLayerNumber, selectedFrameNumber} = this.state;
+    this.frameNow.moveDownward(selectedLayerNumber, (movedLayerNumber)=>{
+      this.dispatch('frame:select', selectedFrameNumber, movedLayerNumber);
+    });
   }
 
   addFrame() {

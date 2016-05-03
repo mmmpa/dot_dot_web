@@ -60,6 +60,12 @@ export default class FrameSelectorComponent extends Cell<P,{}> {
             <button className="add icon-button" onClick={()=> this.dispatch('frame:move:forward')}>
               <Fa icon="hand-o-right"/>
             </button>
+            <button className="add icon-button" onClick={()=> this.dispatch('layer:move:upward')}>
+              <Fa icon="hand-o-up"/>
+            </button>
+            <button className="add icon-button" onClick={()=> this.dispatch('layer:move:downward')}>
+              <Fa icon="hand-o-down"/>
+            </button>
           </div>
         </div>
         <div className="frames">
