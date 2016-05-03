@@ -51,6 +51,7 @@ export let CanvasMixin = (superclass) => class extends superclass {
   }
 
   detectPressAction(isRight = false) {
+    this.isAlternative() && (isRight = !isRight);
     switch (true) {
       case this.isSlideMode():
         return (...args)=> null;
@@ -72,6 +73,7 @@ export let CanvasMixin = (superclass) => class extends superclass {
   }
 
   detectDragAction(isRight = false) {
+    this.isAlternative() && (isRight = !isRight);
     switch (true) {
       case this.isSlideMode():
         return (startX, startY, x, y, endX, endY)=> this.slide(x, y, endX, endY);
@@ -88,6 +90,10 @@ export let CanvasMixin = (superclass) => class extends superclass {
           ? (startX, startY, x, y, endX, endY)=> this.drawLine(x, y, endX, endY, this.rightColor)
           : (startX, startY, x, y, endX, endY)=> this.drawLine(x, y, endX, endY, this.leftColor);
     }
+  }
+
+  isAlternative(){
+    return this.state.keyControl.isDown('Alt')
   }
 
   isFillMode() {

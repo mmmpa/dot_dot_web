@@ -1306,6 +1306,7 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
     class_1.prototype.detectPressAction = function (isRight) {
         var _this = this;
         if (isRight === void 0) { isRight = false; }
+        this.isAlternative() && (isRight = !isRight);
         switch (true) {
             case this.isSlideMode():
                 return function () {
@@ -1340,6 +1341,7 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
     class_1.prototype.detectDragAction = function (isRight) {
         var _this = this;
         if (isRight === void 0) { isRight = false; }
+        this.isAlternative() && (isRight = !isRight);
         switch (true) {
             case this.isSlideMode():
                 return function (startX, startY, x, y, endX, endY) { return _this.slide(x, y, endX, endY); };
@@ -1356,6 +1358,9 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
                     ? function (startX, startY, x, y, endX, endY) { return _this.drawLine(x, y, endX, endY, _this.rightColor); }
                     : function (startX, startY, x, y, endX, endY) { return _this.drawLine(x, y, endX, endY, _this.leftColor); };
         }
+    };
+    class_1.prototype.isAlternative = function () {
+        return this.state.keyControl.isDown('Alt');
     };
     class_1.prototype.isFillMode = function () {
         return this.state.keyControl.isDown('KeyF');
