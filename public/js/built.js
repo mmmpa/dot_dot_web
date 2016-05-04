@@ -30,15 +30,16 @@ var BlurButton = (function (_super) {
     }
     BlurButton.prototype.render = function () {
         var _this = this;
-        var onMouseUp = function (e) {
-            _this.props.onMouseUp && _this.props.onMouseUp(e);
-            e.currentTarget.blur();
+        var onMouseDown = function (e) {
+            _this.props.onMouseDown && _this.props.onMouseDown(e);
+            var button = e.currentTarget;
+            var up = function (e) {
+                button.blur();
+                window.removeEventListener('mouseup', up);
+            };
+            window.addEventListener('mouseup', up);
         };
-        var onClick = function (e) {
-            _this.props.onClick && _this.props.onClick(e);
-            e.currentTarget.blur();
-        };
-        return React.createElement("button", React.__spread({}, this.props, { onMouseUp: onMouseUp, onClick: onClick }), this.props.children);
+        return React.createElement("button", React.__spread({}, this.props, { onMouseDown: onMouseDown }), this.props.children);
     };
     return BlurButton;
 }(React.Component));
