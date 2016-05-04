@@ -2,6 +2,15 @@ import ActionHistory from "../action-history";
 import ImageEditor from "../image-editor";
 import {ImageEditorState} from "../image-editor";
 
+export interface IEditor{
+  del(),
+  copy(),
+  paste(),
+  cut(),
+  fixFloater(),
+  move(t, r, b, l)
+}
+
 export let Editor = (superclass) => class extends superclass {
   del() {
     if (!this.isSelected) {
@@ -51,7 +60,7 @@ export let Editor = (superclass) => class extends superclass {
       return;
     }
 
-    let raw = ImageEditor.floaterBitmap.context.getImageData(0, 0, this.width, this.height).data;
+    let raw = ImageEditor.floaterBitmapData.context.getImageData(0, 0, this.width, this.height).data;
     let offsetX = ImageEditor.floater.x;
     let offsetY = ImageEditor.floater.y;
 
@@ -60,15 +69,15 @@ export let Editor = (superclass) => class extends superclass {
         let position = (i - 3) / 4;
         let x = (position % this.width);
         let y = position / this.width >> 0;
-        let color = ImageEditor.floaterBitmap.getPixel32(x, y);
-        this.bitmapData.setPixel32(x + offsetX, y + offsetY, color);
+        let color = ImageEditor.floaterBitmapData.getPixel32(x, y);
+        this.canvasBitmapData.setPixel32(x + offsetX, y + offsetY, color);
       }
     }
 
     this.stateDrawing();
     this.canvasContainer.removeChild(this.floater);
     this.floater = null;
-    this.bitmapData.updateContext();
+    this.canvasBitmapData.updateContext();
   }
 
   move(t, r, b, l) {

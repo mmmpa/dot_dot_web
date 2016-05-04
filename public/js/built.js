@@ -1316,7 +1316,6 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
     class_1.prototype.spuitCanvas = function (x, y, isRight) {
         if (isRight === void 0) { isRight = false; }
         var color = argb_1.default.number(this.ie.getPixel(x, y));
-        console.log(color);
         this.dispatch('color:select', color, isRight);
     };
     class_1.prototype.copyCanvas = function () {
@@ -1705,11 +1704,7 @@ exports.FrameMixin = function (superclass) { return (function (_super) {
     }
     class_1.prototype.replaceIeByLayeredImage = function (layeredImage) {
         this.ie && this.ie.close();
-        this.ie = image_editor_1.default.create(this.stage, layeredImage.width, layeredImage.height, gen.convertToImage(layeredImage.selected), gen.convertToImage(layeredImage.overlay), gen.convertToImage(layeredImage.underlay));
-        var target = layeredImage.selected;
-        this.ie.onChange = function (ie) {
-            target.update(ie.exportPng());
-        };
+        this.ie = new image_editor_1.default(this.stage, layeredImage.selected, layeredImage.width, layeredImage.height, gen.convertToImage(layeredImage.selected), gen.convertToImage(layeredImage.overlay), gen.convertToImage(layeredImage.underlay));
         this.scale();
         this.ie.switchGrid(this.state.grid);
     };
@@ -2572,8 +2567,8 @@ exports.Display = function (superclass) { return (function (_super) {
     }
     class_1.prototype.center = function (displayWidth, displayHeight) {
         var _a = this, width = _a.width, height = _a.height;
-        width *= this._scale;
-        height *= this._scale;
+        width *= this.scaleNumber;
+        height *= this.scaleNumber;
         this.container.x = (displayWidth - width) / 2;
         this.container.y = (displayHeight - height) / 2;
         this.update();
@@ -2581,41 +2576,40 @@ exports.Display = function (superclass) { return (function (_super) {
     class_1.prototype.scale = function (n, baseX, baseY) {
         if (baseX && baseY) {
             var prePosition = this.normalizePixel(baseX, baseY);
-            this._scale = n;
+            this.scaleNumber = n;
             var nextPosition = this.normalizePixel(baseX, baseY);
             var x = prePosition.x - nextPosition.x;
             var y = prePosition.y - nextPosition.y;
-            this.container.x -= x * this._scale;
-            this.container.y -= y * this._scale;
+            this.container.x -= x * this.scaleNumber;
+            this.container.y -= y * this.scaleNumber;
         }
         else {
-            this._scale = n;
+            this.scaleNumber = n;
         }
-        this.canvasContainer.scaleX = this.canvasContainer.scaleY = this._scale;
-        this.selection.scaleX = this.selection.scaleY = this._scale;
+        this.canvasContainer.scaleX = this.canvasContainer.scaleY = this.scaleNumber;
         this.drawGrid();
         this.stage.update();
     };
     class_1.prototype.drawGrid = function () {
-        this.container.removeChild(this._gridElement);
-        if (!this._grid) {
+        this.container.removeChild(this.grid);
+        if (!this.isGridDisplay) {
             return;
         }
-        var scale = this._scale;
+        var scale = this.scaleNumber;
         if (scale <= 2) {
             return;
         }
-        if (this._gridElement = this._gridStore[scale]) {
-            this.container.addChild(this._gridElement);
+        if (this.grid = this.gridStore[scale]) {
+            this.container.addChild(this.grid);
             this.stage.update();
             return;
         }
-        var _a = this.bitmapData, width = _a.width, height = _a.height;
-        this._gridElement = new createjs.Shape();
-        var g = this._gridElement.graphics;
+        var _a = this.canvasBitmapData, width = _a.width, height = _a.height;
+        this.grid = new createjs.Shape();
+        var g = this.grid.graphics;
         g.setStrokeStyle(0);
-        g.beginStroke('rgba(0,0,0,0.1)');
-        this._gridStore[scale] = this._gridElement;
+        g.beginStroke(this.gridColor);
+        this.gridStore[scale] = this.grid;
         _.times(height + 1, function (h) {
             var y = h * scale - 0.5;
             g.moveTo(-0.5, y);
@@ -2626,14 +2620,14 @@ exports.Display = function (superclass) { return (function (_super) {
             g.moveTo(x, -0.5);
             g.lineTo(x, height * scale - 0.5);
         });
-        this.container.addChild(this._gridElement);
+        this.container.addChild(this.grid);
         this.stage.update();
     };
     class_1.prototype.switchGrid = function (bol) {
-        if (this._grid === bol) {
+        if (this.isGridDisplay === bol) {
             return;
         }
-        this._grid = bol;
+        this.isGridDisplay = bol;
         this.drawGrid();
         this.stage.update();
     };
@@ -2671,8 +2665,8 @@ exports.Drawing = function (superclass) { return (function (_super) {
                 return;
             }
         }
-        var old = this.bitmapData.getPixel32(x, y);
-        this.bitmapData.setPixel32(x, y, color);
+        var old = this.canvasBitmapData.getPixel32(x, y);
+        this.canvasBitmapData.setPixel32(x, y, color);
         if (update) {
             this.update();
         }
@@ -2680,12 +2674,12 @@ exports.Drawing = function (superclass) { return (function (_super) {
     };
     class_1.prototype.fill = function (rawX, rawY, color, update) {
         var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;
-        this.bitmapData.floodFill(x, y, color);
+        this.canvasBitmapData.floodFill(x, y, color);
         update && this.update();
     };
     class_1.prototype.getPixel = function (rawX, rawY) {
         var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;
-        return this.bitmapData.getPixel32(x, y);
+        return this.canvasBitmapData.getPixel32(x, y);
     };
     class_1.prototype.setPixel = function (rawX, rawY, color, update) {
         var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;
@@ -2764,7 +2758,7 @@ exports.Editor = function (superclass) { return (function (_super) {
         if (!this.isFloating) {
             return;
         }
-        var raw = image_editor_1.default.floaterBitmap.context.getImageData(0, 0, this.width, this.height).data;
+        var raw = image_editor_1.default.floaterBitmapData.context.getImageData(0, 0, this.width, this.height).data;
         var offsetX = image_editor_1.default.floater.x;
         var offsetY = image_editor_1.default.floater.y;
         for (var i = raw.length - 1; i >= 0; i -= 4) {
@@ -2772,14 +2766,14 @@ exports.Editor = function (superclass) { return (function (_super) {
                 var position = (i - 3) / 4;
                 var x = (position % this.width);
                 var y = position / this.width >> 0;
-                var color = image_editor_1.default.floaterBitmap.getPixel32(x, y);
-                this.bitmapData.setPixel32(x + offsetX, y + offsetY, color);
+                var color = image_editor_1.default.floaterBitmapData.getPixel32(x, y);
+                this.canvasBitmapData.setPixel32(x + offsetX, y + offsetY, color);
             }
         }
         this.stateDrawing();
         this.canvasContainer.removeChild(this.floater);
         this.floater = null;
-        this.bitmapData.updateContext();
+        this.canvasBitmapData.updateContext();
     };
     class_1.prototype.move = function (t, r, b, l) {
         console.log(this.isFloating);
@@ -2832,13 +2826,13 @@ exports.Selection = function (superclass) { return (function (_super) {
             return;
         }
         var result = [];
-        var raw = this.selectionBitmap.context.getImageData(0, 0, this.width, this.height).data;
+        var raw = this.selectionBitmapData.context.getImageData(0, 0, this.width, this.height).data;
         for (var i = raw.length - 1; i >= 0; i -= 4) {
             if (raw[i] !== 0) {
                 var position = (i - 3) / 4;
                 var x = (position % this.width);
                 var y = position / this.width >> 0;
-                var color = this.bitmapData.getPixel32(x, y);
+                var color = this.canvasBitmapData.getPixel32(x, y);
                 result.push(callback(x, y, color));
             }
         }
@@ -2846,8 +2840,8 @@ exports.Selection = function (superclass) { return (function (_super) {
     };
     class_1.prototype.clearSelection = function (nextStateCallback) {
         this.selectedCount = 0;
-        this.selectionBitmap.clearRect(0, 0, this.width, this.height);
-        this.selectionBitmap.setPixel(0, 0, 0);
+        this.selectionBitmapData.clearRect(0, 0, this.width, this.height);
+        this.selectionBitmapData.setPixel(0, 0, 0);
         nextStateCallback ? nextStateCallback() : this.stateDrawing();
     };
     class_1.prototype.addSelection = function (x, y, add, update) {
@@ -2856,13 +2850,13 @@ exports.Selection = function (superclass) { return (function (_super) {
         if (add) {
             if (!this.isCellSelected(x, y)) {
                 this.selectedCount++;
-                this.selectionBitmap.setPixel32(x, y, this.selectionColor);
+                this.selectionBitmapData.setPixel32(x, y, this.selectionColor);
             }
         }
         else {
             if (this.isCellSelected(x, y)) {
                 this.selectedCount--;
-                this.selectionBitmap.setPixel32(x, y, 0);
+                this.selectionBitmapData.setPixel32(x, y, 0);
             }
         }
         this.checkSelected();
@@ -2871,7 +2865,7 @@ exports.Selection = function (superclass) { return (function (_super) {
         }
     };
     class_1.prototype.isCellSelected = function (x, y) {
-        return this.selectionBitmap.getPixel32(x, y) !== 0;
+        return this.selectionBitmapData.getPixel32(x, y) !== 0;
     };
     class_1.prototype.checkSelected = function () {
         if (this.selectedCount !== 0) {
@@ -2998,38 +2992,35 @@ var data_url_1 = require("../../test/src/models/data-url");
 var ImageEditorState = exports.ImageEditorState;
 var ImageEditor = (function (_super) {
     __extends(ImageEditor, _super);
-    function ImageEditor(stage, width, height, imageElement, overlayElement, underlayElement) {
+    function ImageEditor(stage, dataURL, width, height, imageElement, overlayElement, underlayElement) {
         this.stage = stage;
+        this.dataURL = dataURL;
         this.width = width;
         this.height = height;
-        this._scale = 1;
-        this._grid = false;
-        this._gridElement = null;
-        this._gridStore = [];
-        this._gridColor = 0xff000000;
+        this.scaleNumber = 1;
+        this.isGridDisplay = false;
+        this.gridStore = [];
+        this.gridColor = 'rgba(0,0,0,0.1)';
         this.selectedCount = 0;
         this.selectionColor = 0x4400ff00;
         this.container = new createjs.Container();
         this.canvasContainer = new createjs.Container();
         this.bg = new createjs.Bitmap(new createjs.BitmapData(null, stage.canvas.width, stage.canvas.height, 0x01000000).canvas);
-        if (imageElement) {
-            this.bitmapData = new createjs.BitmapData(imageElement);
-        }
-        else {
-            this.bitmapData = new createjs.BitmapData(null, width, height, 0xffffffff);
-        }
-        var overlay = overlayElement ? new createjs.Bitmap(new createjs.BitmapData(overlayElement).canvas) : null;
-        var underlay = underlayElement ? new createjs.Bitmap(new createjs.BitmapData(underlayElement).canvas) : null;
-        this.width = this.bitmapData.width;
-        this.height = this.bitmapData.height;
-        this.selectionBitmap = new createjs.BitmapData(null, this.width, this.height);
-        this.selection = new createjs.Bitmap(this.selectionBitmap.canvas);
-        this.canvas = new createjs.Bitmap(this.bitmapData.canvas);
-        underlay && this.canvasContainer.addChild(underlay);
+        this.canvasBitmapData = new createjs.BitmapData(imageElement);
+        this.overlay = overlayElement
+            ? new createjs.Bitmap(new createjs.BitmapData(overlayElement).canvas)
+            : null;
+        this.underlay = underlayElement
+            ? new createjs.Bitmap(new createjs.BitmapData(underlayElement).canvas)
+            : null;
+        this.selectionBitmapData = new createjs.BitmapData(null, this.width, this.height);
+        this.selection = new createjs.Bitmap(this.selectionBitmapData.canvas);
+        this.canvas = new createjs.Bitmap(this.canvasBitmapData.canvas);
+        this.underlay && this.canvasContainer.addChild(this.underlay);
         this.canvasContainer.addChild(this.canvas);
-        overlay && this.canvasContainer.addChild(overlay);
+        this.overlay && this.canvasContainer.addChild(this.overlay);
+        this.canvasContainer.addChild(this.selection);
         this.container.addChild(this.canvasContainer);
-        this.container.addChild(this.selection);
         stage.addChild(this.bg);
         stage.addChild(this.container);
         this.update();
@@ -3038,9 +3029,27 @@ var ImageEditor = (function (_super) {
     ImageEditor.find = function (id) {
         return this.store[id];
     };
+    ImageEditor.clearClip = function () {
+        this.floaterBitmapData && this.floaterBitmapData.dispose();
+        this.floaterBitmapData = null;
+    };
+    ImageEditor.prepareClip = function (w, h) {
+        this.floaterBitmapData && this.floaterBitmapData.dispose();
+        this.floaterBitmapData = new createjs.BitmapData(null, w, h);
+        return this.floaterBitmapData;
+    };
+    ImageEditor.prepareFloater = function () {
+        if (!this.floaterBitmapData) {
+            return null;
+        }
+        this.floaterBitmapData.updateContext();
+        this.floater = new createjs.Bitmap(this.floaterBitmapData.canvas);
+        this.floater.shadow = new createjs.Shadow("#ff0000", 2, 2, 0);
+        return this.floater;
+    };
     ImageEditor.prototype.close = function () {
         this.fixFloater();
-        this.onChange && this.onChange(this);
+        this.update();
         this.stage.clear();
         this.stage.removeAllChildren();
     };
@@ -3051,7 +3060,7 @@ var ImageEditor = (function (_super) {
         return store.historyGroup;
     };
     ImageEditor.prototype.exportPng = function () {
-        return new data_url_1.default(this.bitmapData.canvas.toDataURL("image/png"));
+        return new data_url_1.default(this.canvasBitmapData.canvas.toDataURL("image/png"));
     };
     Object.defineProperty(ImageEditor.prototype, "position", {
         get: function () {
@@ -3073,36 +3082,15 @@ var ImageEditor = (function (_super) {
         };
     };
     ImageEditor.prototype.update = function () {
-        this.selectionBitmap.updateContext();
-        this.bitmapData.updateContext();
+        this.selectionBitmapData.updateContext();
+        this.canvasBitmapData.updateContext();
         this.stage.update();
-        this.onChange && this.onChange(this);
+        this.dataURL.update(this.exportPng());
     };
     ImageEditor.prototype.normalizePixel = function (rawX, rawY) {
-        var x = (rawX - this.container.x) / this._scale >> 0;
-        var y = (rawY - this.container.y) / this._scale >> 0;
+        var x = (rawX - this.container.x) / this.scaleNumber >> 0;
+        var y = (rawY - this.container.y) / this.scaleNumber >> 0;
         return { x: x, y: y };
-    };
-    ImageEditor.clearClip = function () {
-        this.floaterBitmap && this.floaterBitmap.dispose();
-        this.floaterBitmap = null;
-    };
-    ImageEditor.prepareClip = function (w, h) {
-        this.floaterBitmap && this.floaterBitmap.dispose();
-        this.floaterBitmap = new createjs.BitmapData(null, w, h);
-        return this.floaterBitmap;
-    };
-    ImageEditor.prepareFloater = function () {
-        if (!this.floaterBitmap) {
-            return null;
-        }
-        this.floaterBitmap.updateContext();
-        this.floater = new createjs.Bitmap(this.floaterBitmap.canvas);
-        this.floater.shadow = new createjs.Shadow("#ff0000", 2, 2, 0);
-        return this.floater;
-    };
-    ImageEditor.create = function (stage, w, h, imageElement, overlayElement, underlayElement) {
-        return new ImageEditor(stage, w, h, imageElement, overlayElement, underlayElement);
     };
     ImageEditor.pToP = function (x, y, endX, endY) {
         var points = [];
@@ -3126,8 +3114,6 @@ var ImageEditor = (function (_super) {
         }
         return points;
     };
-    ImageEditor.id = 0;
-    ImageEditor.store = [];
     return ImageEditor;
 }(mix_1.mix(id_man_1.default).with(drawer_mixin_1.Drawing, selection_mixin_1.Selection, display_mixin_1.Display, editor_mixin_1.Editor, state_mixin_1.State)));
 Object.defineProperty(exports, "__esModule", { value: true });

@@ -1,6 +1,14 @@
 import ActionHistory from "../action-history";
 import ImageEditor from "../image-editor";
 
+export interface IDrawing{
+  draw(x, y, color, update?:boolean),
+  fill(rawX, rawY, color, update?:boolean),
+  getPixel(rawX, rawY),
+  setPixel(rawX, rawY, color, update?:boolean),
+  setPixelToPixel(rawX, rawY, endRawX, endRawY, color, update?:boolean),
+}
+
 export let Drawing = (superclass) => class extends superclass {
   draw(x, y, color, update?:boolean) {
     this.fixFloater();
@@ -9,8 +17,8 @@ export let Drawing = (superclass) => class extends superclass {
         return;
       }
     }
-    let old = this.bitmapData.getPixel32(x, y);
-    this.bitmapData.setPixel32(x, y, color);
+    let old = this.canvasBitmapData.getPixel32(x, y);
+    this.canvasBitmapData.setPixel32(x, y, color);
     if (update) {
       this.update();
     }
@@ -20,14 +28,14 @@ export let Drawing = (superclass) => class extends superclass {
   fill(rawX, rawY, color, update?:boolean) {
     let {x, y} = this.normalizePixel(rawX, rawY);
 
-    this.bitmapData.floodFill(x, y, color);
+    this.canvasBitmapData.floodFill(x, y, color);
     update && this.update();
   }
 
   getPixel(rawX, rawY){
     let {x, y} = this.normalizePixel(rawX, rawY);
 
-    return this.bitmapData.getPixel32(x, y);
+    return this.canvasBitmapData.getPixel32(x, y);
   }
 
   setPixel(rawX, rawY, color, update?:boolean) {

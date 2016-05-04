@@ -22,7 +22,6 @@ export let CanvasMixin = (superclass) => class extends superclass {
 
   spuitCanvas(x, y, isRight = false) {
     let color = ARGB.number(this.ie.getPixel(x, y));
-    console.log(color);
     this.dispatch('color:select', color, isRight);
   }
 

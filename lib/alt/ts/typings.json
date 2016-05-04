@@ -1,6 +1,6 @@
 {
   "ambientDependencies": {
-    "createjs": "registry:dt/createjs#0.7.1+20140414154755",
+    "createjs": "registry:dt/createjs#0.0.0+20160316155526",
     "jquery": "registry:dt/jquery#1.10.0+20160316155526",
     "lodash": "registry:dt/lodash#3.10.0+20160327004937",
     "node": "registry:dt/node#4.0.0+20160319033040",

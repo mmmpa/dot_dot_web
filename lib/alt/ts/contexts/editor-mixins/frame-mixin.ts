@@ -7,18 +7,15 @@ const gen = new DataURLGenerator();
 export let FrameMixin = (superclass) => class extends superclass {
   replaceIeByLayeredImage(layeredImage:LayeredImage) {
     this.ie && this.ie.close();
-    this.ie = ImageEditor.create(
+    this.ie = new ImageEditor(
       this.stage,
+      layeredImage.selected,
       layeredImage.width,
       layeredImage.height,
       gen.convertToImage(layeredImage.selected),
       gen.convertToImage(layeredImage.overlay),
       gen.convertToImage(layeredImage.underlay)
     );
-    let target = layeredImage.selected;
-    this.ie.onChange = (ie:ImageEditor)=> {
-      target.update(ie.exportPng());
-    };
     this.scale();
     this.ie.switchGrid(this.state.grid);
   }

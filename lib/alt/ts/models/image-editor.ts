@@ -17,72 +17,88 @@ export enum ImageEditorState{
 }
 
 export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Display, Editor, State) {
-  static id:number = 0;
-  static store:ImageEditor[] = [];
+  static floater:createjs.Bitmap;
+  static floaterBitmapData:createjs.BitmapData;
 
-  static floater:any;
-  static floaterBitmap:any;
+  public state:ImageEditorState;
 
-  public state:ImageEditorState
+  private scaleNumber:number = 1;
 
-  private _scale:number = 1;
-  private _grid:boolean = false;
-  private _gridElement:any = null;
-  private _gridStore:any[] = [];
-  private _gridColor = 0xff000000;
-
-  private container:any;
-  private bg:any;
-  private canvas:any;
-  private canvasContainer:any;
+  private isGridDisplay:boolean = false;
+  private gridStore:createjs.Shape[] = [];
+  private gridColor:string = 'rgba(0,0,0,0.1)';
 
   private selectedCount:number = 0;
-  private selection:any;
-  private selectionBitmap:any;
 
-  private bitmapData:any;
+  // DisplayObject
+  private container:createjs.Container;
+  private canvasContainer:createjs.Container;
+  private grid:createjs.Shape;
+  private bg:createjs.Bitmap;
+  private selection:createjs.Bitmap;
+  private overlay:createjs.Bitmap;
+  private underlay:createjs.Bitmap;
+  private canvas:createjs.Bitmap;
 
-  private floater;
+  // BitmapData
+  private selectionBitmapData:createjs.BitmapData;
+  private canvasBitmapData:createjs.BitmapData;
 
-  public mode:string;
-
-  private selectionColor = 0x4400ff00;
-
-  public onChange:(id:ImageEditor)=>void;
+  private selectionColor:number = 0x4400ff00;
 
   static find(id) {
     return this.store[id];
   }
 
-  constructor(public stage, public width, public height, imageElement?, overlayElement?, underlayElement?) {
+  static clearClip() {
+    this.floaterBitmapData && this.floaterBitmapData.dispose();
+    this.floaterBitmapData = null;
+  }
+
+  static prepareClip(w, h) {
+    this.floaterBitmapData && this.floaterBitmapData.dispose();
+    this.floaterBitmapData = new createjs.BitmapData(null, w, h);
+    return this.floaterBitmapData;
+  }
+
+  static prepareFloater() {
+    if (!this.floaterBitmapData) {
+      return null;
+    }
+    this.floaterBitmapData.updateContext();
+    this.floater = new createjs.Bitmap(this.floaterBitmapData.canvas);
+    this.floater.shadow = new createjs.Shadow("#ff0000", 2, 2, 0);
+    return this.floater;
+  }
+
+  constructor(public stage, public dataURL, public width, public height, imageElement?:HTMLImageElement, overlayElement?:HTMLImageElement, underlayElement?:HTMLImageElement) {
 
     this.container = new createjs.Container();
     this.canvasContainer = new createjs.Container();
 
     this.bg = new createjs.Bitmap(new createjs.BitmapData(null, stage.canvas.width, stage.canvas.height, 0x01000000).canvas);
 
-    if (imageElement) {
-      this.bitmapData = new createjs.BitmapData(imageElement);
-    } else {
-      this.bitmapData = new createjs.BitmapData(null, width, height, 0xffffffff);
-    }
+    this.canvasBitmapData = new createjs.BitmapData(imageElement);
 
-    let overlay = overlayElement ? new createjs.Bitmap(new createjs.BitmapData(overlayElement).canvas) : null;
-    let underlay = underlayElement ? new createjs.Bitmap(new createjs.BitmapData(underlayElement).canvas) : null;
+    this.overlay = overlayElement
+      ? new createjs.Bitmap(new createjs.BitmapData(overlayElement).canvas)
+      : null;
+    this.underlay = underlayElement
+      ? new createjs.Bitmap(new createjs.BitmapData(underlayElement).canvas)
+      : null;
 
-    this.width = this.bitmapData.width;
-    this.height = this.bitmapData.height;
+    this.selectionBitmapData = new createjs.BitmapData(null, this.width, this.height);
+    this.selection = new createjs.Bitmap(this.selectionBitmapData.canvas);
 
-    this.selectionBitmap = new createjs.BitmapData(null, this.width, this.height);
-    this.selection = new createjs.Bitmap(this.selectionBitmap.canvas);
+    this.canvas = new createjs.Bitmap(this.canvasBitmapData.canvas);
 
-    this.canvas = new createjs.Bitmap(this.bitmapData.canvas);
-
-    underlay && this.canvasContainer.addChild(underlay);
+    this.underlay && this.canvasContainer.addChild(this.underlay);
     this.canvasContainer.addChild(this.canvas);
-    overlay && this.canvasContainer.addChild(overlay);
+    this.overlay && this.canvasContainer.addChild(this.overlay);
+    this.canvasContainer.addChild(this.selection);
+
     this.container.addChild(this.canvasContainer);
-    this.container.addChild(this.selection);
+
     stage.addChild(this.bg);
     stage.addChild(this.container);
     this.update();
@@ -92,7 +108,7 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
 
   close() {
     this.fixFloater();
-    this.onChange && this.onChange(this);
+    this.update();
     this.stage.clear();
     this.stage.removeAllChildren();
   }
@@ -107,7 +123,7 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
   }
 
   exportPng() {
-    return new DataURL(this.bitmapData.canvas.toDataURL("image/png"));
+    return new DataURL(this.canvasBitmapData.canvas.toDataURL("image/png"));
   }
 
   get position() {
@@ -124,42 +140,17 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
   }
 
   update() {
-    this.selectionBitmap.updateContext();
-    this.bitmapData.updateContext();
+    this.selectionBitmapData.updateContext();
+    this.canvasBitmapData.updateContext();
     this.stage.update();
-    this.onChange && this.onChange(this);
+    this.dataURL.update(this.exportPng());
   }
 
   normalizePixel(rawX, rawY) {
-    let x = (rawX - this.container.x) / this._scale >> 0;
-    let y = (rawY - this.container.y) / this._scale >> 0;
+    let x = (rawX - this.container.x) / this.scaleNumber >> 0;
+    let y = (rawY - this.container.y) / this.scaleNumber >> 0;
 
     return {x, y};
-  }
-
-  static clearClip() {
-    this.floaterBitmap && this.floaterBitmap.dispose();
-    this.floaterBitmap = null;
-  }
-
-  static prepareClip(w, h) {
-    this.floaterBitmap && this.floaterBitmap.dispose();
-    this.floaterBitmap = new createjs.BitmapData(null, w, h);
-    return this.floaterBitmap;
-  }
-
-  static prepareFloater() {
-    if (!this.floaterBitmap) {
-      return null;
-    }
-    this.floaterBitmap.updateContext();
-    this.floater = new createjs.Bitmap(this.floaterBitmap.canvas);
-    this.floater.shadow = new createjs.Shadow("#ff0000", 2, 2, 0);
-    return this.floater;
-  }
-
-  static create(stage, w, h, imageElement?, overlayElement?, underlayElement?) {
-    return new ImageEditor(stage, w, h, imageElement, overlayElement, underlayElement);
   }
 
   static pToP(x, y, endX, endY) {

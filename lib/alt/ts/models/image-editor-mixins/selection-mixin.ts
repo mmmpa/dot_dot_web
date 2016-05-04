@@ -9,13 +9,13 @@ export let Selection = (superclass) => class extends superclass {
     }
 
     let result = []
-    let raw = this.selectionBitmap.context.getImageData(0, 0, this.width, this.height).data
+    let raw = this.selectionBitmapData.context.getImageData(0, 0, this.width, this.height).data
     for (let i = raw.length - 1; i >= 0; i -= 4) {
       if (raw[i] !== 0) {
         let position = (i - 3) / 4;
         let x = (position % this.width);
         let y = position / this.width >> 0;
-        let color = this.bitmapData.getPixel32(x, y);
+        let color = this.canvasBitmapData.getPixel32(x, y);
 
         result.push(callback(x, y, color))
       }
@@ -25,8 +25,8 @@ export let Selection = (superclass) => class extends superclass {
 
   clearSelection(nextStateCallback?:()=>void) {
     this.selectedCount = 0;
-    this.selectionBitmap.clearRect(0, 0, this.width, this.height);
-    this.selectionBitmap.setPixel(0, 0, 0);
+    this.selectionBitmapData.clearRect(0, 0, this.width, this.height);
+    this.selectionBitmapData.setPixel(0, 0, 0);
     nextStateCallback ? nextStateCallback() : this.stateDrawing();
   }
 
@@ -35,12 +35,12 @@ export let Selection = (superclass) => class extends superclass {
     if (add) {
       if (!this.isCellSelected(x, y)) {
         this.selectedCount++;
-        this.selectionBitmap.setPixel32(x, y, this.selectionColor);
+        this.selectionBitmapData.setPixel32(x, y, this.selectionColor);
       }
     } else {
       if (this.isCellSelected(x, y)) {
         this.selectedCount--;
-        this.selectionBitmap.setPixel32(x, y, 0);
+        this.selectionBitmapData.setPixel32(x, y, 0);
       }
     }
     this.checkSelected();
@@ -51,7 +51,7 @@ export let Selection = (superclass) => class extends superclass {
   }
 
   isCellSelected(x, y) {
-    return this.selectionBitmap.getPixel32(x, y) !== 0;
+    return this.selectionBitmapData.getPixel32(x, y) !== 0;
   }
 
   checkSelected() {

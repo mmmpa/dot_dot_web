@@ -1,11 +1,21 @@
 import ActionHistory from "../action-history";
 import ImageEditor from "../image-editor";
 
+export interface IDisplay {
+  center(displayWidth, displayHeight),
+  scale(n:number, baseX, baseY),
+  drawGrid(),
+  switchGrid(bol:boolean),
+  slide(x, y, update?),
+  posit({x, y})
+}
+
 export let Display = (superclass) => class extends superclass {
+
   center(displayWidth, displayHeight) {
     let {width, height} = this;
-    width *= this._scale;
-    height *= this._scale;
+    width *= this.scaleNumber;
+    height *= this.scaleNumber;
     this.container.x = (displayWidth - width) / 2;
     this.container.y = (displayHeight - height) / 2;
     this.update();
@@ -14,51 +24,49 @@ export let Display = (superclass) => class extends superclass {
   scale(n:number, baseX, baseY) {
     if (baseX && baseY) {
       let prePosition = this.normalizePixel(baseX, baseY);
-      this._scale = n;
+      this.scaleNumber = n;
       let nextPosition = this.normalizePixel(baseX, baseY);
 
       let x = prePosition.x - nextPosition.x;
       let y = prePosition.y - nextPosition.y;
 
-      this.container.x -= x * this._scale;
-      this.container.y -= y * this._scale;
+      this.container.x -= x * this.scaleNumber;
+      this.container.y -= y * this.scaleNumber;
     } else {
-      this._scale = n;
+      this.scaleNumber = n;
     }
 
-    this.canvasContainer.scaleX = this.canvasContainer.scaleY = this._scale;
-    this.selection.scaleX = this.selection.scaleY = this._scale;
+    this.canvasContainer.scaleX = this.canvasContainer.scaleY = this.scaleNumber;
     this.drawGrid();
     this.stage.update();
   }
 
-
   drawGrid() {
-    this.container.removeChild(this._gridElement);
+    this.container.removeChild(this.grid);
 
-    if (!this._grid) {
+    if (!this.isGridDisplay) {
       return;
     }
 
-    let scale = this._scale;
+    let scale = this.scaleNumber;
 
     if (scale <= 2) {
       return;
     }
 
-    if (this._gridElement = this._gridStore[scale]) {
-      this.container.addChild(this._gridElement);
+    if (this.grid = this.gridStore[scale]) {
+      this.container.addChild(this.grid);
       this.stage.update();
       return;
     }
 
-    let {width, height} = this.bitmapData;
+    let {width, height} = this.canvasBitmapData;
 
-    this._gridElement = new createjs.Shape();
-    let g = this._gridElement.graphics;
+    this.grid = new createjs.Shape();
+    let g:createjs.Graphics = this.grid.graphics;
     g.setStrokeStyle(0);
-    g.beginStroke('rgba(0,0,0,0.1)');
-    this._gridStore[scale] = this._gridElement;
+    g.beginStroke(this.gridColor);
+    this.gridStore[scale] = this.grid;
 
     _.times(height + 1, (h)=> {
       let y = h * scale - 0.5
@@ -71,16 +79,16 @@ export let Display = (superclass) => class extends superclass {
       g.moveTo(x, -0.5);
       g.lineTo(x, height * scale - 0.5);
     });
-    this.container.addChild(this._gridElement);
+    this.container.addChild(this.grid);
     this.stage.update();
   }
 
   switchGrid(bol:boolean) {
-    if (this._grid === bol) {
+    if (this.isGridDisplay === bol) {
       return;
     }
 
-    this._grid = bol;
+    this.isGridDisplay = bol;
     this.drawGrid();
     this.stage.update();
   }
