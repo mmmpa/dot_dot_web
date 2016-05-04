@@ -9,7 +9,7 @@ import ImageEditor from "../models/image-editor";
 import FileInformation from "../models/file-information";
 import Configuration from "../records/configuration";
 import LayeredImage from "../models/layered-image";
-import DataURLGenerator from "../models/data-url-generator";
+import DataURLEditor from "../models/data-url-editor";
 import GradationColor from "../models/gradation-color";
 import CanvasSettingComponent from "../components/canvas-setting-component";
 import CanvasResizeComponent from "../components/canvas-resize-component";
@@ -39,7 +39,7 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
   private keyControl:KeyControl = new KeyControl();
   private configuration:Configuration;
   private intervals:number[] = [];
-  private gen:DataURLGenerator = new DataURLGenerator();
+  private gen:DataURLEditor = DataURLEditor;
 
   componentWillMount() {
     this.initializeConfiguration();
@@ -75,9 +75,9 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     this.commands['onControlN'] = ()=> this.dispatch('file:new');
     this.commands['onControlO'] = ()=> this.dispatch('file:open');
 
-    this.commands['onControlZ'] = ()=> this.dispatch('work:undo');
-    this.commands['onControlY'] = ()=> this.dispatch('work:redo');
-    this.commands['onControlShiftZ'] = ()=> this.dispatch('work:redo');
+    this.commands['onControlZ'] = ()=> this.dispatch('canvas:undo');
+    this.commands['onControlY'] = ()=> this.dispatch('canvas:redo');
+    this.commands['onControlShiftZ'] = ()=> this.dispatch('canvas:redo');
 
     this.commands['onControlC'] = ()=> this.dispatch('canvas:copy');
     this.commands['onControlV'] = ()=> this.dispatch('canvas:paste');
@@ -189,6 +189,8 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     to('edit', 'floater:select', (callback)=> this.selectColorFromFloater(callback));
     to('edit', 'floater:rise', (e, floatingCallback)=> this.riseFloater(e, floatingCallback));
 
+    to('edit', 'canvas:undo', ()=> this.undo());
+    to('edit', 'canvas:redo', ()=> this.redo());
     to('edit', 'canvas:press', (x, y)=> this.pressCanvas(x, y));
     to('edit', 'canvas:press:right', (x, y)=> this.pressCanvas(x, y, true));
     to('edit', 'canvas:drag', (...args)=> this.dragCanvas(...args));
@@ -222,13 +224,14 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     to('edit', 'frame:play', (n)=> this.playFrame(n));
     to('edit', 'frame:rate', (n)=> this.setFrameRate(n));
     to('edit', 'frame:replace', (frames)=> this.replaceFrames(frames));
-    to('edit', 'frame:update', (frames)=> this.updateFrame());
+    to('edit', 'frame:update', ()=> this.updateFrame());
 
     to('edit', 'file:save', ()=> this.save());
     to('edit', 'file:open', ()=> this.open());
     to('edit', 'file:new', ()=> this.createBlankCanvasFromModal(<CanvasSettingComponent/>));
     to('edit', 'file:new:complete', (w, h, bg)=> this.createBlankCanvas(w, h, bg));
     to('edit', 'file:name', (fileName)=> this.setState({fileName}));
+    to('edit', 'file:start', (fileName)=> this.start());
 
     to('edit', 'modal:rise', (modalComponent, modalProps)=> this.setState({modalComponent, modalProps}))
     to('modal', 'modal:hide', ()=> this.setState({modalComponent: null, modalProps: null}))

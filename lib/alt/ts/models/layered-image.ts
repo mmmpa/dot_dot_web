@@ -1,8 +1,8 @@
 import DataURL from "./data-url";
 import IDMan from "../libs/id-man";
-import DataURLGenerator from "./data-url-generator";
+import DataURLEditor from "./data-url-editor";
 
-const gen = new DataURLGenerator();
+const gen = DataURLEditor;
 
 export default class LayeredImage extends IDMan {
   public overlay:DataURL;

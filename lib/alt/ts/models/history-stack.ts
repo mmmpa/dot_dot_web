@@ -1,13 +1,13 @@
-interface Stack{
+interface Stack {
   up:()=>void,
   down:()=>void
 }
 
 export default class HistoryStack {
-  private history:Stack[] = [];
+  private history:(Stack[]|Stack[][]) = [];
   private position:number = 0;
 
-  constructor(public length = 10){
+  constructor(public length = 10) {
     this.length++;
   }
 
@@ -15,7 +15,19 @@ export default class HistoryStack {
     this.now = command;
     this.stepForward();
     this.now && this.dispose();
-    //this.now = null;
+  }
+
+  stockPrevious(command):void {
+    let previous:(Stack|Stack[]) = this.previous;
+
+    if (!previous) {
+      return;
+    }
+
+    if (!previous.slice) {
+      this.history[this.position - 1] = [previous];
+    }
+    this.previous.push(command);
   }
 
   undo():void {
@@ -23,28 +35,34 @@ export default class HistoryStack {
       return;
     }
     this.stepBackward();
-    this.now.down()
+    if(this.now.slice){
+      for(let i = this.now.length; i--;){
+        this.now[i].down()
+      }
+    }else{
+      this.now.down();
+    }
   }
 
   redo():void {
     if (!this.isRedoable) {
       return;
     }
-    this.now.up();
+    this.now.slice ? this.now.forEach((s)=> s.up()) : this.now.up()
     this.stepForward();
   }
 
-  stepForward(){
+  stepForward() {
     this.position++;
-    if(this.position === this.length){
+    if (this.position === this.length) {
       this.position = 0;
     }
   }
 
-  stepBackward(){
-    if(this.position === 0){
+  stepBackward() {
+    if (this.position === 0) {
       this.position = this.length - 1;
-    }else{
+    } else {
       this.position--;
     }
   }
@@ -57,15 +75,15 @@ export default class HistoryStack {
     return !!this.now;
   }
 
-  get previous():Stack {
-    if(this.position === 0){
+  get previous():(Stack|Stack[]) {
+    if (this.position === 0) {
       return this.history[this.length - 1];
-    }else{
+    } else {
       return this.history[this.position - 1];
     }
   }
 
-  get now():Stack {
+  get now():(Stack|Stack[]) {
     return this.history[this.position];
   }
 
@@ -73,7 +91,7 @@ export default class HistoryStack {
     this.history[this.position] = v;
   }
 
-  private dispose(){
+  private dispose() {
     delete this.history[this.position];
   }
 }

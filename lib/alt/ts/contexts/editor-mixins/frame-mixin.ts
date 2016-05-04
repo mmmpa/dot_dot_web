@@ -1,8 +1,8 @@
 import ImageEditor from "../../models/image-editor";
 import LayeredImage from "../../models/layered-image";
-import DataURLGenerator from "../../models/data-url-generator";
+import DataURLEditor from "../../models/data-url-editor";
 
-const gen = new DataURLGenerator();
+const gen = DataURLEditor;
 
 export let FrameMixin = (superclass) => class extends superclass {
   replaceIeByLayeredImage(layeredImage:LayeredImage) {
@@ -45,8 +45,7 @@ export let FrameMixin = (superclass) => class extends superclass {
   }
 
   updateFrame() {
-    let {frames, selectedFrameNumber, selectedLayerNumber} = this.state;
-
+    let {frames} = this.state;
     this.setState({frames});
   }
 

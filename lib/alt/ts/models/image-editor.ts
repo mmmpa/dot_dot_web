@@ -8,7 +8,9 @@ import {Display} from "./image-editor-mixins/display-mixin"
 import {Editor} from "./image-editor-mixins/editor-mixin"
 import {State} from "./image-editor-mixins/state-mixin"
 import LayeredImage from "./layered-image";
-import DataURL from "../../test/src/models/data-url";
+import DataURL from "./data-url";
+import DataURLEditor from "./data-url-editor";
+import HistoryStack from "./history-stack";
 
 export enum ImageEditorState{
   Drawing,
@@ -17,18 +19,19 @@ export enum ImageEditorState{
 }
 
 export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Display, Editor, State) {
+  static history:HistoryStack;
+
   static floater:createjs.Bitmap;
   static floaterBitmapData:createjs.BitmapData;
 
   public state:ImageEditorState;
 
   private scaleNumber:number = 1;
+  private selectedCount:number = 0;
 
   private isGridDisplay:boolean = false;
   private gridStore:createjs.Shape[] = [];
   private gridColor:string = 'rgba(0,0,0,0.1)';
-
-  private selectedCount:number = 0;
 
   // DisplayObject
   private container:createjs.Container;
@@ -69,6 +72,29 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
     this.floater = new createjs.Bitmap(this.floaterBitmapData.canvas);
     this.floater.shadow = new createjs.Shadow("#ff0000", 2, 2, 0);
     return this.floater;
+  }
+
+  static setPixel(dataURL:DataURL, x:number, y:number, color:number) {
+    let image = DataURLEditor.convertToImage(dataURL);
+    let bitmapData = new createjs.BitmapData(image);
+
+    bitmapData.setPixel32(x, y, color);
+    bitmapData.updateContext();
+
+    let updated = new DataURL(bitmapData.canvas.toDataURL());
+    dataURL.update(updated);
+  }
+
+  static initialize(){
+    this.history = new HistoryStack();
+  }
+
+  static undo(){
+    this.history.undo();
+  }
+
+  static redo(){
+    this.history.redo();
   }
 
   constructor(public stage, public dataURL, public width, public height, imageElement?:HTMLImageElement, overlayElement?:HTMLImageElement, underlayElement?:HTMLImageElement) {

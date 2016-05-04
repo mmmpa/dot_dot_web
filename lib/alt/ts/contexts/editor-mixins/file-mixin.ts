@@ -1,5 +1,6 @@
 import FileInformation from "../../models/file-information";
 import LayeredImage from "../../models/layered-image";
+import ImageEditor from "../../models/image-editor";
 
 export let FileMixin = (superclass) => class extends superclass {
   get fileName() {
@@ -25,7 +26,7 @@ export let FileMixin = (superclass) => class extends superclass {
       canvasHeight: height,
       selectedFrameNumber: 0,
       fileName: ''
-    }, ()=> this.dispatch('frame:select', 0));
+    }, ()=> this.dispatch('file:start'));
   }
 
   createBlankCanvasFromModal(component) {
@@ -41,6 +42,21 @@ export let FileMixin = (superclass) => class extends superclass {
       }
     };
     this.dispatch('modal:rise', component, modalProps);
+  }
+
+  start() {
+    ImageEditor.initialize();
+    this.dispatch('frame:select', 0);
+  }
+
+  undo() {
+    ImageEditor.undo();
+    this.dispatch('frame:update');
+  }
+
+  redo() {
+    ImageEditor.redo();
+    this.dispatch('frame:update');
   }
 
   save() {
@@ -95,7 +111,7 @@ export let FileMixin = (superclass) => class extends superclass {
         canvasHeight: baseHeight,
         selectedFrameNumber: 0,
         fileName: information.name
-      }, ()=> this.dispatch('frame:select', 0));
+      }, ()=> this.dispatch('file:start'));
     }
   }
 };
