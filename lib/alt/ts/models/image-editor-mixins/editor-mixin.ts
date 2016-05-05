@@ -81,7 +81,6 @@ export let Editor = (superclass) => class extends superclass {
   }
 
   move(t, r, b, l) {
-    console.log(this.isFloating)
     if (!this.isFloating) {
       return;
     }

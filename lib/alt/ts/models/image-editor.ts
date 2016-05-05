@@ -12,6 +12,7 @@ import DataURL from "./data-url";
 import DataURLEditor from "./data-url-editor";
 import HistoryStack from "./history-stack";
 
+
 export enum ImageEditorState{
   Drawing,
   Selected,
@@ -157,6 +158,10 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
       x: this.container.x,
       y: this.container.y
     }
+  }
+  
+  refresh(){
+    this.canvasBitmapData.drawImage(DataURLEditor.convertToImage(this.dataURL));
   }
 
   writeHistory(store) {

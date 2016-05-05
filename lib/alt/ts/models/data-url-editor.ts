@@ -1,4 +1,5 @@
-import DataURL from "../../test/src/models/data-url";
+import DataURL from "./data-url";
+
 export default class DataURLEditor {
   static _img:HTMLImageElement;
   static _canvas:HTMLCanvasElement;

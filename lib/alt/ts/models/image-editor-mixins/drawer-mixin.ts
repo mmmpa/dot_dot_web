@@ -1,5 +1,7 @@
 import ActionHistory from "../action-history";
 import ImageEditor from "../image-editor";
+import DataURL from "../data-url";
+import DataURLEditor from "../data-url-editor";
 
 export interface IDrawing {
   draw(x, y, color, update?:boolean),
@@ -41,8 +43,23 @@ export let Drawing = (superclass) => class extends superclass {
   fill(rawX, rawY, color, update?:boolean) {
     let {x, y} = this.normalizePixel(rawX, rawY);
 
-    this.canvasBitmapData.floodFill(x, y, color);
-    update && this.update();
+    let old = this.canvasBitmapData.getPixel32(x, y);
+    let updated = this.canvasBitmapData.floodFill(x, y, color);
+
+    if (!!updated && updated.length > 0) {
+      update && this.update();
+
+      ImageEditor.history.stock({
+        up: ()=> {
+          updated.forEach(({x, y})=> this.draw(x, y, color, false, false));
+          this.update();
+        },
+        down: ()=> {
+          updated.forEach(({x, y})=> this.draw(x, y, old, false, false));
+          this.update();
+        }
+      });
+    }
   }
 
   getPixel(rawX, rawY) {
