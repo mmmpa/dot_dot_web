@@ -12,8 +12,13 @@ export interface IDrawing {
 }
 
 export let Drawing = (superclass) => class extends superclass {
-  draw(x, y, color, update?:boolean = false, stock? = true) {
-    this.fixFloater();
+  draw(x, y, color, update?:boolean = false, stock? = true, fix? = true) {
+    if(fix){
+      if(this.fixFloater()){
+        return;
+      }
+    }
+
     if (this.isSelected) {
       if (!this.isCellSelected(x, y)) {
         return;
@@ -46,20 +51,8 @@ export let Drawing = (superclass) => class extends superclass {
     let old = this.canvasBitmapData.getPixel32(x, y);
     let updated = this.canvasBitmapData.floodFill(x, y, color);
 
-    if (!!updated && updated.length > 0) {
-      update && this.update();
-
-      ImageEditor.history.stock({
-        up: ()=> {
-          updated.forEach(({x, y})=> this.draw(x, y, color, false, false));
-          this.update();
-        },
-        down: ()=> {
-          updated.forEach(({x, y})=> this.draw(x, y, old, false, false));
-          this.update();
-        }
-      });
-    }
+    update && this.update();
+    this.stockPixels(updated);
   }
 
   getPixel(rawX, rawY) {

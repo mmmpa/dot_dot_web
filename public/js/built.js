@@ -2801,11 +2801,16 @@ exports.Drawing = function (superclass) { return (function (_super) {
     function class_1() {
         _super.apply(this, arguments);
     }
-    class_1.prototype.draw = function (x, y, color, update, stock) {
+    class_1.prototype.draw = function (x, y, color, update, stock, fix) {
         var _this = this;
         if (update === void 0) { update = false; }
         if (stock === void 0) { stock = true; }
-        this.fixFloater();
+        if (fix === void 0) { fix = true; }
+        if (fix) {
+            if (this.fixFloater()) {
+                return;
+            }
+        }
         if (this.isSelected) {
             if (!this.isCellSelected(x, y)) {
                 return;
@@ -2829,29 +2834,11 @@ exports.Drawing = function (superclass) { return (function (_super) {
         return { x: x, y: y, color: color, oldColor: oldColor };
     };
     class_1.prototype.fill = function (rawX, rawY, color, update) {
-        var _this = this;
         var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;
         var old = this.canvasBitmapData.getPixel32(x, y);
         var updated = this.canvasBitmapData.floodFill(x, y, color);
-        if (!!updated && updated.length > 0) {
-            update && this.update();
-            image_editor_1.default.history.stock({
-                up: function () {
-                    updated.forEach(function (_a) {
-                        var x = _a.x, y = _a.y;
-                        return _this.draw(x, y, color, false, false);
-                    });
-                    _this.update();
-                },
-                down: function () {
-                    updated.forEach(function (_a) {
-                        var x = _a.x, y = _a.y;
-                        return _this.draw(x, y, old, false, false);
-                    });
-                    _this.update();
-                }
-            });
-        }
+        update && this.update();
+        this.stockPixels(updated);
     };
     class_1.prototype.getPixel = function (rawX, rawY) {
         var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;
@@ -2913,9 +2900,10 @@ exports.Editor = function (superclass) { return (function (_super) {
         if (!this.isSelected) {
             return;
         }
-        var result = this.doSelected(function (x, y, color) { return _this.draw(x, y, 0); });
+        var updated = this.doSelected(function (x, y, color) { return _this.draw(x, y, 0, false, false); });
         this.clearSelection();
         this.update();
+        this.stockPixels(updated);
     };
     class_1.prototype.copy = function () {
         if (!this.isSelected) {
@@ -2942,33 +2930,37 @@ exports.Editor = function (superclass) { return (function (_super) {
             return;
         }
         var clip = image_editor_1.default.prepareClip(this.width, this.height);
-        var result = this.doSelected(function (x, y, color) {
+        var updated = this.doSelected(function (x, y, color) {
             clip.setPixel32(x, y, color);
-            return _this.draw(x, y, 0);
+            return _this.draw(x, y, 0, false, false);
         });
         this.clearSelection();
         this.update();
+        this.stockPixels(updated);
     };
     class_1.prototype.fixFloater = function () {
         if (!this.isFloating) {
-            return;
+            return false;
         }
         var raw = image_editor_1.default.floaterBitmapData.context.getImageData(0, 0, this.width, this.height).data;
         var offsetX = image_editor_1.default.floater.x;
         var offsetY = image_editor_1.default.floater.y;
+        var updated = [];
         for (var i = raw.length - 1; i >= 0; i -= 4) {
             if (raw[i] !== 0) {
                 var position = (i - 3) / 4;
                 var x = (position % this.width);
                 var y = position / this.width >> 0;
                 var color = image_editor_1.default.floaterBitmapData.getPixel32(x, y);
-                this.canvasBitmapData.setPixel32(x + offsetX, y + offsetY, color);
+                updated.push(this.draw(x + offsetX, y + offsetY, color, false, false, false));
             }
         }
         this.stateDrawing();
         this.canvasContainer.removeChild(this.floater);
         this.floater = null;
-        this.canvasBitmapData.updateContext();
+        this.stockPixels(updated);
+        this.update();
+        return true;
     };
     class_1.prototype.move = function (t, r, b, l) {
         if (!this.isFloating) {
@@ -3307,6 +3299,28 @@ var ImageEditor = (function (_super) {
         var x = (rawX - this.container.x) / this.scaleNumber >> 0;
         var y = (rawY - this.container.y) / this.scaleNumber >> 0;
         return { x: x, y: y };
+    };
+    ImageEditor.prototype.stockPixels = function (updated) {
+        var _this = this;
+        if (!updated || updated.length === 0) {
+            return;
+        }
+        ImageEditor.history.stock({
+            up: function () {
+                updated.forEach(function (_a) {
+                    var x = _a.x, y = _a.y, color = _a.color;
+                    return _this.draw(x, y, color, false, false);
+                });
+                _this.update();
+            },
+            down: function () {
+                updated.forEach(function (_a) {
+                    var x = _a.x, y = _a.y, oldColor = _a.oldColor;
+                    return _this.draw(x, y, oldColor, false, false);
+                });
+                _this.update();
+            }
+        });
     };
     ImageEditor.pToP = function (x, y, endX, endY) {
         var points = [];

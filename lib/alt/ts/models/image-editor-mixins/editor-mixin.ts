@@ -2,7 +2,7 @@ import ActionHistory from "../action-history";
 import ImageEditor from "../image-editor";
 import {ImageEditorState} from "../image-editor";
 
-export interface IEditor{
+export interface IEditor {
   del(),
   copy(),
   paste(),
@@ -16,9 +16,10 @@ export let Editor = (superclass) => class extends superclass {
     if (!this.isSelected) {
       return;
     }
-    let result = this.doSelected((x, y, color)=> this.draw(x, y, 0));
+    let updated = this.doSelected((x, y, color)=> this.draw(x, y, 0, false, false));
     this.clearSelection();
     this.update();
+    this.stockPixels(updated);
   }
 
   copy() {
@@ -47,37 +48,41 @@ export let Editor = (superclass) => class extends superclass {
       return;
     }
     let clip = ImageEditor.prepareClip(this.width, this.height);
-    let result = this.doSelected((x, y, color)=> {
+    let updated = this.doSelected((x, y, color)=> {
       clip.setPixel32(x, y, color);
-      return this.draw(x, y, 0);
+      return this.draw(x, y, 0, false, false);
     });
     this.clearSelection();
     this.update();
+    this.stockPixels(updated);
   }
 
-  fixFloater() {
+  fixFloater():boolean {
     if (!this.isFloating) {
-      return;
+      return false;
     }
 
     let raw = ImageEditor.floaterBitmapData.context.getImageData(0, 0, this.width, this.height).data;
     let offsetX = ImageEditor.floater.x;
     let offsetY = ImageEditor.floater.y;
 
+    let updated = [];
     for (let i = raw.length - 1; i >= 0; i -= 4) {
       if (raw[i] !== 0) {
         let position = (i - 3) / 4;
         let x = (position % this.width);
         let y = position / this.width >> 0;
         let color = ImageEditor.floaterBitmapData.getPixel32(x, y);
-        this.canvasBitmapData.setPixel32(x + offsetX, y + offsetY, color);
+        updated.push(this.draw(x + offsetX, y + offsetY, color, false, false, false));
       }
     }
 
     this.stateDrawing();
     this.canvasContainer.removeChild(this.floater);
     this.floater = null;
-    this.canvasBitmapData.updateContext();
+    this.stockPixels(updated);
+    this.update();
+    return true;
   }
 
   move(t, r, b, l) {

@@ -86,15 +86,15 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
     dataURL.update(updated);
   }
 
-  static initialize(){
+  static initialize() {
     this.history = new HistoryStack();
   }
 
-  static undo(){
+  static undo() {
     this.history.undo();
   }
 
-  static redo(){
+  static redo() {
     this.history.redo();
   }
 
@@ -159,8 +159,8 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
       y: this.container.y
     }
   }
-  
-  refresh(){
+
+  refresh() {
     this.canvasBitmapData.drawImage(DataURLEditor.convertToImage(this.dataURL));
   }
 
@@ -182,6 +182,23 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
     let y = (rawY - this.container.y) / this.scaleNumber >> 0;
 
     return {x, y};
+  }
+
+  stockPixels(updated:any[]) {
+    if (!updated || updated.length === 0) {
+      return;
+    }
+
+    ImageEditor.history.stock({
+      up: ()=> {
+        updated.forEach(({x, y, color})=> this.draw(x, y, color, false, false));
+        this.update();
+      },
+      down: ()=> {
+        updated.forEach(({x, y, oldColor})=> this.draw(x, y, oldColor, false, false));
+        this.update();
+      }
+    });
   }
 
   static pToP(x, y, endX, endY) {
