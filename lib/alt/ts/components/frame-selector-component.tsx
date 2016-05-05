@@ -60,9 +60,9 @@ export default class FrameSelectorComponent extends Cell<P,{}> {
         <div className="controller">
           <div className="edit">
             <StepperInput value={this.props.framesScale} onChange={(v)=> this.dispatch('frame:scale', v)}/>
-            <button className="add icon-button" onClick={()=> this.dispatch('frame:play', this.props.frameRate)}>
+            <BlurButton className="add icon-button" onClick={()=> this.dispatch('frame:play', this.props.frameRate)}>
               <Fa icon="play"/>
-            </button>
+            </BlurButton>
           </div>
           <div className="edit">
             <BlurButton className="add icon-button" onClick={()=> this.dispatch('frame:add')}>
