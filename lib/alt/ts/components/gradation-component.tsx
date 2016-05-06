@@ -39,7 +39,7 @@ export default class GradationSelectorComponent extends Cell<P,{}> {
     let [color1, color2] = this.props.colors;
 
     return <div className="cell y color-palette" style={this.layoutStyle}>
-      <header className="cell-header">{this.myName}</header>
+      <header className="cell-header">二色間カラーパレット</header>
       <section className="cell-body">
         {this.writeGradations()}
         <div className="controller">

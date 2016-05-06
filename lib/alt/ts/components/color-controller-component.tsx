@@ -51,7 +51,7 @@ export default class ColorControllerComponent extends Cell<{},{}> {
     let {colors, selectedColorNumber} = this.props;
     let that = this;
     return <div className="cell y color-controller" style={this.layoutStyle}>
-      <header className="cell-header">{this.myName}</header>
+      <header className="cell-header">選択カラー調整</header>
       <section className="cell-body">
         <section className="selected">
           <SelectedColor {...{colors, selectedColorNumber}}

@@ -55,7 +55,7 @@ export default class FrameSelectorComponent extends Cell<P,{}> {
   render() {
     return <div className="cell x frame-selector" style={this.layoutStyle}>
       <div className="resize-bar" onMouseDown={(e)=> this.resize(e)}>&nbsp;</div>
-      <header className="cell-header">{this.myName}</header>
+      <header className="cell-header">アニメーションフレームとレイヤー</header>
       <section className="cell-body">
         <div className="controller">
           <div className="edit">

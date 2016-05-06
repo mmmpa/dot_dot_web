@@ -6,9 +6,6 @@ import {Route} from './constants/constants'
 
 import MainContext from "./contexts/main-context";
 import EditorContext from "./contexts/editor-context";
-import SelectorContext from "./contexts/selector-context";
-
-import SelectorComponent from "./components/selector-component";
 import EditorComponent from "./components/editor-component";
 
 class DotDot {
@@ -16,9 +13,6 @@ class DotDot {
     ReactDOM.render(
       <article className="dot-body">
         <MainContext>
-          <SelectorContext route={Route.Selector}>
-            <SelectorComponent/>
-          </SelectorContext>
           <EditorContext route={Route.Editor}>
             <EditorComponent/>
           </EditorContext>

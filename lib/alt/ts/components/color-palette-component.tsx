@@ -18,7 +18,7 @@ export default class ColorPaletteComponent extends Cell<P,{}> {
     let {top, left} = this.layoutStyle;
 
     return <div className="cell y color-palette" style={this.layoutStyle}>
-      <header className="cell-header">{this.myName}</header>
+      <header className="cell-header">カラーパレット</header>
       <section className="cell-body">
         <ColorCellSet {...{colorSet, onClick: (color)=> this.dispatch('color:select', color)}}/>
         <div className="controller">
