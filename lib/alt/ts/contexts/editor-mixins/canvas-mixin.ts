@@ -1,5 +1,6 @@
 import LayeredImage from "../../models/layered-image";
 import ARGB from "../../models/argb";
+import DataURLEditor from '../../models/data-url-editor';
 
 export let CanvasMixin = (superclass) => class extends superclass {
   resizeCanvasFromModal(component) {
@@ -23,7 +24,7 @@ export let CanvasMixin = (superclass) => class extends superclass {
     let height = canvasHeight + top + bottom;
 
     let newFrames = frames.map((frame)=> {
-      return new LayeredImage(width, height, [this.gen.fromImage(frame.image(0), width, height, top, left)])
+      return new LayeredImage(width, height, [DataURLEditor.fromImage(frame.image(0), width, height, top, left)])
     });
 
     this.setState({

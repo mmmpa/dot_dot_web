@@ -15,12 +15,11 @@ interface P {
 export default class ColorPaletteComponent extends Cell<P,{}> {
   render() {
     let {colorSet} = this.props;
-    let {top, left} = this.layoutStyle;
 
     return <div className="cell y color-palette" style={this.layoutStyle}>
       <header className="cell-header">カラーパレット</header>
       <section className="cell-body">
-        <ColorCellSet {...{colorSet, onClick: (color)=> this.dispatch('color:select', color)}}/>
+        <ColorCellSet {...{colorSet, onClick: (color, index, isRight)=> this.dispatch('color:select', color, isRight)}}/>
         <div className="controller">
           <BlurButton className="add icon-button" onClick={()=> this.dispatch('color:add', this.props.selectedColor)}>
             <Fa icon="plus-circle"/>

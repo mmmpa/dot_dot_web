@@ -21,6 +21,7 @@ import {FrameDisplayMixin} from "./editor-mixins/frame-display-mixin"
 import {LayerMixin} from "./editor-mixins/layer-mixin"
 import {WorkMixin} from "./editor-mixins/work-mixin"
 import ComponentSize from "../models/component-size";
+import LayeredAnimationFrame from '../models/layered-animation';
 
 interface P {
 }
@@ -39,80 +40,53 @@ export default class EditorContext extends mix(Parcel).with(
   FrameMixin,
   FrameDisplayMixin,
   LayerMixin,
-  WorkMixin,
+  WorkMixin
 ) {
   private version:number        = 1;
   private stage:any;
-  private ie:ImageEditor;
-  private scaleNumbers:number[] = [1, 2, 4, 8, 16, 32, 64];
-  private slide:(x, y)=>void;
-  private commands:any          = [];
+  private commands:any          = {};
   private keyControl:KeyControl = new KeyControl();
   private configuration:Configuration;
   private intervals:number[]    = [];
-  private gen:DataURLEditor     = DataURLEditor;
 
   componentWillMount() {
-    this.initializeConfiguration();
     super.componentWillMount();
+    this.initializeConfiguration();
+    let configuration = this.configuration.readInitial();
 
-    let {scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations, framesScale} = this.configuration.readOnce('scale', 'grid', 'colors', 'selectedColorNumber', 'selectedColor', 'colorSet', 'gradations', 'framesScale');
-
-    this.setState({
+    this.setState(_.merge(configuration, {
       componentSize: new ComponentSize({}),
       keyControl: this.keyControl,
       mode: null,
       floatingCallback: null,
       floatingFrom: null,
       commands: this.commands,
-      draw: (...args)=> this.draw(...args),
-      drawLine: (...args)=> this.drawLine(...args),
-      frameCount: 1,
       fileName: 'noname',
       canvasWidth: 0,
       canvasHeight: 0,
-      frames: [],
-      selectedFrameNumber: 0,
-      selectedLayerNumber: 0,
-      frameRate: 60,
-      // user state
-      scale,
-      grid,
-      colors,
-      selectedColorNumber,
-      selectedColor,
-      colorSet,
-      gradations,
-      framesScale
-    });
+      frames: new LayeredAnimationFrame()
+    }));
 
-    this.commands['onG']        = ()=> this.dispatch('canvas:grid:toggle');
-    this.commands['onDelete']   = ()=> this.dispatch('canvas:delete');
-    this.commands['onShiftG']   = ()=> this.dispatch('canvas:outline:toggle');
-    this.commands['onControlS'] = ()=> this.dispatch('file:save');
-    this.commands['onControlN'] = ()=> this.dispatch('file:new');
-    this.commands['onControlO'] = ()=> this.dispatch('file:open');
-
-    this.commands['onControlZ']      = ()=> this.dispatch('canvas:undo');
-    this.commands['onControlY']      = ()=> this.dispatch('canvas:redo');
-    this.commands['onControlShiftZ'] = ()=> this.dispatch('canvas:redo');
-
-    this.commands['onControlC'] = ()=> this.dispatch('canvas:copy');
-    this.commands['onControlV'] = ()=> this.dispatch('canvas:paste');
-    this.commands['onControlX'] = ()=> this.dispatch('canvas:cut');
-
-    this.commands['onArrowUp']           = ()=> this.dispatch('canvas:move', 1, 0, 0, 0);
-    this.commands['onArrowRight']        = ()=> this.dispatch('canvas:move', 0, 1, 0, 0);
-    this.commands['onArrowDown']         = ()=> this.dispatch('canvas:move', 0, 0, 1, 0);
-    this.commands['onArrowLeft']         = ()=> this.dispatch('canvas:move', 0, 0, 0, 1);
-    this.commands['onControlArrowUp']    = ()=> this.dispatch('canvas:move', 1, 0, 0, 0);
-    this.commands['onControlArrowRight'] = ()=> this.dispatch('canvas:move', 0, 1, 0, 0);
-    this.commands['onControlArrowDown']  = ()=> this.dispatch('canvas:move', 0, 0, 1, 0);
-    this.commands['onControlArrowLeft']  = ()=> this.dispatch('canvas:move', 0, 0, 0, 1);
-
-    this.keyControl.hook = (name, e:JQueryKeyEventObject)=> {
-      this.call(name, e)()
-    }
+    this.keyControl.bind('onG', 'sc', ()=> this.dispatch('canvas:grid:toggle'));
+    this.keyControl.bind('onDelete', 'sc', ()=> this.dispatch('canvas:delete'));
+    this.keyControl.bind('onShiftG', 'sc', ()=> this.dispatch('canvas:outline:toggle'));
+    this.keyControl.bind('onControlS', 'sc', ()=> this.dispatch('file:save'));
+    this.keyControl.bind('onControlN', 'sc', ()=> this.dispatch('file:new'));
+    this.keyControl.bind('onControlO', 'sc', ()=> this.dispatch('file:open'));
+    this.keyControl.bind('onControlZ', 'sc', ()=> this.dispatch('canvas:undo'));
+    this.keyControl.bind('onControlY', 'sc', ()=> this.dispatch('canvas:redo'));
+    this.keyControl.bind('onControlShiftZ', 'sc', ()=> this.dispatch('canvas:redo'));
+    this.keyControl.bind('onControlC', 'sc', ()=> this.dispatch('canvas:copy'));
+    this.keyControl.bind('onControlV', 'sc', ()=> this.dispatch('canvas:paste'));
+    this.keyControl.bind('onControlX', 'sc', ()=> this.dispatch('canvas:cut'));
+    this.keyControl.bind('onArrowUp', 'sc', ()=> this.dispatch('canvas:move', 1, 0, 0, 0));
+    this.keyControl.bind('onArrowRight', 'sc', ()=> this.dispatch('canvas:move', 0, 1, 0, 0));
+    this.keyControl.bind('onArrowDown', 'sc', ()=> this.dispatch('canvas:move', 0, 0, 1, 0));
+    this.keyControl.bind('onArrowLeft', 'sc', ()=> this.dispatch('canvas:move', 0, 0, 0, 1));
+    this.keyControl.bind('onControlArrowUp', 'sc', ()=> this.dispatch('canvas:move', 1, 0, 0, 0));
+    this.keyControl.bind('onControlArrowRight', 'sc', ()=> this.dispatch('canvas:move', 0, 1, 0, 0));
+    this.keyControl.bind('onControlArrowDown', 'sc', ()=> this.dispatch('canvas:move', 0, 0, 1, 0));
+    this.keyControl.bind('onControlArrowLeft', 'sc', ()=> this.dispatch('canvas:move', 0, 0, 0, 1));
   }
 
   componentDidMount() {
@@ -130,39 +104,20 @@ export default class EditorContext extends mix(Parcel).with(
     }
   }
 
+  componentWillUpdate(props, state) {
+    this.configuration.saveFrom(state);
+  }
+
   initializeConfiguration() {
-    this.configuration = new Configuration();
-
-    if (this.configuration.read('initialized') !== this.version) {
-      this.configuration.writeOnce({
-        initialized: this.version,
-        scale: 2,
-        grid: true,
-        colors: [ARGB.number(0xff000000), ARGB.number(0xffffffff)],
-        selectedColorNumber: 0,
-        selectedColor: ARGB.number(0xff000000),
-        colorSet: new ColorSet(nes),
-        gradations: [],
-        framesScale: 4,
-        frameRate: 60,
-        layerNumber: 0
-      })
-    }
-
-    let id = setInterval(()=> {
-      let {scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations, framesScale} = this.state;
-      this.configuration.writeOnce({
-        scale,
-        grid,
-        colors,
-        selectedColorNumber,
-        selectedColor,
-        colorSet,
-        gradations,
-        framesScale
-      });
-    }, 1000);
-    this.intervals.push(id);
+    this.configuration = new Configuration(this.version, {
+      scale: 2,
+      grid: true,
+      colors: [ARGB.number(0xff000000), ARGB.number(0xffffffff)],
+      selectedColorNumber: 0,
+      selectedColor: ARGB.number(0xff000000),
+      colorSet: new ColorSet(),
+      gradations: []
+    });
   }
 
   call(name, e?) {
@@ -190,7 +145,7 @@ export default class EditorContext extends mix(Parcel).with(
 
   resizeComponent(target:string, moveX:number, moveY:number) {
     let {componentSize} = this.state;
-    let newSize     = {}
+    let newSize     = {};
     newSize[target] = componentSize[target] + moveY;
     componentSize.update(newSize);
     this.setState({componentSize});
@@ -268,7 +223,7 @@ export default class EditorContext extends mix(Parcel).with(
       modalComponent,
       modalProps
     }));
-    
+
     to('modal', 'modal:hide', ()=> this.setState({
       modalComponent: null,
       modalProps: null

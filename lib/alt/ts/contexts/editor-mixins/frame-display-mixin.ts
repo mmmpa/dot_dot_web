@@ -14,10 +14,6 @@ export let FrameDisplayMixin = (superclass) => class extends superclass {
     this.setState({framesScale})
   }
 
-  setFrameRate(frameRate) {
-    this.setState({frameRate})
-  }
-
   playFrame(frameRate) {
     let id = setInterval(()=> {
       this.selectNextFrame();

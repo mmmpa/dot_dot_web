@@ -6,41 +6,22 @@ const gen = DataURLEditor;
 
 export let FrameMixin = (superclass) => class extends superclass {
   get frameNow():LayeredImage {
-    return this.state.frames[this.state.selectedFrameNumber];
+    return this.state.frames.selected;
   }
 
   addFrame() {
-    let {frames, selectedFrameNumber} = this.state;
-    let newFrame = frames[selectedFrameNumber].clone();
-    frames.splice(selectedFrameNumber, 0, newFrame);
-    this.setState({frames}, ()=> this.dispatch('frame:select', selectedFrameNumber + 1));
+    this.state.frames.cloneSelectedFrame();
+    this.dispatch('frame:select')
   }
 
   removeFrame() {
-    let {frames, selectedFrameNumber} = this.state;
-
-    if (frames.length === 1) {
-      return
-    }
-
-    let newFrames = frames.filter((f)=> f.id !== this.frameNow.id)
-    let nextFrame = selectedFrameNumber === 0 ? 0 : selectedFrameNumber - 1;
-    this.setState({frames: newFrames}, ()=> this.dispatch('frame:select', nextFrame));
+    this.state.frames.removeSelectedFrame();
+    this.dispatch('frame:select')
   }
 
   moveFrameN(n) {
-    let {frames, selectedFrameNumber} = this.state;
-    let target = frames[selectedFrameNumber + n];
-    if (!target) {
-      return;
-    }
-
-    let newFrames = frames.concat();
-
-    newFrames[selectedFrameNumber]     = target;
-    newFrames[selectedFrameNumber + n] = this.frameNow;
-
-    this.setState({frames: newFrames}, ()=> this.dispatch('frame:select', selectedFrameNumber + n));
+    this.state.frames.move(n);
+    this.dispatch('frame:select')
   }
 
   moveFrameBackward() {
@@ -51,24 +32,20 @@ export let FrameMixin = (superclass) => class extends superclass {
     this.moveFrameN(+1);
   }
 
-  selectFrame(selectedFrameNumber, selectedLayerNumber_ = -1) {
-    let frame:LayeredImage = this.state.frames[selectedFrameNumber];
+  selectFrame(selectedFrameNumber_ = -1, selectedLayerNumber_ = -1) {
+    let {frames} = this.state;
+    let selectedFrameNumber = selectedFrameNumber_ === -1 ? frames.selectedIndex : selectedFrameNumber_;
+    let selectedLayerNumber = selectedLayerNumber_ === -1 ? frames.selectedLayerIndex : selectedLayerNumber_;
+    
+    frames.select(selectedFrameNumber);
+    frames.selectLayer(selectedLayerNumber);
 
-    let selectedLayerNumber = selectedLayerNumber_ !== -1 ? selectedLayerNumber_ : this.state.selectedLayerNumber
-
-    if (!frame) {
-      return;
-    }
-
-    frame.select(selectedLayerNumber);
-    let ie = this.replaceIeByLayeredImage(frame);
-    this.setState({ie, selectedFrameNumber, selectedLayerNumber});
+    let ie = this.replaceIeByLayeredImage(frames.selected);
+    this.setState({ie});
   }
 
   replaceFrames(frames) {
-    let {selectedFrameNumber} = this.state;
-
-    this.setState({frames}, ()=> this.selectFrame(selectedFrameNumber));
+    this.setState({frames}, ()=> this.dispatch('frame:select'));
   }
 
   replaceIeByLayeredImage(layeredImage:LayeredImage) {

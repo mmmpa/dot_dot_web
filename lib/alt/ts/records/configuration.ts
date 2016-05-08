@@ -2,10 +2,36 @@ import Plate from "../libs/plate";
 import ARGB from "../models/argb";
 import ColorSet from "../models/color-set";
 import GradationColor from "../models/gradation-color";
+import * as _ from 'lodash';
 
 export default class Configuration extends Plate {
-  constructor() {
+  public saveTarget:string[];
+
+  constructor(public version = 0, params) {
     super('dot-dot-configuration');
+
+    this.saveTarget = _.map(params, (v, k)=> k);
+
+    if (this.read('initialized') !== this.version) {
+      this.write('initialized', this.version);
+      this.writeOnce(params);
+    }
+  }
+
+  readInitial(){
+    return _.reduce(this.saveTarget, (a, key)=> {
+      a[key] = this.read(key);
+      return a;
+    }, {});
+  }
+
+  saveFrom(params) {
+    let picked = _.reduce(this.saveTarget, (a, key)=> {
+      a[key] = params[key];
+      return a;
+    }, {});
+
+    this.writeOnce(picked);
   }
 
   set_selectedColor(value) {

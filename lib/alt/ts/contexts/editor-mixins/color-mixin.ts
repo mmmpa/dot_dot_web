@@ -23,7 +23,7 @@ export let ColorMixin = (superclass) => class extends superclass {
     this.setState({colors, selectedColor});
   }
 
-  selectColor(selectedColor:ARGB, isRight:bolean = false) {
+  selectColor(selectedColor:ARGB, isRight:boolean = false) {
     let {colors, selectedColorNumber} = this.state;
     isRight && (selectedColorNumber = selectedColorNumber ^ 1);
     colors = colors.concat();

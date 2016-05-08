@@ -12,7 +12,7 @@ export default class ColorCellSet extends React.Component<{colorSet:ColorSet, on
   }
 
   shouldComponentUpdate(props) {
-    return props.colorSet.version !== this.state.version
+    return props.colorSet !== this.props.colorSet || props.colorSet.version !== this.state.version
   }
 
   componentWillReceiveProps(props) {

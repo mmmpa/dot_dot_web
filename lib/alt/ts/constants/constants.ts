@@ -1,4 +1,7 @@
+import * as _ from 'lodash'
 import ARGB from "../models/argb";
+import ColorSet from '../models/color-set';
+
 export enum Route{
   Selector,
   Editor
@@ -9,12 +12,22 @@ export enum Tool{
   Spuit
 }
 
+export const presetScale:number[] = [1, 2, 4, 8, 16, 32, 64];
+
 export enum FloatingColorPaletteMode{
   Delete,
   Select,
   SelectBackground,
   SelectGraduation
 }
+
+export const web = _.flatten(_.times(6, (r)=> {
+  return _.flatten(_.times(6, (g)=> {
+    return _.times(6, (b)=> {
+      return new ARGB(255, r * 51, g * 51, b * 51)
+    });
+  }));
+}));
 
 export const nes = [
   new ARGB(255, 124, 124, 124),
@@ -82,3 +95,15 @@ export const nes = [
   new ARGB(255, 0, 0, 0),
   new ARGB(255, 0, 0, 0)
 ];
+
+export const colorPreset = {
+  sfc: {
+    title: 'SFC',
+    colorSet: new ColorSet(nes)
+  },
+  web: {
+    title: 'Webセーフカラー',
+    colorSet: new ColorSet(web)
+  }
+};
+

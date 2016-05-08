@@ -7,6 +7,7 @@ import {Selection} from "./image-editor-mixins/selection-mixin"
 import {Display} from "./image-editor-mixins/display-mixin"
 import {Editor} from "./image-editor-mixins/editor-mixin"
 import {State} from "./image-editor-mixins/state-mixin"
+import {ClipBoardMixin} from "./image-editor-mixins/clip-board-mixin"
 import LayeredImage from "./layered-image";
 import DataURL from "./data-url";
 import DataURLEditor from "./data-url-editor";
@@ -19,7 +20,14 @@ export enum ImageEditorState{
   Floating
 }
 
-export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Display, Editor, State) {
+export default class ImageEditor extends mix(IDMan).with(
+  Drawing,
+  Selection,
+  Display,
+  Editor,
+  State,
+  ClipBoardMixin
+) {
   static history:HistoryStack;
 
   static floater:createjs.Bitmap;
@@ -49,42 +57,6 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
   private canvasBitmapData:createjs.BitmapData;
 
   private selectionColor:number = 0x4400ff00;
-
-  static find(id) {
-    return this.store[id];
-  }
-
-  static clearClip() {
-    this.floaterBitmapData && this.floaterBitmapData.dispose();
-    this.floaterBitmapData = null;
-  }
-
-  static prepareClip(w, h) {
-    this.floaterBitmapData && this.floaterBitmapData.dispose();
-    this.floaterBitmapData = new createjs.BitmapData(null, w, h);
-    return this.floaterBitmapData;
-  }
-
-  static prepareFloater() {
-    if (!this.floaterBitmapData) {
-      return null;
-    }
-    this.floaterBitmapData.updateContext();
-    this.floater = new createjs.Bitmap(this.floaterBitmapData.canvas);
-    this.floater.shadow = new createjs.Shadow("#ff0000", 2, 2, 0);
-    return this.floater;
-  }
-
-  static setPixel(dataURL:DataURL, x:number, y:number, color:number) {
-    let image = DataURLEditor.convertToImage(dataURL);
-    let bitmapData = new createjs.BitmapData(image);
-
-    bitmapData.setPixel32(x, y, color);
-    bitmapData.updateContext();
-
-    let updated = new DataURL(bitmapData.canvas.toDataURL());
-    dataURL.update(updated);
-  }
 
   static initialize() {
     this.history = new HistoryStack();
@@ -140,34 +112,8 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
     this.stage.removeAllChildren();
   }
 
-  once(callback:(writeHistory, bitmapData)=>void):ActionHistory[] {
-    let store:{historyGroup:ActionHistory[]} = {historyGroup: []};
-    callback(this.writeHistory(history), this);
-
-    this.update();
-
-    return store.historyGroup
-  }
-
   exportPng() {
     return new DataURL(this.canvasBitmapData.canvas.toDataURL("image/png"));
-  }
-
-  get position() {
-    return {
-      x: this.container.x,
-      y: this.container.y
-    }
-  }
-
-  refresh() {
-    this.canvasBitmapData.drawImage(DataURLEditor.convertToImage(this.dataURL));
-  }
-
-  writeHistory(store) {
-    return (...args)=> {
-      store.historyGroup = args;
-    }
   }
 
   update() {
@@ -191,12 +137,10 @@ export default class ImageEditor extends mix(IDMan).with(Drawing, Selection, Dis
 
     ImageEditor.history.stock({
       up: ()=> {
-        updated.forEach(({x, y, color})=> this.draw(x, y, color, false, false));
-        this.update();
+        updated.forEach(({x, y, color})=> this.setPixel(x, y, color, false, false));
       },
       down: ()=> {
-        updated.forEach(({x, y, oldColor})=> this.draw(x, y, oldColor, false, false));
-        this.update();
+        updated.forEach(({x, y, oldColor})=> this.setPixel(x, y, oldColor, false, false));
       }
     });
   }

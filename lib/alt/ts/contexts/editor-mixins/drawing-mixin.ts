@@ -1,5 +1,6 @@
 import LayeredImage from "../../models/layered-image";
 import ARGB from "../../models/argb";
+import {presetScale} from '../../constants/constants';
 
 export let DrawingMixin = (superclass) => class extends superclass {
   pressCanvas(x, y, isRight = false) {
@@ -123,12 +124,12 @@ export let DrawingMixin = (superclass) => class extends superclass {
   }
 
   draw(x, y, color) {
-    this.ie.setPixel(x, y, color.number, true);
+    this.ie.draw(x, y, color.number, true);
     this.dispatch('frame:update');
   }
 
   drawLine(x, y, endX, endY, color) {
-    this.ie.setPixelToPixel(x, y, endX, endY, color.number, true);
+    this.ie.drawPixelToPixel(x, y, endX, endY, color.number, true);
     this.dispatch('frame:update');
   }
 
@@ -146,8 +147,8 @@ export let DrawingMixin = (superclass) => class extends superclass {
     scale += direction;
     if (scale < 0) {
       scale = 0;
-    } else if (scale >= this.scaleNumbers.length) {
-      scale = this.scaleNumbers.length - 1;
+    } else if (scale >= presetScale.length) {
+      scale = presetScale.length - 1;
     }
 
     this.scale(scale, x, y)
@@ -155,7 +156,7 @@ export let DrawingMixin = (superclass) => class extends superclass {
   }
 
   scale(scale?, x?, y?) {
-    this.ie.scale(this.scaleNumbers[scale || this.state.scale], x, y);
+    this.ie.scale(presetScale[scale || this.state.scale], x, y);
     if (!x && !y) {
       this.center();
     }

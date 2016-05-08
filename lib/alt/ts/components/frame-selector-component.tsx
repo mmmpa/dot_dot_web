@@ -8,10 +8,11 @@ import StepperInput from "./stepper-input";
 import DataURL from "../models/data-url";
 import * as ReactAddons from "react-addons";
 import BlurButton from "./blur-button";
+import LayeredAnimationFrame from '../models/layered-animation';
 const classSet = ReactAddons.classSet;
 
 interface P {
-  frames:LayeredImage[],
+  frames:LayeredAnimationFrame,
   frameNumber:number,
   framesScale:number
 }
@@ -22,12 +23,13 @@ export default class FrameSelectorComponent extends Cell<P,{}> {
   }
 
   writeFrames() {
-    let {selectedFrameNumber, selectedLayerNumber, framesScale, frames} = this.props;
+    let {framesScale, frames} = this.props;
+    let {selectedLayerIndex} = frames;
 
     let scale = framesScale;
-    return frames.map((image, frameNumber)=> {
-      let onClick = (layerNumber)=> this.dispatch('frame:select', frameNumber, layerNumber)
-      return <FrameSelectorCellComponent {...{scale, image, onClick, selectedLayerNumber, selected: frameNumber === selectedFrameNumber}}/>
+    return frames.frames.map((image, frameNumber)=> {
+      let onClick = (layerNumber)=> this.dispatch('frame:select', frameNumber, layerNumber);
+      return <FrameSelectorCellComponent {...{scale, image, onClick, selectedLayerIndex, selected: image === frames.selected}}/>
     })
   }
 
@@ -60,7 +62,7 @@ export default class FrameSelectorComponent extends Cell<P,{}> {
         <div className="controller">
           <div className="edit">
             <StepperInput value={this.props.framesScale} onChange={(v)=> this.dispatch('frame:scale', v)}/>
-            <BlurButton className="add icon-button" onClick={()=> this.dispatch('frame:play', this.props.frameRate)}>
+            <BlurButton className="add icon-button" onClick={()=> this.dispatch('frame:play')}>
               <Fa icon="play"/>
             </BlurButton>
           </div>
@@ -125,13 +127,13 @@ class FrameSelectorCellComponent extends React.Component<{scale:number, image:La
   }
 
   writeLayers() {
-    let {image, onClick, selectedLayerNumber} = this.props;
+    let {image, onClick, selectedLayerIndex} = this.props;
     let style = image.scale(this.props.scale);
     if (!image) {
       return
     }
     return image.dataURLs.map((dataURL, layerNumber)=> {
-      return <LayerSelectorCellComponent {...{style, dataURL, onClick, layerNumber, selected: layerNumber === selectedLayerNumber}}/>
+      return <LayerSelectorCellComponent {...{style, dataURL, onClick, layerNumber, selected: layerNumber === selectedLayerIndex}}/>
     })
   }
 

@@ -6,28 +6,22 @@ const gen = DataURLEditor;
 
 export let LayerMixin = (superclass) => class extends superclass {
   addLayer() {
-    let {frames, selectedLayerNumber, selectedFrameNumber} = this.state;
-    frames.forEach((layeredImage)=> layeredImage.add(selectedLayerNumber));
-    this.dispatch('frame:select', selectedFrameNumber, selectedLayerNumber);
+    this.state.frames.addLayer();
+    this.dispatch('frame:select');
   }
 
   removeLayer() {
-    let {frames, selectedLayerNumber, selectedFrameNumber} = this.state;
-    frames.forEach((layeredImage)=> layeredImage.remove(selectedLayerNumber));
-    this.dispatch('frame:select', selectedFrameNumber, selectedLayerNumber);
+    this.state.frames.removeLayer();
+    this.dispatch('frame:select', null);
   }
 
   moveLayerUpward() {
-    let {selectedLayerNumber, selectedFrameNumber} = this.state;
-    this.frameNow.moveUpward(selectedLayerNumber, (movedLayerNumber)=> {
-      this.dispatch('frame:select', selectedFrameNumber, movedLayerNumber);
-    });
+    this.state.frames.moveLayerUpward();
+    this.dispatch('frame:select');
   }
 
   moveLayerDownward() {
-    let {selectedLayerNumber, selectedFrameNumber} = this.state;
-    this.frameNow.moveDownward(selectedLayerNumber, (movedLayerNumber)=> {
-      this.dispatch('frame:select', selectedFrameNumber, movedLayerNumber);
-    });
+    this.state.frames.moveLayerDownward();
+    this.dispatch('frame:select');
   }
 };

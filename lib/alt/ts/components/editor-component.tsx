@@ -13,6 +13,7 @@ import FrameSelectorComponent from "./frame-selector-component";
 import GradationSelectorComponent from "./gradation-component";
 import ModalComponent from "./modal-component";
 import ComponentSize from "../models/component-size";
+import ColorSetComponent from './color-set-component';
 
 require("zepto/zepto.min");
 declare const $:any;
@@ -27,6 +28,7 @@ export default class EditorComponent extends Good<P,{}> {
       <CanvasComponent name="canvas"/>,
       <FrameSelectorComponent name="frameSelector"/>,
       <ToolSelectorComponent name="toolSelector"/>,
+      <ColorSetComponent name="colorSet"/>,
       <ColorPaletteComponent name="colorPalette"/>,
       <GradationSelectorComponent name="gradationSelector"/>,
       <ColorControllerComponent name="colorController"/>,

@@ -16,7 +16,7 @@ export let Editor = (superclass) => class extends superclass {
     if (!this.isSelected) {
       return;
     }
-    let updated = this.doSelected((x, y, color)=> this.draw(x, y, 0, false, false));
+    let updated = this.doSelected((x, y, color)=> this.setPixel(x, y, 0, false, false));
     this.clearSelection();
     this.update();
     this.stockPixels(updated);
@@ -50,7 +50,7 @@ export let Editor = (superclass) => class extends superclass {
     let clip = ImageEditor.prepareClip(this.width, this.height);
     let updated = this.doSelected((x, y, color)=> {
       clip.setPixel32(x, y, color);
-      return this.draw(x, y, 0, false, false);
+      return this.setPixel(x, y, 0, false, false);
     });
     this.clearSelection();
     this.update();
@@ -73,7 +73,7 @@ export let Editor = (superclass) => class extends superclass {
         let x = (position % this.width);
         let y = position / this.width >> 0;
         let color = ImageEditor.floaterBitmapData.getPixel32(x, y);
-        updated.push(this.draw(x + offsetX, y + offsetY, color, false, false, false));
+        updated.push(this.setPixel(x + offsetX, y + offsetY, color, false, false, false));
       }
     }
 
