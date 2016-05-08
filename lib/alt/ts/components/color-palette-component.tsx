@@ -25,7 +25,7 @@ export default class ColorPaletteComponent extends Cell<P,{}> {
           <BlurButton className="add icon-button" onClick={()=> this.dispatch('color:add', this.props.selectedColor)}>
             <Fa icon="plus-circle"/>
           </BlurButton>
-          <BlurButton className="delete icon-button" onClick={(e)=> this.dispatch('floater:rise', e,(color)=> this.dispatch('color:delete', color))}>
+          <BlurButton className="delete icon-button" onClick={(e)=> this.dispatch('floater:rise', e,(color)=> this.dispatch('color:remove', color))}>
             <Fa icon="trash"/>
           </BlurButton>
         </div>

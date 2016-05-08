@@ -49,16 +49,6 @@ export let FileMixin = (superclass) => class extends superclass {
     this.dispatch('frame:select', 0);
   }
 
-  undo() {
-    ImageEditor.undo();
-    this.dispatch('frame:update');
-  }
-
-  redo() {
-    ImageEditor.redo();
-    this.dispatch('frame:update');
-  }
-
   save() {
     $('<a>')
       .attr("href", this.dataURL)

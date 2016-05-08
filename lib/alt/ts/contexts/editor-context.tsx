@@ -4,13 +4,9 @@ import * as ReactDOM from 'react-dom';
 import ARGB from "../models/argb";
 import KeyControl from "../models/key-control";
 import ColorSet from "../models/color-set";
-import {FloatingColorPaletteMode, nes} from "../constants/constants";
 import ImageEditor from "../models/image-editor";
-import FileInformation from "../models/file-information";
 import Configuration from "../records/configuration";
-import LayeredImage from "../models/layered-image";
 import DataURLEditor from "../models/data-url-editor";
-import GradationColor from "../models/gradation-color";
 import CanvasSettingComponent from "../components/canvas-setting-component";
 import CanvasResizeComponent from "../components/canvas-resize-component";
 import {mix} from "../libs/mix"
@@ -18,8 +14,12 @@ import {FileMixin} from "./editor-mixins/file-mixin"
 import {ColorMixin} from "./editor-mixins/color-mixin"
 import {GradationMixin} from "./editor-mixins/gradation-mixin"
 import {CanvasMixin} from "./editor-mixins/canvas-mixin"
+import {DrawingMixin} from "./editor-mixins/drawing-mixin"
 import {FloaterMixin} from "./editor-mixins/floater-mixin"
 import {FrameMixin} from "./editor-mixins/frame-mixin"
+import {FrameDisplayMixin} from "./editor-mixins/frame-display-mixin"
+import {LayerMixin} from "./editor-mixins/layer-mixin"
+import {WorkMixin} from "./editor-mixins/work-mixin"
 import ComponentSize from "../models/component-size";
 
 interface P {
@@ -29,17 +29,28 @@ interface S {
 }
 
 
-export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixin, GradationMixin, CanvasMixin, FloaterMixin, FrameMixin) {
-  private version:number = 1;
+export default class EditorContext extends mix(Parcel).with(
+  FileMixin,
+  CanvasMixin,
+  DrawingMixin,
+  ColorMixin,
+  FloaterMixin,
+  GradationMixin,
+  FrameMixin,
+  FrameDisplayMixin,
+  LayerMixin,
+  WorkMixin,
+) {
+  private version:number        = 1;
   private stage:any;
   private ie:ImageEditor;
   private scaleNumbers:number[] = [1, 2, 4, 8, 16, 32, 64];
   private slide:(x, y)=>void;
-  private commands:any = [];
+  private commands:any          = [];
   private keyControl:KeyControl = new KeyControl();
   private configuration:Configuration;
-  private intervals:number[] = [];
-  private gen:DataURLEditor = DataURLEditor;
+  private intervals:number[]    = [];
+  private gen:DataURLEditor     = DataURLEditor;
 
   componentWillMount() {
     this.initializeConfiguration();
@@ -65,32 +76,39 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
       selectedLayerNumber: 0,
       frameRate: 60,
       // user state
-      scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations, framesScale
+      scale,
+      grid,
+      colors,
+      selectedColorNumber,
+      selectedColor,
+      colorSet,
+      gradations,
+      framesScale
     });
 
-    this.commands['onG'] = ()=> this.dispatch('canvas:grid:toggle');
-    this.commands['onDelete'] = ()=> this.dispatch('canvas:delete');
-    this.commands['onShiftG'] = ()=> this.dispatch('canvas:outline:toggle');
+    this.commands['onG']        = ()=> this.dispatch('canvas:grid:toggle');
+    this.commands['onDelete']   = ()=> this.dispatch('canvas:delete');
+    this.commands['onShiftG']   = ()=> this.dispatch('canvas:outline:toggle');
     this.commands['onControlS'] = ()=> this.dispatch('file:save');
     this.commands['onControlN'] = ()=> this.dispatch('file:new');
     this.commands['onControlO'] = ()=> this.dispatch('file:open');
 
-    this.commands['onControlZ'] = ()=> this.dispatch('canvas:undo');
-    this.commands['onControlY'] = ()=> this.dispatch('canvas:redo');
+    this.commands['onControlZ']      = ()=> this.dispatch('canvas:undo');
+    this.commands['onControlY']      = ()=> this.dispatch('canvas:redo');
     this.commands['onControlShiftZ'] = ()=> this.dispatch('canvas:redo');
 
     this.commands['onControlC'] = ()=> this.dispatch('canvas:copy');
     this.commands['onControlV'] = ()=> this.dispatch('canvas:paste');
     this.commands['onControlX'] = ()=> this.dispatch('canvas:cut');
 
-    this.commands['onArrowUp'] = ()=> this.dispatch('canvas:move', 1, 0, 0, 0);
-    this.commands['onArrowRight'] = ()=> this.dispatch('canvas:move', 0, 1, 0, 0);
-    this.commands['onArrowDown'] = ()=> this.dispatch('canvas:move', 0, 0, 1, 0);
-    this.commands['onArrowLeft'] = ()=> this.dispatch('canvas:move', 0, 0, 0, 1);
-    this.commands['onControlArrowUp'] = ()=> this.dispatch('canvas:move', 1, 0, 0, 0);
+    this.commands['onArrowUp']           = ()=> this.dispatch('canvas:move', 1, 0, 0, 0);
+    this.commands['onArrowRight']        = ()=> this.dispatch('canvas:move', 0, 1, 0, 0);
+    this.commands['onArrowDown']         = ()=> this.dispatch('canvas:move', 0, 0, 1, 0);
+    this.commands['onArrowLeft']         = ()=> this.dispatch('canvas:move', 0, 0, 0, 1);
+    this.commands['onControlArrowUp']    = ()=> this.dispatch('canvas:move', 1, 0, 0, 0);
     this.commands['onControlArrowRight'] = ()=> this.dispatch('canvas:move', 0, 1, 0, 0);
-    this.commands['onControlArrowDown'] = ()=> this.dispatch('canvas:move', 0, 0, 1, 0);
-    this.commands['onControlArrowLeft'] = ()=> this.dispatch('canvas:move', 0, 0, 0, 1);
+    this.commands['onControlArrowDown']  = ()=> this.dispatch('canvas:move', 0, 0, 1, 0);
+    this.commands['onControlArrowLeft']  = ()=> this.dispatch('canvas:move', 0, 0, 0, 1);
 
     this.keyControl.hook = (name, e:JQueryKeyEventObject)=> {
       this.call(name, e)()
@@ -133,7 +151,16 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
 
     let id = setInterval(()=> {
       let {scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations, framesScale} = this.state;
-      this.configuration.writeOnce({scale, grid, colors, selectedColorNumber, selectedColor, colorSet, gradations, framesScale});
+      this.configuration.writeOnce({
+        scale,
+        grid,
+        colors,
+        selectedColorNumber,
+        selectedColor,
+        colorSet,
+        gradations,
+        framesScale
+      });
     }, 1000);
     this.intervals.push(id);
   }
@@ -161,9 +188,9 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     this.stage = new createjs.Stage(canvas);
   }
 
-  resizeComponent(target:string, moveX:number, moveY:number){
+  resizeComponent(target:string, moveX:number, moveY:number) {
     let {componentSize} = this.state;
-    let newSize = {}
+    let newSize     = {}
     newSize[target] = componentSize[target] + moveY;
     componentSize.update(newSize);
     this.setState({componentSize});
@@ -171,26 +198,29 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
 
   listen(to) {
     to(null, 'component:canvas:mounted', (canvas)=> this.initializeStage(canvas));
-    to(null, 'component:canvas:resize', (w, h)=> this.setState({canvasComponentWidth: w, canvasComponentHeight: h}));
+    to(null, 'component:canvas:resize', (w, h)=> this.setState({
+      canvasComponentWidth: w,
+      canvasComponentHeight: h
+    }));
 
     to(null, 'component:resize', (...args)=> this.resizeComponent(...args));
 
     to('edit', 'color:switch', (i)=> this.selectFromTip(i));
     to('edit', 'color:select', (...args)=> this.selectColor(...args));
     to('edit', 'color:add', (color)=> this.addColor(color));
-    to('edit', 'color:delete', (color)=> this.deleteColor(color));
+    to('edit', 'color:remove', (color)=> this.removeColor(color));
     to('edit', 'color:arrange', (argb)=>this.arrangeColor(argb));
 
-    to('edit', 'gradation:add', (color1, color2)=> this.addGradation(color1, color2));
-    to('edit', 'gradation:delete', (gradation)=> this.deleteGradation(gradation));
-    to('edit', 'gradation:change:color1', (gradation, color)=> this.changeGradationColor('color1', gradation, color));
-    to('edit', 'gradation:change:color2', (gradation, color)=> this.changeGradationColor('color2', gradation, color));
+    to('edit', 'gradation:add', ()=> this.addGradation());
+    to('edit', 'gradation:remove', (...args)=> this.removeGradation(...args));
+    to('edit', 'gradation:change:color', (...args)=> this.changeGradationColor(...args));
 
     to('edit', 'floater:select', (callback)=> this.selectColorFromFloater(callback));
     to('edit', 'floater:rise', (e, floatingCallback)=> this.riseFloater(e, floatingCallback));
 
     to('edit', 'canvas:undo', ()=> this.undo());
     to('edit', 'canvas:redo', ()=> this.redo());
+
     to('edit', 'canvas:press', (x, y)=> this.pressCanvas(x, y));
     to('edit', 'canvas:press:right', (x, y)=> this.pressCanvas(x, y, true));
     to('edit', 'canvas:drag', (...args)=> this.dragCanvas(...args));
@@ -203,10 +233,11 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     to('edit', 'canvas:wheel:down', (x, y)=> this.scaleStep(-1, x, y));
     to('edit', 'canvas:center', ()=> this.center());
     to('edit', 'canvas:grid:toggle', ()=> this.toggleGrid());
-    to('edit', 'canvas:size', ()=> this.resizeCanvasFromModal(<CanvasResizeComponent/>));
-    to('edit', 'canvas:size:complete', (top, right, bottom, left)=> this.resizeCanvas(top, right, bottom, left));
     to('edit', 'canvas:delete', (x, y)=> this.delSelection());
     to('edit', 'canvas:move', (...args)=> this.moveCanvas(...args));
+
+    to('edit', 'canvas:size', ()=> this.resizeCanvasFromModal(<CanvasResizeComponent/>));
+    to('edit', 'canvas:size:complete', (top, right, bottom, left)=> this.resizeCanvas(top, right, bottom, left));
 
     to('edit', 'layer:add', ()=> this.addLayer());
     to('edit', 'layer:remove', ()=> this.removeLayer());
@@ -217,7 +248,7 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     to('edit', 'frame:next', ()=> this.selectNextFrame());
     to('edit', 'frame:previous', ()=> this.selectPreviousFrame());
     to('edit', 'frame:add', ()=> this.addFrame());
-    to('edit', 'frame:delete', ()=> this.deleteFrame());
+    to('edit', 'frame:remove', ()=> this.removeFrame());
     to('edit', 'frame:move:backward', ()=> this.moveFrameBackward());
     to('edit', 'frame:move:forward', ()=> this.moveFrameForward());
     to('edit', 'frame:scale', (n)=> this.scaleFrame(n));
@@ -233,8 +264,15 @@ export default class EditorContext extends mix(Parcel).with(FileMixin, ColorMixi
     to('edit', 'file:name', (fileName)=> this.setState({fileName}));
     to('edit', 'file:start', (fileName)=> this.start());
 
-    to('edit', 'modal:rise', (modalComponent, modalProps)=> this.setState({modalComponent, modalProps}))
-    to('modal', 'modal:hide', ()=> this.setState({modalComponent: null, modalProps: null}))
+    to('edit', 'modal:rise', (modalComponent, modalProps)=> this.setState({
+      modalComponent,
+      modalProps
+    }));
+    
+    to('modal', 'modal:hide', ()=> this.setState({
+      modalComponent: null,
+      modalProps: null
+    }));
 
     to('modal', 'modal:canvas', ()=> null)
   }

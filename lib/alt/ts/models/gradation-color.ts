@@ -15,6 +15,10 @@ export default class GradationColor {
     this.compute();
   }
 
+  changeColor(target, color){
+    this['color' + target] = color;
+  }
+
   set color1(v) {
     this._color1 = v;
     this.compute();
@@ -34,6 +38,7 @@ export default class GradationColor {
   }
 
   compute() {
+    console.log('compute')
     let steps = _.reduce(['a', 'r', 'g', 'b'], (a, argb)=> {
       a[argb] = (this._color2[argb] - this._color1[argb]) / (this.length - 1);
       return a;
@@ -52,5 +57,6 @@ export default class GradationColor {
 
     this.colors.push(last);
     this.version++;
+    console.log(this.version)
   }
 }

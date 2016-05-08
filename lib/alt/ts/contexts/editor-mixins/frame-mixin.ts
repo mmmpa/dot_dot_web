@@ -5,23 +5,50 @@ import DataURLEditor from "../../models/data-url-editor";
 const gen = DataURLEditor;
 
 export let FrameMixin = (superclass) => class extends superclass {
-  replaceIeByLayeredImage(layeredImage:LayeredImage) {
-    this.ie && this.ie.close();
-    this.ie = new ImageEditor(
-      this.stage,
-      layeredImage.selected,
-      layeredImage.width,
-      layeredImage.height,
-      gen.convertToImage(layeredImage.selected),
-      gen.convertToImage(layeredImage.overlay),
-      gen.convertToImage(layeredImage.underlay)
-    );
-    this.scale();
-    this.ie.switchGrid(this.state.grid);
-  }
-
   get frameNow():LayeredImage {
     return this.state.frames[this.state.selectedFrameNumber];
+  }
+
+  addFrame() {
+    let {frames, selectedFrameNumber} = this.state;
+    let newFrame = frames[selectedFrameNumber].clone();
+    frames.splice(selectedFrameNumber, 0, newFrame);
+    this.setState({frames}, ()=> this.dispatch('frame:select', selectedFrameNumber + 1));
+  }
+
+  removeFrame() {
+    let {frames, selectedFrameNumber} = this.state;
+
+    if (frames.length === 1) {
+      return
+    }
+
+    let newFrames = frames.filter((f)=> f.id !== this.frameNow.id)
+    let nextFrame = selectedFrameNumber === 0 ? 0 : selectedFrameNumber - 1;
+    this.setState({frames: newFrames}, ()=> this.dispatch('frame:select', nextFrame));
+  }
+
+  moveFrameN(n) {
+    let {frames, selectedFrameNumber} = this.state;
+    let target = frames[selectedFrameNumber + n];
+    if (!target) {
+      return;
+    }
+
+    let newFrames = frames.concat();
+
+    newFrames[selectedFrameNumber]     = target;
+    newFrames[selectedFrameNumber + n] = this.frameNow;
+
+    this.setState({frames: newFrames}, ()=> this.dispatch('frame:select', selectedFrameNumber + n));
+  }
+
+  moveFrameBackward() {
+    this.moveFrameN(-1);
+  }
+
+  moveFrameForward() {
+    this.moveFrameN(+1);
   }
 
   selectFrame(selectedFrameNumber, selectedLayerNumber_ = -1) {
@@ -44,120 +71,18 @@ export let FrameMixin = (superclass) => class extends superclass {
     this.setState({frames}, ()=> this.selectFrame(selectedFrameNumber));
   }
 
-  updateFrame() {
-    let {frames} = this.state;
-    this.setState({frames});
-  }
-
-  selectNextFrame() {
-    let nextFrame = this.state.selectedFrameNumber + 1;
-    if (!this.state.frames[nextFrame]) {
-      nextFrame = 0;
-    }
-    this.dispatch('frame:select', nextFrame)
-  }
-
-  selectPreviousFrame() {
-    let nextFrame = this.state.selectedFrameNumber - 1;
-    if (!this.state.frames[nextFrame]) {
-      nextFrame = this.state.frames.length - 1;
-    }
-    this.dispatch('frame:select', nextFrame)
-  }
-
-  scaleFrame(framesScale) {
-    this.setState({framesScale})
-  }
-
-  setFrameRate(frameRate) {
-    this.setState({frameRate})
-  }
-
-  playFrame(frameRate) {
-    let id = setInterval(()=> {
-      this.selectNextFrame();
-    }, 1000 / frameRate);
-
-    let stop = (e)=> {
-      e.preventDefault();
-      clearInterval(id);
-      $(window).unbind('mousedown', stop);
-    };
-    $(window).bind('mousedown', stop);
-  }
-
-  addLayer() {
-    let {frames, selectedLayerNumber, selectedFrameNumber} = this.state;
-    frames.forEach((layeredImage)=>layeredImage.add(selectedLayerNumber));
-    this.dispatch('frame:select', selectedFrameNumber, selectedLayerNumber);
-  }
-
-  removeLayer() {
-    let {frames, selectedLayerNumber, selectedFrameNumber} = this.state;
-    frames.forEach((layeredImage)=>layeredImage.remove(selectedLayerNumber))
-    this.dispatch('frame:select', selectedFrameNumber, selectedLayerNumber);
-  }
-
-  moveLayerUpward(){
-    let {selectedLayerNumber, selectedFrameNumber} = this.state;
-    this.frameNow.moveUpward(selectedLayerNumber, (movedLayerNumber)=>{
-      this.dispatch('frame:select', selectedFrameNumber, movedLayerNumber);
-    });
-  }
-
-  moveLayerDownward(){
-    let {selectedLayerNumber, selectedFrameNumber} = this.state;
-    this.frameNow.moveDownward(selectedLayerNumber, (movedLayerNumber)=>{
-      this.dispatch('frame:select', selectedFrameNumber, movedLayerNumber);
-    });
-  }
-
-  addFrame() {
-    let {frames, selectedFrameNumber} = this.state;
-    let newFrame = frames[selectedFrameNumber].clone();
-    frames.splice(selectedFrameNumber, 0, newFrame);
-    this.setState({frames}, ()=> this.dispatch('frame:select', selectedFrameNumber + 1));
-  }
-
-  deleteFrame() {
-    let {frames, selectedFrameNumber} = this.state;
-
-    if (frames.length === 1) {
-      return
-    }
-
-    let newFrames = frames.filter((f)=> f.id !== this.frameNow.id)
-    let nextFrame = selectedFrameNumber === 0 ? 0 : selectedFrameNumber - 1;
-    this.setState({frames: newFrames}, ()=> this.dispatch('frame:select', nextFrame));
-  }
-
-  moveFrameBackward() {
-    let {frames, selectedFrameNumber} = this.state;
-    let target = frames[selectedFrameNumber - 1];
-    if (!target) {
-      return;
-    }
-
-    let newFrames = frames.concat();
-
-    newFrames[selectedFrameNumber] = target;
-    newFrames[selectedFrameNumber - 1] = this.frameNow;
-
-    this.setState({frames: newFrames}, ()=> this.dispatch('frame:select', selectedFrameNumber - 1));
-  }
-
-  moveFrameForward() {
-    let {frames, selectedFrameNumber} = this.state;
-    let target = frames[selectedFrameNumber + 1];
-    if (!target) {
-      return;
-    }
-
-    let newFrames = frames.concat();
-
-    newFrames[selectedFrameNumber] = target;
-    newFrames[selectedFrameNumber + 1] = this.frameNow;
-
-    this.setState({frames: newFrames}, ()=> this.dispatch('frame:select', selectedFrameNumber + 1));
+  replaceIeByLayeredImage(layeredImage:LayeredImage) {
+    this.ie && this.ie.close();
+    this.ie = new ImageEditor(
+      this.stage,
+      layeredImage.selected,
+      layeredImage.width,
+      layeredImage.height,
+      gen.convertToImage(layeredImage.selected),
+      gen.convertToImage(layeredImage.overlay),
+      gen.convertToImage(layeredImage.underlay)
+    );
+    this.scale();
+    this.ie.switchGrid(this.state.grid);
   }
 };

@@ -1,5 +1,5 @@
 const assert = require('power-assert');
-import HistoryStack from './src/models/history-stack';
+import HistoryStack from '../ts/models/history-stack';
 
 describe('HistoryStack', ()=> {
   describe('', ()=> {

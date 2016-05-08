@@ -1,6 +1,16 @@
 import ARGB from "../../models/argb";
 
 export let ColorMixin = (superclass) => class extends superclass {
+  get leftColor() {
+    let {colors, selectedColorNumber} = this.state;
+    return colors[selectedColorNumber];
+  }
+
+  get rightColor() {
+    let {colors, selectedColorNumber} = this.state;
+    return colors[selectedColorNumber ^ 1];
+  }
+
   selectFromTip(i) {
     this.setState({selectedColorNumber: i, selectedColor: this.state.colors[i]})
   }
@@ -27,7 +37,7 @@ export let ColorMixin = (superclass) => class extends superclass {
     this.setState({colorSet})
   }
 
-  deleteColor(color) {
+  removeColor(color) {
     let {colorSet} = this.state;
     colorSet.remove(color);
     this.setState({colorSet})

@@ -68,7 +68,7 @@ export default class FrameSelectorComponent extends Cell<P,{}> {
             <BlurButton className="add icon-button" onClick={()=> this.dispatch('frame:add')}>
               <Fa icon="film"/> <Fa icon="plus-circle"/>
             </BlurButton>
-            <BlurButton className="delete icon-button" onClick={(e)=> this.dispatch('frame:delete')}>
+            <BlurButton className="delete icon-button" onClick={(e)=> this.dispatch('frame:remove')}>
               <Fa icon="film"/> <Fa icon="trash"/>
             </BlurButton>
             <BlurButton className="add icon-button" onClick={()=> this.dispatch('layer:add')}>
