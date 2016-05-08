@@ -16,7 +16,7 @@ path = require 'path'
 _ = require 'lodash'
 shell = require 'gulp-shell'
 
-rootPath = path.join(__dirname, '../../')
+rootPath = path.join(__dirname, '../')
 srcRootPath = path.join(__dirname, './')
 publicJsPath = path.join(rootPath, './public/js')
 publicCSSPath = path.join(rootPath, './public/css')
