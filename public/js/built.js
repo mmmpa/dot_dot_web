@@ -1953,9 +1953,9 @@ exports.default = MainContext;
 var React = require('react');
 var ReactDOM = require('react-dom');
 var constants_1 = require('./constants/constants');
-var main_context_1 = require("./contexts/main-context");
-var editor_context_1 = require("./contexts/editor-context");
-var editor_component_1 = require("./components/editor-component");
+var main_context_1 = require('./contexts/main-context');
+var editor_context_1 = require('./contexts/editor-context');
+var editor_component_1 = require('./components/editor-component');
 var DotDot = (function () {
     function DotDot() {
     }

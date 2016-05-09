@@ -2,11 +2,11 @@
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import {Route} from './constants/constants'
+import {Route} from './constants/constants';
 
-import MainContext from "./contexts/main-context";
-import EditorContext from "./contexts/editor-context";
-import EditorComponent from "./components/editor-component";
+import MainContext from './contexts/main-context';
+import EditorContext from './contexts/editor-context';
+import EditorComponent from './components/editor-component';
 
 class DotDot {
   static run(dom) {
@@ -22,4 +22,4 @@ class DotDot {
   }
 }
 
-DotDot.run(document.getElementById('editor'))
+DotDot.run(document.getElementById('editor'));
