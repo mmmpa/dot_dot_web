@@ -1,11 +1,11 @@
 export const mix = (superclass) => new MixinBuilder(superclass);
 
 class MixinBuilder {
-  constructor(superclass) {
-    this.superclass = superclass;
+  constructor(private superclass: any) {
+
   }
 
-  with(...mixins) {
+  mix(...mixins: any[]) {
     return mixins.reduce((c, mixin) => mixin(c), this.superclass);
   }
 }

@@ -13,15 +13,15 @@ var Fa = (function (_super) {
     Fa.prototype.render = function () {
         var p = this.props;
         var classes = ['fa'];
-        classes.push("fa-" + p.icon);
-        p.scale && classes.push("fa-" + p.scale + "x");
+        classes.push('fa-' + p.icon);
+        p.scale && classes.push('fa-' + p.scale + 'x');
         (p.fixedWidth === undefined || p.fixedWidth === true) && classes.push('fa-fw');
         p.list && classes.push('fa-li');
         p.border && classes.push('fa-border');
-        p.pull && classes.push("fa-pull-" + p.pull);
-        p.animation && classes.push("fa-" + p.animation);
-        p.rotate && classes.push("fa-rotate-" + p.rotate);
-        p.flip && classes.push("fa-flip-" + p.flip);
+        p.pull && classes.push('fa-pull-' + p.pull);
+        p.animation && classes.push('fa-' + p.animation);
+        p.rotate && classes.push('fa-rotate-' + p.rotate);
+        p.flip && classes.push('fa-flip-' + p.flip);
         return React.createElement("i", {className: classes.join(' ')});
     };
     return Fa;

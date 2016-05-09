@@ -1,15 +1,15 @@
 import * as _ from 'lodash';
 
 export default class Plate {
-  protected _raw;
+  protected raw_;
 
-  constructor(protected _name:string) {
+  constructor(protected name_: string) {
     this._initialize();
   }
 
   private _initialize() {
-    let raw = window.localStorage.getItem(this._name);
-    this._raw = raw ? JSON.parse(raw) : {};
+    let raw   = window.localStorage.getItem(this.name_);
+    this.raw_ = raw ? JSON.parse(raw) : {};
   }
 
   reload() {
@@ -17,10 +17,10 @@ export default class Plate {
   }
 
   save() {
-    window.localStorage.setItem(this._name, JSON.stringify(this._raw));
+    window.localStorage.setItem(this.name_, JSON.stringify(this.raw_));
   }
 
-  read(key:string) {
+  read(key: string) {
     if (this['get_' + key]) {
       return this['get_' + key]();
     } else {
@@ -28,25 +28,25 @@ export default class Plate {
     }
   }
 
-  readRaw(key:string) {
-    return this._raw[key];
+  readRaw(key: string) {
+    return this.raw_[key];
   }
 
-  write(key:string, value, save = true) {
+  write(key: string, value, save = true) {
     if (this['set_' + key]) {
-      this['set_' + key](value)
+      this['set_' + key](value);
     } else {
-      this.writeRaw(key, value, save)
+      this.writeRaw(key, value, save);
     }
   }
 
-  writeRaw(key:string, value, save = true) {
-    this._raw[key] = value;
+  writeRaw(key: string, value, save = true) {
+    this.raw_[key] = value;
     save && this.save();
   }
 
   writeOnce(keyValue) {
-    _.forEach(keyValue, (v, k)=> {
+    _.forEach(keyValue, (v, k) => {
       this.write(k, v, false);
     });
 
@@ -54,7 +54,7 @@ export default class Plate {
   }
 
   readOnce(...keys) {
-    return _.reduce(keys, (a, key)=> {
+    return _.reduce(keys, (a, key) => {
       a[key] = this.read(key);
       return a;
     }, {});

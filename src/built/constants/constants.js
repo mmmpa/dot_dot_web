@@ -1,6 +1,6 @@
 "use strict";
 var _ = require('lodash');
-var argb_1 = require("../models/argb");
+var argb_1 = require('../models/argb');
 var color_set_1 = require('../models/color-set');
 (function (Route) {
     Route[Route["Selector"] = 0] = "Selector";
@@ -91,16 +91,16 @@ exports.nes = [
     new argb_1.default(255, 0, 252, 252),
     new argb_1.default(255, 216, 216, 216),
     new argb_1.default(255, 0, 0, 0),
-    new argb_1.default(255, 0, 0, 0)
+    new argb_1.default(255, 0, 0, 0),
 ];
 exports.colorPreset = {
     sfc: {
         title: 'SFC',
-        colorSet: new color_set_1.default(exports.nes)
+        colorSet: new color_set_1.default(exports.nes),
     },
     web: {
         title: 'Webセーフカラー',
-        colorSet: new color_set_1.default(exports.web)
-    }
+        colorSet: new color_set_1.default(exports.web),
+    },
 };
 //# sourceMappingURL=constants.js.map

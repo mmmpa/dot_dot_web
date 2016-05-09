@@ -1,14 +1,5 @@
 export default class ARGB {
-  constructor(public a, public r, public g, public b) {
-
-  }
-
-  hexSupport(c) {
-    var hex = c.toString(16);
-    return hex.length == 1 ? "0" + hex : hex;
-  }
-
-  static number(argb) {
+  static fromNumber(argb) {
     let a = (argb >> 24) & 0xff;
     let r = (argb >> 16) & 0xff;
     let g = (argb >> 8) & 0xff;
@@ -17,12 +8,18 @@ export default class ARGB {
     return new ARGB(a, r, g, b);
   }
 
-  get number() {
-    return ((this.a << 24) + (this.r << 16) + (this.g << 8) + this.b) >>> 0;
+  static fromJson(json): ARGB {
+    let {r, b, g, a} = json;
+    return new ARGB(a, r, g, b);
   }
 
-  get hex() {
-    return "#" + this.hexSupport(this.r) + this.hexSupport(this.g) + this.hexSupport(this.b);
+  static hexSupport(c) {
+    let hex = c.toString(16);
+    return hex.length === 1 ? '0' + hex : hex;
+  }
+
+  constructor(public a, public r, public g, public b) {
+
   }
 
   get css() {
@@ -31,17 +28,21 @@ export default class ARGB {
     return `rgba(${[r, g, b, floatA].join(',')})`;
   }
 
-  toJson() {
-    let {r, b, g, a} = this;
-    return {r, g, b, a}
+  get hex() {
+    return '#' + ARGB.hexSupport(this.r) + ARGB.hexSupport(this.g) + ARGB.hexSupport(this.b);
   }
 
-  clone():ARGB {
+  get number() {
+    return ((this.a << 24) + (this.r << 16) + (this.g << 8) + this.b) >>> 0;
+  }
+
+  clone(): ARGB {
     return ARGB.fromJson(this.toJson());
   }
 
-  static fromJson(json):ARGB {
-    let {r, b, g, a} = json;
-    return new ARGB(a, r, g, b);
+  toJson() {
+    let {r, b, g, a} = this;
+    return {r, g, b, a};
   }
+
 }

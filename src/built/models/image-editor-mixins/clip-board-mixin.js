@@ -24,7 +24,7 @@ exports.ClipBoardMixin = function (superclass) { return (function (_super) {
         }
         this.floaterBitmapData.updateContext();
         this.floater = new createjs.Bitmap(this.floaterBitmapData.canvas);
-        this.floater.shadow = new createjs.Shadow("#ff0000", 2, 2, 0);
+        this.floater.shadow = new createjs.Shadow('#ff0000', 2, 2, 0);
         return this.floater;
     };
     return class_1;

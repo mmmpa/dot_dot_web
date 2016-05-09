@@ -1,19 +1,19 @@
-import DataURL from "./data-url";
-import IDMan from "../libs/id-man";
-import DataURLEditor from "./data-url-editor";
+import DataURL from './data-url';
+import IDMan from '../libs/id-man';
+import DataURLEditor from './data-url-editor';
 
 const gen = DataURLEditor;
 
 export default class LayeredImage extends IDMan {
-  public overlay:DataURL;
-  public underlay:DataURL;
-  public selected:DataURL;
-  public selectedIndex:number;
+  public overlay: DataURL;
+  public underlay: DataURL;
+  public selected: DataURL;
+  public selectedIndex: number;
 
-  private locked:boolean = false;
-  private storedCombined:DataURL;
+  private locked: boolean = false;
+  private storedCombined: DataURL;
 
-  constructor(public width, public height, public dataURLs:DataURL[], public version = 0) {
+  constructor(public width, public height, public dataURLs: DataURL[], public version = 0) {
     super();
     this.select(0);
   }
@@ -25,28 +25,28 @@ export default class LayeredImage extends IDMan {
     return this.combine();
   }
 
-  get joinedDataURL():DataURL {
-    return gen.joinDataURLs(this.dataURLs, this.width, this.height, true)
+  get joinedDataURL(): DataURL {
+    return gen.joinDataURLs(this.dataURLs, this.width, this.height, true);
   }
 
-  get layerCount():number {
+  get layerCount(): number {
     return this.dataURLs.length;
   }
 
-  add(index:number) {
+  add(index: number) {
     let blank = gen.blankDataUrl(this.width, this.height);
     this.dataURLs.splice(index, 0, blank);
-    this.select(index + 1)
+    this.select(index + 1);
   }
 
-  remove(index:number) {
+  remove(index: number) {
     if (this.dataURLs.length === 1) {
       return;
     }
     this.dataURLs.splice(index, 1);
   }
 
-  moveUpward(index:number, callback?:(index)=>void) {
+  moveUpward(index: number, callback?: (index) => void) {
     if (index === 0) {
       return;
     }
@@ -57,7 +57,7 @@ export default class LayeredImage extends IDMan {
     callback && callback(index - 1);
   }
 
-  moveDownward(index:number, callback:(index)=>void) {
+  moveDownward(index: number, callback: (index) => void) {
     if (index === this.dataURLs.length - 1) {
       return;
     }
@@ -69,7 +69,7 @@ export default class LayeredImage extends IDMan {
   }
 
 
-  select(index:number, force:boolean = false) {
+  select(index: number, force: boolean = false) {
     if (!force && this.selectedIndex === index) {
       return;
     }
@@ -92,35 +92,35 @@ export default class LayeredImage extends IDMan {
 
   lock() {
     this.storedCombined = this.combine();
-    this.locked = true;
+    this.locked         = true;
   }
 
   unlock() {
     this.storedCombined = null;
-    this.locked = false;
+    this.locked         = false;
   }
 
-  update(index:number, dataURL:DataURL) {
+  update(index: number, dataURL: DataURL) {
     this.dataURLs[index].update(dataURL);
     this.version++;
   }
 
-  scale(n:number = 4) {
+  scale(n: number = 4) {
     return {
       width: this.width * n,
-      height: this.height * n
-    }
+      height: this.height * n,
+    };
   }
 
-  combine():DataURL {
+  combine(): DataURL {
     return gen.combineDataURLs(this.dataURLs, this.width, this.height);
   }
 
   clone() {
-    return new LayeredImage(this.width, this.height, this.dataURLs.map((d)=> new DataURL(d.data)));
+    return new LayeredImage(this.width, this.height, this.dataURLs.map((d) => new DataURL(d.data)));
   }
 
-  raw(index:number):DataURL {
+  raw(index: number): DataURL {
     return this.dataURLs[index];
   }
 }

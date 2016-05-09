@@ -1,19 +1,19 @@
 "use strict";
 var _ = require('lodash');
 var Plate = (function () {
-    function Plate(_name) {
-        this._name = _name;
+    function Plate(name_) {
+        this.name_ = name_;
         this._initialize();
     }
     Plate.prototype._initialize = function () {
-        var raw = window.localStorage.getItem(this._name);
-        this._raw = raw ? JSON.parse(raw) : {};
+        var raw = window.localStorage.getItem(this.name_);
+        this.raw_ = raw ? JSON.parse(raw) : {};
     };
     Plate.prototype.reload = function () {
         this._initialize();
     };
     Plate.prototype.save = function () {
-        window.localStorage.setItem(this._name, JSON.stringify(this._raw));
+        window.localStorage.setItem(this.name_, JSON.stringify(this.raw_));
     };
     Plate.prototype.read = function (key) {
         if (this['get_' + key]) {
@@ -24,7 +24,7 @@ var Plate = (function () {
         }
     };
     Plate.prototype.readRaw = function (key) {
-        return this._raw[key];
+        return this.raw_[key];
     };
     Plate.prototype.write = function (key, value, save) {
         if (save === void 0) { save = true; }
@@ -37,7 +37,7 @@ var Plate = (function () {
     };
     Plate.prototype.writeRaw = function (key, value, save) {
         if (save === void 0) { save = true; }
-        this._raw[key] = value;
+        this.raw_[key] = value;
         save && this.save();
     };
     Plate.prototype.writeOnce = function (keyValue) {

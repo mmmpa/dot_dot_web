@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var image_editor_1 = require("../image-editor");
+var image_editor_1 = require('../image-editor');
 exports.State = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
     function class_1() {

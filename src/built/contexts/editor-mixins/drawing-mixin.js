@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var argb_1 = require("../../models/argb");
+var argb_1 = require('../../models/argb');
 var constants_1 = require('../../constants/constants');
 exports.DrawingMixin = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
@@ -21,7 +21,7 @@ exports.DrawingMixin = function (superclass) { return (function (_super) {
     };
     class_1.prototype.spuitCanvas = function (x, y, isRight) {
         if (isRight === void 0) { isRight = false; }
-        var color = argb_1.default.number(this.ie.getPixel(x, y));
+        var color = argb_1.default.fromNumber(this.ie.getPixel(x, y));
         this.dispatch('color:select', color, isRight);
     };
     class_1.prototype.copyCanvas = function () {
@@ -168,7 +168,7 @@ exports.DrawingMixin = function (superclass) { return (function (_super) {
     };
     class_1.prototype.center = function () {
         var _a = this.state, canvasComponentWidth = _a.canvasComponentWidth, canvasComponentHeight = _a.canvasComponentHeight;
-        return this.ie.center(parseInt(canvasComponentWidth), parseInt(canvasComponentHeight));
+        return this.ie.center(parseInt(canvasComponentWidth, 10), parseInt(canvasComponentHeight, 10));
     };
     class_1.prototype.toggleGrid = function () {
         this.ie.switchGrid(!this.state.grid);

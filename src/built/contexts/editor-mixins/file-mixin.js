@@ -4,9 +4,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var file_information_1 = require("../../models/file-information");
-var layered_image_1 = require("../../models/layered-image");
-var image_editor_1 = require("../../models/image-editor");
+var file_information_1 = require('../../models/file-information');
+var layered_image_1 = require('../../models/layered-image');
+var image_editor_1 = require('../../models/image-editor');
 var layered_animation_1 = require('../../models/layered-animation');
 var data_url_editor_1 = require('../../models/data-url-editor');
 exports.FileMixin = function (superclass) { return (function (_super) {
@@ -41,7 +41,7 @@ exports.FileMixin = function (superclass) { return (function (_super) {
             frames: frames,
             canvasWidth: width,
             canvasHeight: height,
-            fileName: ''
+            fileName: '',
         }, function () { return _this.dispatch('file:start'); });
     };
     class_1.prototype.createBlankCanvasFromModal = function (component) {
@@ -55,7 +55,7 @@ exports.FileMixin = function (superclass) { return (function (_super) {
             },
             onCancel: function () {
                 _this.dispatch('modal:hide');
-            }
+            },
         };
         this.dispatch('modal:rise', component, modalProps);
     };
@@ -65,8 +65,8 @@ exports.FileMixin = function (superclass) { return (function (_super) {
     };
     class_1.prototype.save = function () {
         $('<a>')
-            .attr("href", this.dataURL)
-            .attr("download", this.fileName)
+            .attr('href', this.dataURL)
+            .attr('download', this.fileName)
             .trigger('click');
     };
     class_1.prototype.open = function () {
@@ -107,7 +107,7 @@ exports.FileMixin = function (superclass) { return (function (_super) {
                 canvasWidth: baseWidth,
                 canvasHeight: baseHeight,
                 selectedFrameNumber: 0,
-                fileName: information.name
+                fileName: information.name,
             }, function () { return _this.dispatch('file:start'); });
         };
     };

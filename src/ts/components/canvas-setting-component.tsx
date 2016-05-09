@@ -1,23 +1,18 @@
-import {Good} from "../libs/parcel";
-import * as React from "react";
+import {Good} from '../libs/parcel';
+import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import Fa from "../mods/fa";
 
 interface SellP {
-  layout:any,
-  name:string
+  layout: any;
+  name: string;
 }
 
-interface SellS {
-
-}
-
-export default class CanvasSettingComponent extends Good<{},{}> {
+export default class CanvasSettingComponent extends Good<{}, {}> {
   componentWillMount() {
     super.componentWillMount();
 
     let {width, height, bg} = this.props;
-    this.setState({width, height, bg})
+    this.setState({width, height, bg});
   }
 
   render() {
@@ -28,16 +23,16 @@ export default class CanvasSettingComponent extends Good<{},{}> {
       <header className="modal-header">New</header>
       <section className="params">
         <h1>Width</h1>
-        <div><input type="text" value={width} onChange={(e)=> this.setState({width: +e.target.value})}/></div>
+        <div><input type="text" value={width} onChange={(e) => this.setState({width: +e.target.value})}/></div>
       </section>
       <section className="params">
         <h1>Height</h1>
-        <div><input type="text" value={height} onChange={(e)=> this.setState({height: +e.target.value})}/></div>
+        <div><input type="text" value={height} onChange={(e) => this.setState({height: +e.target.value})}/></div>
       </section>
       <div className="buttons">
-        <button className="complete-button" onClick={()=> onComplete(width, height, bg)}>Create</button>
-        <button className="cancel-button" onClick={()=> onCancel()}>Cancel</button>
+        <button className="complete-button" onClick={() => onComplete(width, height, bg)}>Create</button>
+        <button className="cancel-button" onClick={() => onCancel()}>Cancel</button>
       </div>
-    </div>
+    </div>;
   }
 }

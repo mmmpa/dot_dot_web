@@ -4,10 +4,18 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var parcel_1 = require("../libs/parcel");
-var React = require("react");
-var color_cell_set_1 = require("./color-cell-set");
-require("zepto/zepto.min");
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+var parcel_1 = require('../libs/parcel');
+var React = require('react');
+var color_cell_set_1 = require('./color-cell-set');
+require('zepto/zepto.min');
 var FloatingColorPaletteComponent = (function (_super) {
     __extends(FloatingColorPaletteComponent, _super);
     function FloatingColorPaletteComponent() {
@@ -16,7 +24,7 @@ var FloatingColorPaletteComponent = (function (_super) {
     FloatingColorPaletteComponent.prototype.componentWillMount = function () {
         this.setState({
             visible: this.detectVisibility(this.props),
-            position: this.detectPosition(this.props)
+            position: this.detectPosition(this.props),
         });
     };
     FloatingColorPaletteComponent.prototype.detectPosition = function (props) {
@@ -34,7 +42,7 @@ var FloatingColorPaletteComponent = (function (_super) {
     FloatingColorPaletteComponent.prototype.componentWillReceiveProps = function (props) {
         this.setState({
             visible: this.detectVisibility(props),
-            position: this.detectPosition(props)
+            position: this.detectPosition(props),
         });
     };
     FloatingColorPaletteComponent.prototype.detectVisibility = function (props) {
@@ -47,7 +55,7 @@ var FloatingColorPaletteComponent = (function (_super) {
         }
         var _a = this.state.position, top = _a.top, left = _a.left;
         var _b = this.props, colorSet = _b.colorSet, floatingCallback = _b.floatingCallback;
-        return React.createElement("div", {className: "floating-color-palette", style: { top: top, left: left }}, React.createElement(color_cell_set_1.default, React.__spread({}, { colorSet: colorSet, onClick: function (color) { return _this.dispatch('floater:select', function () { return floatingCallback(color); }); } })));
+        return React.createElement("div", {className: "floating-color-palette", style: { top: top, left: left }}, React.createElement(color_cell_set_1.default, __assign({}, { colorSet: colorSet, onClick: function (color) { return _this.dispatch('floater:select', function () { return floatingCallback(color); }); } })));
     };
     return FloatingColorPaletteComponent;
 }(parcel_1.Good));

@@ -1,27 +1,27 @@
-import ImageEditor from "../../models/image-editor";
-import LayeredImage from "../../models/layered-image";
-import DataURLEditor from "../../models/data-url-editor";
+import ImageEditor from '../../models/image-editor';
+import LayeredImage from '../../models/layered-image';
+import DataURLEditor from '../../models/data-url-editor';
 
 const gen = DataURLEditor;
 
 export let FrameMixin = (superclass) => class extends superclass {
-  get frameNow():LayeredImage {
+  get frameNow(): LayeredImage {
     return this.state.frames.selected;
   }
 
   addFrame() {
     this.state.frames.cloneSelectedFrame();
-    this.dispatch('frame:select')
+    this.dispatch('frame:select');
   }
 
   removeFrame() {
     this.state.frames.removeSelectedFrame();
-    this.dispatch('frame:select')
+    this.dispatch('frame:select');
   }
 
   moveFrameN(n) {
     this.state.frames.move(n);
-    this.dispatch('frame:select')
+    this.dispatch('frame:select');
   }
 
   moveFrameBackward() {
@@ -36,7 +36,7 @@ export let FrameMixin = (superclass) => class extends superclass {
     let {frames} = this.state;
     let selectedFrameNumber = selectedFrameNumber_ === -1 ? frames.selectedIndex : selectedFrameNumber_;
     let selectedLayerNumber = selectedLayerNumber_ === -1 ? frames.selectedLayerIndex : selectedLayerNumber_;
-    
+
     frames.select(selectedFrameNumber);
     frames.selectLayer(selectedLayerNumber);
 
@@ -45,10 +45,10 @@ export let FrameMixin = (superclass) => class extends superclass {
   }
 
   replaceFrames(frames) {
-    this.setState({frames}, ()=> this.dispatch('frame:select'));
+    this.setState({frames}, () => this.dispatch('frame:select'));
   }
 
-  replaceIeByLayeredImage(layeredImage:LayeredImage) {
+  replaceIeByLayeredImage(layeredImage: LayeredImage) {
     this.ie && this.ie.close();
     this.ie = new ImageEditor(
       this.stage,

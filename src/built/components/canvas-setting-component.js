@@ -4,8 +4,8 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var parcel_1 = require("../libs/parcel");
-var React = require("react");
+var parcel_1 = require('../libs/parcel');
+var React = require('react');
 var CanvasSettingComponent = (function (_super) {
     __extends(CanvasSettingComponent, _super);
     function CanvasSettingComponent() {

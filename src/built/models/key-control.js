@@ -41,18 +41,18 @@ var KeyControl = (function () {
         return this.downStore[code];
     };
     KeyControl.prototype.check = function (e) {
-        var string = 'on';
+        var name = 'on';
         if (e.altKey) {
-            string += 'Alt';
+            name += 'Alt';
         }
         if (e.ctrlKey) {
-            string += 'Control';
+            name += 'Control';
         }
         if (e.shiftKey) {
-            string += 'Shift';
+            name += 'Shift';
         }
-        string += e.code.replace('Key', '');
-        this.strike(string, e);
+        name += e.code.replace('Key', '');
+        this.strike(name, e);
     };
     KeyControl.prototype.strike = function (name, e) {
         if (this.binding[name]) {

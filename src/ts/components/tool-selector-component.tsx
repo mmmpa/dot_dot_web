@@ -1,20 +1,19 @@
-import {Good} from "../libs/parcel";
-import * as React from "react";
+import {Good} from '../libs/parcel';
+import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import Fa from "../mods/fa";
-import Cell from "./cell-component";
-import BlurButton from "./blur-button";
+import Fa from '../mods/fa';
+import Cell from './cell-component';
+import BlurButton from './blur-button';
 
-export default class ToolSelectorComponent extends Cell<{},{}> {
+export default class ToolSelectorComponent extends Cell<{}, {}> {
   writeButton(name) {
     let key = name.replace(/\s/ig, '-');
     return <li>
-      <BlurButton key={key} className={key} onClick={(e)=> this.fire(e, key)}>{name}</BlurButton>
-    </li>
+      <BlurButton key={key} className={key} onClick={(e) => this.fire(e, key)}>{name}</BlurButton>
+    </li>;
   }
 
   fire(e, key) {
-    //e.target.blur();
     switch (key) {
       case 'save':
         return this.dispatch('file:save');
@@ -33,7 +32,7 @@ export default class ToolSelectorComponent extends Cell<{},{}> {
       case 'resize':
         return this.dispatch('canvas:size');
       default:
-        this.dispatch(key);
+        return this.dispatch(key);
     }
   }
 
@@ -41,17 +40,17 @@ export default class ToolSelectorComponent extends Cell<{},{}> {
     return <div className="cell y tool-selector" style={this.layoutStyle}>
       <section>
         <h1>file name</h1>
-        <input type="text" value={this.props.fileName} onChange={(e)=> this.dispatch('file:name', e.target.value)}/>
+        <input type="text" value={this.props.fileName} onChange={(e) => this.dispatch('file:name', e.target.value)}/>
       </section>
       <ul className="tool-list">
 
       </ul>
       <ul className="command-list file">
-        {['new', 'open', 'save', 'resize'].map((name)=> this.writeButton(name))}
+        {['new', 'open', 'save', 'resize'].map((name) => this.writeButton(name))}
       </ul>
       <ul className="command-list file">
-        {['grid', 'centering', 'scale plus', 'scale minus'].map((name)=> this.writeButton(name))}
+        {['grid', 'centering', 'scale plus', 'scale minus'].map((name) => this.writeButton(name))}
       </ul>
-    </div>
+    </div>;
   }
 }

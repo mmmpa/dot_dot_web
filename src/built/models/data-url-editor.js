@@ -1,34 +1,34 @@
 "use strict";
-var data_url_1 = require("./data-url");
+var data_url_1 = require('./data-url');
 var DataURLEditor = (function () {
     function DataURLEditor() {
     }
     Object.defineProperty(DataURLEditor, "img", {
         get: function () {
-            if (!this._img) {
-                this._img = document.createElement('img');
+            if (!this.img_) {
+                this.img_ = document.createElement('img');
             }
-            return this._img;
+            return this.img_;
         },
         enumerable: true,
         configurable: true
     });
     Object.defineProperty(DataURLEditor, "canvas", {
         get: function () {
-            if (!this._canvas) {
-                this._canvas = document.createElement('canvas');
+            if (!this.canvas_) {
+                this.canvas_ = document.createElement('canvas');
             }
-            return this._canvas;
+            return this.canvas_;
         },
         enumerable: true,
         configurable: true
     });
     Object.defineProperty(DataURLEditor, "context", {
         get: function () {
-            if (!this._context) {
-                this._context = this.canvas.getContext("2d");
+            if (!this.context_) {
+                this.context_ = this.canvas.getContext('2d');
             }
-            return this._context;
+            return this.context_;
         },
         enumerable: true,
         configurable: true
@@ -58,6 +58,7 @@ var DataURLEditor = (function () {
         this.canvas.height = h;
         this.context.clearRect(0, 0, w, h);
         this.context.drawImage(image, trimX, trimY, w, h, offsetX, offsetY, w, h);
+        return this.canvas;
     };
     DataURLEditor.fromImage = function (image, w, h, top, left) {
         if (top === void 0) { top = 0; }

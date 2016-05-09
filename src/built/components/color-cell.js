@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
+var React = require('react');
 var ColorCell = (function (_super) {
     __extends(ColorCell, _super);
     function ColorCell() {
@@ -12,7 +12,10 @@ var ColorCell = (function (_super) {
     }
     ColorCell.prototype.render = function () {
         var _a = this.props, color = _a.color, index = _a.index, onClick = _a.onClick;
-        return React.createElement("li", {className: "color-cell", onClick: function () { return onClick(color); }, onContextMenu: function (e) { e.preventDefault(); onClick(color, null, true); }}, React.createElement("em", {style: { background: color.css }}, color.hex));
+        return React.createElement("li", {className: "color-cell", onClick: function () { return onClick(color); }, onContextMenu: function (e) {
+            e.preventDefault();
+            onClick(color, null, true);
+        }}, React.createElement("em", {style: { background: color.css }}, color.hex));
     };
     return ColorCell;
 }(React.Component));

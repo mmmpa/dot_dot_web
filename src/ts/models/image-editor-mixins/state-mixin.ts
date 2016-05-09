@@ -1,6 +1,4 @@
-import ActionHistory from "../action-history";
-import ImageEditor from "../image-editor";
-import {ImageEditorState} from "../image-editor";
+import {ImageEditorState} from '../image-editor';
 
 export let State = (superclass) => class extends superclass {
   stateFloating() {
@@ -15,15 +13,15 @@ export let State = (superclass) => class extends superclass {
     this.state = ImageEditorState.Selected;
   }
 
-  get isFloating(){
+  get isFloating() {
     return this.state === ImageEditorState.Floating;
   }
 
-  get isDrawing(){
+  get isDrawing() {
     return this.state === ImageEditorState.Drawing;
   }
 
-  get isSelected(){
+  get isSelected() {
     return this.state === ImageEditorState.Selected;
   }
 };

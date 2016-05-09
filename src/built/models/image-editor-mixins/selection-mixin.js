@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var image_editor_1 = require("../image-editor");
+var image_editor_1 = require('../image-editor');
 exports.Selection = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
     function class_1() {
@@ -101,9 +101,9 @@ exports.Selection = function (superclass) { return (function (_super) {
     class_1.prototype.setSelectionPixelToPixel = function (rawX, rawY, endRawX, endRawY, add, update) {
         var _this = this;
         if (add === void 0) { add = true; }
-        var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;
-        var end = this.normalizePixel(endRawX, endRawY);
-        image_editor_1.default.pToP(x, y, end.x, end.y).map(function (_a) {
+        var _a = this.normalizePixel(rawX, rawY), beginX = _a.x, beginY = _a.y;
+        var _b = this.normalizePixel(endRawX, endRawY), endX = _b.x, endY = _b.y;
+        image_editor_1.default.pToP(beginX, beginY, endX, endY).map(function (_a) {
             var x = _a.x, y = _a.y;
             return _this.addSelection(x, y, add);
         });

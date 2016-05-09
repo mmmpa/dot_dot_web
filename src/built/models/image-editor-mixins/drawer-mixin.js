@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var image_editor_1 = require("../image-editor");
+var image_editor_1 = require('../image-editor');
 exports.Drawing = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
     function class_1() {
@@ -24,16 +24,16 @@ exports.Drawing = function (superclass) { return (function (_super) {
         var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;
         return this.setPixel(x, y, color, update);
     };
-    class_1.prototype.drawPixelToPixel = function (rawX, rawY, endRawX, endRawY, color, update, stock) {
+    class_1.prototype.drawPixelToPixel = function (rawX, rawY, endRawX, endRawY, setColor, update, stock) {
         var _this = this;
         if (update === void 0) { update = false; }
         if (stock === void 0) { stock = true; }
-        var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;
-        var end = this.normalizePixel(endRawX, endRawY);
-        var points = image_editor_1.default.pToP(x, y, end.x, end.y);
+        var _a = this.normalizePixel(rawX, rawY), beginX = _a.x, beginY = _a.y;
+        var _b = this.normalizePixel(endRawX, endRawY), endX = _b.x, endY = _b.y;
+        var points = image_editor_1.default.pToP(beginX, beginY, endX, endY);
         var updated = points.map(function (_a) {
             var x = _a.x, y = _a.y;
-            return _this.setPixel(x, y, color, false, false);
+            return _this.setPixel(x, y, setColor, false, false);
         }).reverse();
         update && this.update();
         if (stock) {
@@ -49,7 +49,7 @@ exports.Drawing = function (superclass) { return (function (_super) {
                         var x = _a.x, y = _a.y, oldColor = _a.oldColor;
                         return _this.setPixel(x, y, oldColor, false, false);
                     });
-                }
+                },
             });
         }
     };

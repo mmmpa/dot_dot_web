@@ -4,8 +4,8 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
-var cell_component_1 = require("./cell-component");
+var React = require('react');
+var cell_component_1 = require('./cell-component');
 var ModalComponent = (function (_super) {
     __extends(ModalComponent, _super);
     function ModalComponent() {
@@ -20,12 +20,12 @@ var ModalComponent = (function (_super) {
         }
         var _a = this.layoutStyle, width = _a.width, height = _a.height;
         var _b = this.window, clientWidth = _b.clientWidth, clientHeight = _b.clientHeight;
-        this.window.style.top = (parseInt(height) - clientHeight) / 2 + 'px';
-        this.window.style.left = (parseInt(width) - clientWidth) / 2 + 'px';
+        this.window.style.top = (parseInt(height, 10) - clientHeight) / 2 + 'px';
+        this.window.style.left = (parseInt(width, 10) - clientWidth) / 2 + 'px';
     };
     Object.defineProperty(ModalComponent.prototype, "window", {
         get: function () {
-            return this.refs['window'];
+            return this.refs.window;
         },
         enumerable: true,
         configurable: true

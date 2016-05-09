@@ -1,28 +1,20 @@
-import {Good} from "../libs/parcel";
-import * as React from "react";
+import {Good} from '../libs/parcel';
+import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import CanvasComponent from "./canvas-component";
-import ToolSelectorComponent from "./tool-selector-component";
-import ToolControllerComponent from "./tool-contoroller-component";
-import ColorPaletteComponent from "./color-palette-component";
-import SelectedColorComponent from "./selected-color-component";
-import StyleStylist from "../models/style-stylist"
-import ColorControllerComponent from "./color-controller-component";
-import FloatingColorPaletteComponent from "./floating-color-palette";
-import FrameSelectorComponent from "./frame-selector-component";
-import GradationSelectorComponent from "./gradation-component";
-import ModalComponent from "./modal-component";
-import ComponentSize from "../models/component-size";
+import CanvasComponent from './canvas-component';
+import ToolSelectorComponent from './tool-selector-component';
+import ColorPaletteComponent from './color-palette-component';
+import ColorControllerComponent from './color-controller-component';
+import FloatingColorPaletteComponent from './floating-color-palette';
+import FrameSelectorComponent from './frame-selector-component';
+import GradationSelectorComponent from './gradation-component';
+import ModalComponent from './modal-component';
 import ColorSetComponent from './color-set-component';
 
-require("zepto/zepto.min");
-declare const $:any;
+require('zepto/zepto.min');
+declare const $: any;
 
-interface P {
-  bitmap
-}
-
-export default class EditorComponent extends Good<P,{}> {
+export default class EditorComponent extends Good<{}, {}> {
   get components() {
     return [
       <CanvasComponent name="canvas"/>,
@@ -33,16 +25,16 @@ export default class EditorComponent extends Good<P,{}> {
       <GradationSelectorComponent name="gradationSelector"/>,
       <ColorControllerComponent name="colorController"/>,
       <FloatingColorPaletteComponent name="floaterColorPalette"/>,
-      <ModalComponent name="modal"/>
-    ]
+      <ModalComponent name="modal"/>,
+    ];
   }
 
   componentWillMount() {
     super.componentWillMount();
     this.onWindowResize();
     this.setState({
-      componentSizeVersion: this.props.componentSize.version
-    })
+      componentSizeVersion: this.props.componentSize.version,
+    });
   }
 
   componentDidMount() {
@@ -50,17 +42,17 @@ export default class EditorComponent extends Good<P,{}> {
     this.addEvent();
   }
 
-  componentWillReceiveProps(props){
-    if(props.componentSize.version !== this.state.componentSizeVersion){
+  componentWillReceiveProps(props) {
+    if (props.componentSize.version !== this.state.componentSizeVersion) {
       this.setState({
-        layout: props.componentSize.compute($(window).width(), $(window).height())
-      })
+        layout: props.componentSize.compute($(window).width(), $(window).height()),
+      });
     }
   }
 
-  onWindowResize(e?:Event) {
+  onWindowResize(e?: Event) {
     this.setState({
-      layout: this.props.componentSize.compute($(window).width(), $(window).height())
+      layout: this.props.componentSize.compute($(window).width(), $(window).height()),
     });
   }
 
@@ -71,6 +63,6 @@ export default class EditorComponent extends Good<P,{}> {
   render() {
     return <article className="editor-area">
       {this.relay(this.components)}
-    </article>
+    </article>;
   }
 }

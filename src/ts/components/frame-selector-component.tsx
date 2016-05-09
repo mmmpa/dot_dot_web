@@ -1,25 +1,25 @@
-import {Good} from "../libs/parcel";
-import * as React from "react";
+import {Good} from '../libs/parcel';
+import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import Fa from "../mods/fa";
-import Cell from "./cell-component";
-import LayeredImage from "../models/layered-image";
-import StepperInput from "./stepper-input";
-import DataURL from "../models/data-url";
-import * as ReactAddons from "react-addons";
-import BlurButton from "./blur-button";
+import Fa from '../mods/fa';
+import Cell from './cell-component';
+import LayeredImage from '../models/layered-image';
+import StepperInput from './stepper-input';
+import DataURL from '../models/data-url';
+import * as ReactAddons from 'react-addons';
+import BlurButton from './blur-button';
 import LayeredAnimationFrame from '../models/layered-animation';
 const classSet = ReactAddons.classSet;
 
 interface P {
-  frames:LayeredAnimationFrame,
-  frameNumber:number,
-  framesScale:number
+  frames: LayeredAnimationFrame;
+  frameNumber: number;
+  framesScale: number;
 }
 
-export default class FrameSelectorComponent extends Cell<P,{}> {
+export default class FrameSelectorComponent extends Cell<P, {}> {
   shouldComponentUpdate(props) {
-    return !!props.frames
+    return !!props.frames;
   }
 
   writeFrames() {
@@ -27,25 +27,25 @@ export default class FrameSelectorComponent extends Cell<P,{}> {
     let {selectedLayerIndex} = frames;
 
     let scale = framesScale;
-    return frames.frames.map((image, frameNumber)=> {
-      let onClick = (layerNumber)=> this.dispatch('frame:select', frameNumber, layerNumber);
-      return <FrameSelectorCellComponent {...{scale, image, onClick, selectedLayerIndex, selected: image === frames.selected}}/>
-    })
+    return frames.frames.map((image, frameNumber) => {
+      let onClick = (layerNumber) => this.dispatch('frame:select', frameNumber, layerNumber);
+      return <FrameSelectorCellComponent {...{scale, image, onClick, selectedLayerIndex, selected: image === frames.selected}}/>;
+    });
   }
 
-  resize(e){
+  resize(e) {
     e.preventDefault();
     let pre = {x: e.pageX, y: e.pageY};
 
-    let move = (e:MouseEvent)=> {
-      let {pageX, pageY} = e;
+    let move = (moveE: MouseEvent) => {
+      let {pageX, pageY} = moveE;
       let moveX = pageX - pre.x;
       let moveY = pageY - pre.y;
       this.dispatch('component:resize', 'frameSelectorHeight', moveX, -moveY);
       pre = {x: pageX, y: pageY};
     };
 
-    let clear = (e)=>{
+    let clear = (clearE) => {
       $(window).unbind('mouseup', clear);
       $(window).unbind('mousemove', move);
     };
@@ -56,39 +56,39 @@ export default class FrameSelectorComponent extends Cell<P,{}> {
 
   render() {
     return <div className="cell x frame-selector" style={this.layoutStyle}>
-      <div className="resize-bar" onMouseDown={(e)=> this.resize(e)}>&nbsp;</div>
+      <div className="resize-bar" onMouseDown={(e) => this.resize(e)}>&nbsp;</div>
       <header className="cell-header">アニメーションフレームとレイヤー</header>
       <section className="cell-body">
         <div className="controller">
           <div className="edit">
-            <StepperInput value={this.props.framesScale} onChange={(v)=> this.dispatch('frame:scale', v)}/>
-            <BlurButton className="add icon-button" onClick={()=> this.dispatch('frame:play')}>
+            <StepperInput value={this.props.framesScale} onChange={(v) => this.dispatch('frame:scale', v)}/>
+            <BlurButton className="add icon-button" onClick={() => this.dispatch('frame:play')}>
               <Fa icon="play"/>
             </BlurButton>
           </div>
           <div className="edit">
-            <BlurButton className="add icon-button" onClick={()=> this.dispatch('frame:add')}>
+            <BlurButton className="add icon-button" onClick={() => this.dispatch('frame:add')}>
               <Fa icon="film"/> <Fa icon="plus-circle"/>
             </BlurButton>
-            <BlurButton className="delete icon-button" onClick={(e)=> this.dispatch('frame:remove')}>
+            <BlurButton className="delete icon-button" onClick={(e) => this.dispatch('frame:remove')}>
               <Fa icon="film"/> <Fa icon="trash"/>
             </BlurButton>
-            <BlurButton className="add icon-button" onClick={()=> this.dispatch('layer:add')}>
+            <BlurButton className="add icon-button" onClick={() => this.dispatch('layer:add')}>
               <Fa icon="copy"/> <Fa icon="plus-circle"/>
             </BlurButton>
-            <BlurButton className="delete icon-button" onClick={(e)=> this.dispatch('layer:remove')}>
+            <BlurButton className="delete icon-button" onClick={(e) => this.dispatch('layer:remove')}>
               <Fa icon="copy"/> <Fa icon="trash"/>
             </BlurButton>
-            <BlurButton className="add icon-button" onClick={()=> this.dispatch('frame:move:backward')}>
+            <BlurButton className="add icon-button" onClick={() => this.dispatch('frame:move:backward')}>
               <Fa icon="hand-o-left"/>
             </BlurButton>
-            <BlurButton className="add icon-button" onClick={()=> this.dispatch('frame:move:forward')}>
+            <BlurButton className="add icon-button" onClick={() => this.dispatch('frame:move:forward')}>
               <Fa icon="hand-o-right"/>
             </BlurButton>
-            <BlurButton className="add icon-button" onClick={()=> this.dispatch('layer:move:upward')}>
+            <BlurButton className="add icon-button" onClick={() => this.dispatch('layer:move:upward')}>
               <Fa icon="hand-o-up"/>
             </BlurButton>
-            <BlurButton className="add icon-button" onClick={()=> this.dispatch('layer:move:downward')}>
+            <BlurButton className="add icon-button" onClick={() => this.dispatch('layer:move:downward')}>
               <Fa icon="hand-o-down"/>
             </BlurButton>
           </div>
@@ -97,32 +97,32 @@ export default class FrameSelectorComponent extends Cell<P,{}> {
           {this.writeFrames()}
         </div>
       </section>
-    </div>
+    </div>;
   }
 }
 
-class FrameSelectorCellComponent extends React.Component<{scale:number, image:LayeredImage, selected:boolean, onClick:()=>void},{}> {
+class FrameSelectorCellComponent extends React.Component<{scale: number, image: LayeredImage, selected: boolean, onClick: () => void}, {}> {
   componentWillMount() {
-    this.componentWillReceiveProps(this.props)
+    this.componentWillReceiveProps(this.props);
   }
 
   shouldComponentUpdate(props) {
     let {image} = props;
     let {version} = image;
-    return true
+    return true;
   }
 
   componentWillReceiveProps(props) {
     this.setState({
       version: props.image.version,
-      image: props.image
-    })
+      image: props.image,
+    });
   }
 
   get classes() {
     return classSet({
       'frame-cell': true,
-      'selected': this.props.selected
+      'selected': this.props.selected,
     });
   }
 
@@ -130,11 +130,11 @@ class FrameSelectorCellComponent extends React.Component<{scale:number, image:La
     let {image, onClick, selectedLayerIndex} = this.props;
     let style = image.scale(this.props.scale);
     if (!image) {
-      return
+      return;
     }
-    return image.dataURLs.map((dataURL, layerNumber)=> {
-      return <LayerSelectorCellComponent {...{style, dataURL, onClick, layerNumber, selected: layerNumber === selectedLayerIndex}}/>
-    })
+    return image.dataURLs.map((dataURL, layerNumber) => {
+      return <LayerSelectorCellComponent {...{style, dataURL, onClick, layerNumber, selected: layerNumber === selectedLayerIndex}}/>;
+    });
   }
 
   render() {
@@ -143,22 +143,22 @@ class FrameSelectorCellComponent extends React.Component<{scale:number, image:La
     let style = image.scale(this.props.scale);
 
     return <div className={this.classes}>
-      <div className="layer-cell first"><img src={image.combined.data} style={style} onClick={()=> onClick()}/></div>
+      <div className="layer-cell first"><img src={image.combined.data} style={style} onClick={() => onClick()}/></div>
       {this.writeLayers()}
-    </div>
+    </div>;
   }
 }
 
-class LayerSelectorCellComponent extends React.Component<{dataURL:DataURL, selected:boolean, onClick:()=>void},{}> {
+class LayerSelectorCellComponent extends React.Component<{dataURL: DataURL, selected: boolean, onClick: () => void}, {}> {
   get classes() {
     return classSet({
       'layer-cell': true,
-      'selected': this.props.selected
+      'selected': this.props.selected,
     });
   }
 
   render() {
     let {dataURL, onClick, layerNumber, style} = this.props;
-    return <div className={this.classes}><img src={dataURL.data} style={style} onClick={()=> onClick(layerNumber)}/></div>
+    return <div className={this.classes}><img src={dataURL.data} style={style} onClick={() => onClick(layerNumber)}/></div>;
   }
 }

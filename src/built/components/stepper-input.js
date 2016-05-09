@@ -4,7 +4,15 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+var React = require('react');
 var StepperInput = (function (_super) {
     __extends(StepperInput, _super);
     function StepperInput() {
@@ -12,7 +20,7 @@ var StepperInput = (function (_super) {
     }
     Object.defineProperty(StepperInput.prototype, "input", {
         get: function () {
-            return this.refs['input'];
+            return this.refs.input;
         },
         enumerable: true,
         configurable: true
@@ -33,7 +41,7 @@ var StepperInput = (function (_super) {
     };
     StepperInput.prototype.componentWillMount = function () {
         this.setState({
-            value: this.props.value || 1
+            value: this.props.value || 1,
         });
     };
     StepperInput.prototype.componentDidMount = function () {
@@ -45,7 +53,7 @@ var StepperInput = (function (_super) {
     };
     StepperInput.prototype.render = function () {
         var value = this.state.value;
-        return React.createElement("input", React.__spread({type: "number", min: "1", max: "10", step: "1"}, { value: isNaN(value) ? 4 : value }, {ref: "input"}));
+        return React.createElement("input", __assign({type: "number", min: "1", max: "10", step: "1"}, { value: isNaN(value) ? 4 : value }, {ref: "input"}));
     };
     return StepperInput;
 }(React.Component));

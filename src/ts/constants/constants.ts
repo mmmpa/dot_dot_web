@@ -1,30 +1,30 @@
-import * as _ from 'lodash'
-import ARGB from "../models/argb";
+import * as _ from 'lodash';
+import ARGB from '../models/argb';
 import ColorSet from '../models/color-set';
 
-export enum Route{
+export enum Route {
   Selector,
-  Editor
+  Editor,
 }
 
-export enum Tool{
+export enum Tool {
   Pen,
-  Spuit
+  Spuit,
 }
 
-export const presetScale:number[] = [1, 2, 4, 8, 16, 32, 64];
+export const presetScale: number[] = [1, 2, 4, 8, 16, 32, 64];
 
-export enum FloatingColorPaletteMode{
+export enum FloatingColorPaletteMode {
   Delete,
   Select,
   SelectBackground,
-  SelectGraduation
+  SelectGraduation,
 }
 
-export const web = _.flatten(_.times(6, (r)=> {
-  return _.flatten(_.times(6, (g)=> {
-    return _.times(6, (b)=> {
-      return new ARGB(255, r * 51, g * 51, b * 51)
+export const web = _.flatten(_.times(6, (r) => {
+  return _.flatten(_.times(6, (g) => {
+    return _.times(6, (b) => {
+      return new ARGB(255, r * 51, g * 51, b * 51);
     });
   }));
 }));
@@ -93,17 +93,16 @@ export const nes = [
   new ARGB(255, 0, 252, 252),
   new ARGB(255, 216, 216, 216),
   new ARGB(255, 0, 0, 0),
-  new ARGB(255, 0, 0, 0)
+  new ARGB(255, 0, 0, 0),
 ];
 
 export const colorPreset = {
   sfc: {
     title: 'SFC',
-    colorSet: new ColorSet(nes)
+    colorSet: new ColorSet(nes),
   },
   web: {
     title: 'Webセーフカラー',
-    colorSet: new ColorSet(web)
-  }
+    colorSet: new ColorSet(web),
+  },
 };
-

@@ -1,17 +1,13 @@
-import FileInformation from "../../models/file-information";
-import LayeredImage from "../../models/layered-image";
-import ImageEditor from "../../models/image-editor";
+import ImageEditor from '../../models/image-editor';
 
 export let WorkMixin = (superclass) => class extends superclass {
   undo() {
-    ImageEditor.undo();
-    this.ie.update();
+    ImageEditor.undo(this.ie);
     this.dispatch('frame:update');
   }
 
   redo() {
-    ImageEditor.redo();
-    this.ie.update();
+    ImageEditor.redo(this.ie);
     this.dispatch('frame:update');
   }
 };

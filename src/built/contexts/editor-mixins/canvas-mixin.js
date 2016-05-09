@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var layered_image_1 = require("../../models/layered-image");
+var layered_image_1 = require('../../models/layered-image');
 var data_url_editor_1 = require('../../models/data-url-editor');
 exports.CanvasMixin = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
@@ -22,7 +22,7 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
             },
             onCancel: function () {
                 _this.dispatch('modal:hide');
-            }
+            },
         };
         this.dispatch('modal:rise', component, modalProps);
     };
@@ -36,7 +36,7 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
         });
         this.setState({
             canvasWidth: width,
-            canvasHeight: height
+            canvasHeight: height,
         }, function () { return _this.dispatch('frame:replace', newFrames); });
     };
     return class_1;

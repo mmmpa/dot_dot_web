@@ -1,14 +1,14 @@
 export let FloaterMixin = (superclass) => class extends superclass {
   riseFloater(e, floatingCallback) {
     let floatingFrom = e.currentTarget;
-    this.setState({floatingCallback, floatingFrom}, ()=> {
-      let remove = ()=> {
+    this.setState({floatingCallback, floatingFrom}, () => {
+      let remove = () => {
         $(window).unbind('click', remove);
-        this.setState({floatingCallback: null, floatingFrom: null})
+        this.setState({floatingCallback: null, floatingFrom: null});
       };
-      setTimeout(()=> {
+      setTimeout(() => {
         $(window).bind('click', remove);
-      }, 1)
+      }, 1);
     });
   }
 
@@ -16,5 +16,4 @@ export let FloaterMixin = (superclass) => class extends superclass {
     callback();
     this.setState({floatingCallback: null, floatingFrom: null});
   }
-
 };

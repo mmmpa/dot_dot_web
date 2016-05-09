@@ -1,4 +1,4 @@
-import GradationColor from "../../models/gradation-color";
+import GradationColor from '../../models/gradation-color';
 
 export let GradationMixin = (superclass) => class extends superclass {
   addGradation() {
@@ -9,12 +9,12 @@ export let GradationMixin = (superclass) => class extends superclass {
 
   removeGradation(gradation) {
     let {gradations} = this.state;
-    _.remove(gradations, (g)=> g === gradation);
-    this.setState({gradations})
+    _.remove(gradations, (g) => g === gradation);
+    this.setState({gradations});
   }
 
   changeGradationColor(target, gradation, color) {
     gradation.changeColor(target, color);
-    this.setState({})
+    this.setState({});
   }
 };

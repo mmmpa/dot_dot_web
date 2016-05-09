@@ -4,8 +4,8 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
-var cell_component_1 = require("./cell-component");
+var React = require('react');
+var cell_component_1 = require('./cell-component');
 var SelectedColorComponent = (function (_super) {
     __extends(SelectedColorComponent, _super);
     function SelectedColorComponent() {

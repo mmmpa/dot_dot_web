@@ -4,18 +4,18 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var parcel_1 = require("../libs/parcel");
-var React = require("react");
-var canvas_component_1 = require("./canvas-component");
-var tool_selector_component_1 = require("./tool-selector-component");
-var color_palette_component_1 = require("./color-palette-component");
-var color_controller_component_1 = require("./color-controller-component");
-var floating_color_palette_1 = require("./floating-color-palette");
-var frame_selector_component_1 = require("./frame-selector-component");
-var gradation_component_1 = require("./gradation-component");
-var modal_component_1 = require("./modal-component");
+var parcel_1 = require('../libs/parcel');
+var React = require('react');
+var canvas_component_1 = require('./canvas-component');
+var tool_selector_component_1 = require('./tool-selector-component');
+var color_palette_component_1 = require('./color-palette-component');
+var color_controller_component_1 = require('./color-controller-component');
+var floating_color_palette_1 = require('./floating-color-palette');
+var frame_selector_component_1 = require('./frame-selector-component');
+var gradation_component_1 = require('./gradation-component');
+var modal_component_1 = require('./modal-component');
 var color_set_component_1 = require('./color-set-component');
-require("zepto/zepto.min");
+require('zepto/zepto.min');
 var EditorComponent = (function (_super) {
     __extends(EditorComponent, _super);
     function EditorComponent() {
@@ -32,7 +32,7 @@ var EditorComponent = (function (_super) {
                 React.createElement(gradation_component_1.default, {name: "gradationSelector"}),
                 React.createElement(color_controller_component_1.default, {name: "colorController"}),
                 React.createElement(floating_color_palette_1.default, {name: "floaterColorPalette"}),
-                React.createElement(modal_component_1.default, {name: "modal"})
+                React.createElement(modal_component_1.default, {name: "modal"}),
             ];
         },
         enumerable: true,
@@ -42,7 +42,7 @@ var EditorComponent = (function (_super) {
         _super.prototype.componentWillMount.call(this);
         this.onWindowResize();
         this.setState({
-            componentSizeVersion: this.props.componentSize.version
+            componentSizeVersion: this.props.componentSize.version,
         });
     };
     EditorComponent.prototype.componentDidMount = function () {
@@ -52,13 +52,13 @@ var EditorComponent = (function (_super) {
     EditorComponent.prototype.componentWillReceiveProps = function (props) {
         if (props.componentSize.version !== this.state.componentSizeVersion) {
             this.setState({
-                layout: props.componentSize.compute($(window).width(), $(window).height())
+                layout: props.componentSize.compute($(window).width(), $(window).height()),
             });
         }
     };
     EditorComponent.prototype.onWindowResize = function (e) {
         this.setState({
-            layout: this.props.componentSize.compute($(window).width(), $(window).height())
+            layout: this.props.componentSize.compute($(window).width(), $(window).height()),
         });
     };
     EditorComponent.prototype.addEvent = function () {

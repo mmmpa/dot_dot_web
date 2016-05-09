@@ -9,6 +9,6 @@ export default class StyleStylist {
       top: this.y + 'px',
       width: this.w + 'px',
       height: this.h + 'px',
-    }
+    };
   }
 }

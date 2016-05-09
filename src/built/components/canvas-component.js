@@ -4,8 +4,8 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
-var cell_component_1 = require("./cell-component");
+var React = require('react');
+var cell_component_1 = require('./cell-component');
 var CanvasComponent = (function (_super) {
     __extends(CanvasComponent, _super);
     function CanvasComponent() {
@@ -19,24 +19,24 @@ var CanvasComponent = (function (_super) {
         var _this = this;
         _super.prototype.componentDidMount.call(this);
         var _a = this.layoutStyle, width = _a.width, height = _a.height;
-        this.dispatch('component:canvas:resize', parseInt(width), parseInt(height));
-        this.dispatch('component:canvas:mounted', this.refs['canvas']);
+        this.dispatch('component:canvas:resize', parseInt(width, 10), parseInt(height, 10));
+        this.dispatch('component:canvas:mounted', this.refs.canvas);
         this.initializeCommand();
-        this.refs['container'].addEventListener('mousewheel', this.onMouseWheel.bind(this));
-        $(this.refs['container']).on('dblclick', function (e) { return _this.call('onDoubleClick')(e); });
+        this.refs.container.addEventListener('mousewheel', this.onMouseWheel.bind(this));
+        $(this.refs.container).on('dblclick', function (e) { return _this.call('onDoubleClick')(e); });
     };
     CanvasComponent.prototype.initializeCommand = function () {
         var _this = this;
-        this.commands['onMouseDownRight'] = function (x, y) { return _this.onPressRight(x, y); };
-        this.commands['onMouseDown'] = function (x, y) { return _this.onPress(x, y); };
-        this.commands['onMouseWheel'] = function (x, y, deltaX, deltaY) { return _this.onWheel(x, y, deltaY); };
-        this.commands['onDoubleClick'] = function (x, y) { return _this.onPressDouble(x, y); };
+        this.commands.onMouseDownRight = function (x, y) { return _this.onPressRight(x, y); };
+        this.commands.onMouseDown = function (x, y) { return _this.onPress(x, y); };
+        this.commands.onMouseWheel = function (x, y, deltaX, deltaY) { return _this.onWheel(x, y, deltaY); };
+        this.commands.onDoubleClick = function (x, y) { return _this.onPressDouble(x, y); };
     };
     CanvasComponent.prototype.componentWillReceiveProps = function (props) {
         var _a = this.pickLayout(props), width = _a.width, height = _a.height;
         if (this.state.width !== width || this.state.height !== height) {
             this.setState({ width: width, height: height });
-            this.dispatch('component:canvas:resize', parseInt(width), parseInt(height));
+            this.dispatch('component:canvas:resize', parseInt(width, 10), parseInt(height, 10));
         }
     };
     CanvasComponent.prototype.call = function (name) {
@@ -50,7 +50,7 @@ var CanvasComponent = (function (_super) {
     };
     Object.defineProperty(CanvasComponent.prototype, "canvas", {
         get: function () {
-            return this.refs['canvas'];
+            return this.refs.canvas;
         },
         enumerable: true,
         configurable: true

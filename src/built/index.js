@@ -1,4 +1,5 @@
 /// <reference path="./typings/browser.d.ts" />
+/// <reference path="./d.ts/BitmapData.d.ts" />
 "use strict";
 var React = require('react');
 var ReactDOM = require('react-dom');

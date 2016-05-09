@@ -4,9 +4,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var parcel_1 = require("../libs/parcel");
-var React = require("react");
-var fa_1 = require("../mods/fa");
+var parcel_1 = require('../libs/parcel');
+var React = require('react');
+var fa_1 = require('../mods/fa');
 var HeaderComponent = (function (_super) {
     __extends(HeaderComponent, _super);
     function HeaderComponent() {

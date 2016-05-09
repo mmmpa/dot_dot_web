@@ -1,5 +1,5 @@
-import LayeredImage from "../../models/layered-image";
-import ARGB from "../../models/argb";
+import LayeredImage from '../../models/layered-image';
+import ARGB from '../../models/argb';
 import {presetScale} from '../../constants/constants';
 
 export let DrawingMixin = (superclass) => class extends superclass {
@@ -12,7 +12,7 @@ export let DrawingMixin = (superclass) => class extends superclass {
   }
 
   spuitCanvas(x, y, isRight = false) {
-    let color = ARGB.number(this.ie.getPixel(x, y));
+    let color = ARGB.fromNumber(this.ie.getPixel(x, y));
     this.dispatch('color:select', color, isRight);
   }
 
@@ -44,21 +44,21 @@ export let DrawingMixin = (superclass) => class extends superclass {
     this.isAlternative() && (isRight = !isRight);
     switch (true) {
       case this.isSlideMode():
-        return (...args)=> null;
+        return (...args) => null;
       case this.isSelectRectangleMode():
-        return (...args)=> null;
+        return (...args) => null;
       case this.isSelectMode():
-        return (x, y)=> this.select(x, y, !isRight);
+        return (x, y) => this.select(x, y, !isRight);
       case this.isSpuitMode():
-        return (x, y)=> this.spuitCanvas(x, y, isRight);
+        return (x, y) => this.spuitCanvas(x, y, isRight);
       case this.isFillMode():
         return isRight
-          ? (x, y)=> this.fill(x, y, this.rightColor)
-          : (x, y)=> this.fill(x, y, this.leftColor);
+          ? (x, y) => this.fill(x, y, this.rightColor)
+          : (x, y) => this.fill(x, y, this.leftColor);
       default:
         return isRight
-          ? (x, y)=> this.draw(x, y, this.rightColor)
-          : (x, y)=> this.draw(x, y, this.leftColor);
+          ? (x, y) => this.draw(x, y, this.rightColor)
+          : (x, y) => this.draw(x, y, this.leftColor);
     }
   }
 
@@ -66,44 +66,44 @@ export let DrawingMixin = (superclass) => class extends superclass {
     this.isAlternative() && (isRight = !isRight);
     switch (true) {
       case this.isSlideMode():
-        return (startX, startY, x, y, endX, endY)=> this.slide(x, y, endX, endY);
+        return (startX, startY, x, y, endX, endY) => this.slide(x, y, endX, endY);
       case this.isSelectRectangleMode():
         return isRight
-          ? (startX, startY, x, y, endX, endY)=> this.selectRectangle(startX, startY, endX, endY, false)
-          : (startX, startY, x, y, endX, endY)=> this.selectRectangle(startX, startY, endX, endY);
+          ? (startX, startY, x, y, endX, endY) => this.selectRectangle(startX, startY, endX, endY, false)
+          : (startX, startY, x, y, endX, endY) => this.selectRectangle(startX, startY, endX, endY);
       case this.isSelectMode():
         return isRight
-          ? (startX, startY, x, y, endX, endY)=> this.selectLine(x, y, endX, endY, false)
-          : (startX, startY, x, y, endX, endY)=> this.selectLine(x, y, endX, endY);
+          ? (startX, startY, x, y, endX, endY) => this.selectLine(x, y, endX, endY, false)
+          : (startX, startY, x, y, endX, endY) => this.selectLine(x, y, endX, endY);
       default:
         return isRight
-          ? (startX, startY, x, y, endX, endY)=> this.drawLine(x, y, endX, endY, this.rightColor)
-          : (startX, startY, x, y, endX, endY)=> this.drawLine(x, y, endX, endY, this.leftColor);
+          ? (startX, startY, x, y, endX, endY) => this.drawLine(x, y, endX, endY, this.rightColor)
+          : (startX, startY, x, y, endX, endY) => this.drawLine(x, y, endX, endY, this.leftColor);
     }
   }
 
-  isAlternative(){
-    return this.state.keyControl.isDown('Alt')
+  isAlternative() {
+    return this.state.keyControl.isDown('Alt');
   }
 
   isFillMode() {
-    return this.state.keyControl.isDown('KeyF')
+    return this.state.keyControl.isDown('KeyF');
   }
 
   isSlideMode() {
-    return this.state.keyControl.isDown('Space')
+    return this.state.keyControl.isDown('Space');
   }
 
   isSelectMode() {
-    return this.state.keyControl.isDown('Shift')
+    return this.state.keyControl.isDown('Shift');
   }
 
   isSpuitMode() {
-    return this.state.keyControl.isDown('Control')
+    return this.state.keyControl.isDown('Control');
   }
 
   isSelectRectangleMode() {
-    return this.state.keyControl.isDown('Shift') && this.state.keyControl.isDown('Control')
+    return this.state.keyControl.isDown('Shift') && this.state.keyControl.isDown('Control');
   }
 
   select(x, y, add = true) {
@@ -134,12 +134,12 @@ export let DrawingMixin = (superclass) => class extends superclass {
   }
 
   hideSelection(selectionHidden) {
-    selectionHidden ? this.ie.hideSelection() : this.ie.showSelection()
-    this.setState({selectionHidden})
+    selectionHidden ? this.ie.hideSelection() : this.ie.showSelection();
+    this.setState({selectionHidden});
   }
 
   slide(x, y, endX, endY) {
-    this.ie.slide(endX - x, endY - y, true)
+    this.ie.slide(endX - x, endY - y, true);
   }
 
   scaleStep(direction, x?, y?) {
@@ -151,7 +151,7 @@ export let DrawingMixin = (superclass) => class extends superclass {
       scale = presetScale.length - 1;
     }
 
-    this.scale(scale, x, y)
+    this.scale(scale, x, y);
     this.setState({scale});
   }
 
@@ -164,11 +164,11 @@ export let DrawingMixin = (superclass) => class extends superclass {
 
   center() {
     let {canvasComponentWidth, canvasComponentHeight} = this.state;
-    return this.ie.center(parseInt(canvasComponentWidth), parseInt(canvasComponentHeight));
+    return this.ie.center(parseInt(canvasComponentWidth, 10), parseInt(canvasComponentHeight, 10));
   }
 
   toggleGrid() {
     this.ie.switchGrid(!this.state.grid)
-    this.setState({grid: !this.state.grid})
+    this.setState({grid: !this.state.grid});
   }
 };

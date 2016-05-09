@@ -4,7 +4,7 @@ var MixinBuilder = (function () {
     function MixinBuilder(superclass) {
         this.superclass = superclass;
     }
-    MixinBuilder.prototype.with = function () {
+    MixinBuilder.prototype.mix = function () {
         var mixins = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             mixins[_i - 0] = arguments[_i];

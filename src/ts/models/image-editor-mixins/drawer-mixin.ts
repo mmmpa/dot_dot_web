@@ -1,7 +1,7 @@
-import ImageEditor from "../image-editor";
+import ImageEditor from '../image-editor';
 
 export let Drawing = (superclass) => class extends superclass {
-  fill(rawX, rawY, color, update?:boolean) {
+  fill(rawX, rawY, color, update?: boolean) {
     let {x, y}  = this.normalizePixel(rawX, rawY);
     let updated = this.canvasBitmapData.floodFill(x, y, color);
 
@@ -15,38 +15,38 @@ export let Drawing = (superclass) => class extends superclass {
     return this.canvasBitmapData.getPixel32(x, y);
   }
 
-  draw(rawX, rawY, color, update?:boolean) {
+  draw(rawX, rawY, color, update?: boolean) {
     let {x, y} = this.normalizePixel(rawX, rawY);
 
-    return this.setPixel(x, y, color, update)
+    return this.setPixel(x, y, color, update);
   }
 
-  drawPixelToPixel(rawX, rawY, endRawX, endRawY, color, update?:boolean = false, stock? = true) {
-    let {x, y} = this.normalizePixel(rawX, rawY);
-    let end = this.normalizePixel(endRawX, endRawY);
+  drawPixelToPixel(rawX, rawY, endRawX, endRawY, setColor, update?: boolean = false, stock? = true) {
+    let {x: beginX, y: beginY} = this.normalizePixel(rawX, rawY);
+    let {x: endX, y: endY} = this.normalizePixel(endRawX, endRawY);
 
-    let points    = ImageEditor.pToP(x, y, end.x, end.y);
-    let updated = points.map(({x, y})=> this.setPixel(x, y, color, false, false)).reverse();
+    let points  = ImageEditor.pToP(beginX, beginY, endX, endY);
+    let updated = points.map(({x, y}) => this.setPixel(x, y, setColor, false, false)).reverse();
 
     update && this.update();
 
     if (stock) {
       ImageEditor.history.stockPrevious({
-        up: ()=> {
-          updated.forEach(({x, y, color})=> this.setPixel(x, y, color, false, false));
+        up: () => {
+          updated.forEach(({x, y, color}) => this.setPixel(x, y, color, false, false));
         },
-        down: ()=> {
-          updated.forEach(({x, y, oldColor})=> this.setPixel(x, y, oldColor, false, false));
-        }
+        down: () => {
+          updated.forEach(({x, y, oldColor}) => this.setPixel(x, y, oldColor, false, false));
+        },
       });
     }
   }
 
   private isDrawable(x, y) {
-    return !this.isSelected || this.isCellSelected(x, y)
+    return !this.isSelected || this.isCellSelected(x, y);
   }
 
-  private setPixel(x, y, color, update?:boolean = false, stock? = true, fix? = true) {
+  private setPixel(x, y, color, update?: boolean = false, stock? = true, fix? = true) {
     if (fix && this.fixFloater()) {
       return;
     }
@@ -58,11 +58,11 @@ export let Drawing = (superclass) => class extends superclass {
     let oldColor = this.canvasBitmapData.getPixel32(x, y);
     this.canvasBitmapData.setPixel32(x, y, color);
 
-    let updated = {x, y, color, oldColor}
+    let updated = {x, y, color, oldColor};
 
     stock && this.stockPixels([updated]);
     update && this.update();
 
-    return updated
+    return updated;
   }
 };

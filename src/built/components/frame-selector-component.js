@@ -4,12 +4,20 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
-var fa_1 = require("../mods/fa");
-var cell_component_1 = require("./cell-component");
-var stepper_input_1 = require("./stepper-input");
-var ReactAddons = require("react-addons");
-var blur_button_1 = require("./blur-button");
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+var React = require('react');
+var fa_1 = require('../mods/fa');
+var cell_component_1 = require('./cell-component');
+var stepper_input_1 = require('./stepper-input');
+var ReactAddons = require('react-addons');
+var blur_button_1 = require('./blur-button');
 var classSet = ReactAddons.classSet;
 var FrameSelectorComponent = (function (_super) {
     __extends(FrameSelectorComponent, _super);
@@ -26,21 +34,21 @@ var FrameSelectorComponent = (function (_super) {
         var scale = framesScale;
         return frames.frames.map(function (image, frameNumber) {
             var onClick = function (layerNumber) { return _this.dispatch('frame:select', frameNumber, layerNumber); };
-            return React.createElement(FrameSelectorCellComponent, React.__spread({}, { scale: scale, image: image, onClick: onClick, selectedLayerIndex: selectedLayerIndex, selected: image === frames.selected }));
+            return React.createElement(FrameSelectorCellComponent, __assign({}, { scale: scale, image: image, onClick: onClick, selectedLayerIndex: selectedLayerIndex, selected: image === frames.selected }));
         });
     };
     FrameSelectorComponent.prototype.resize = function (e) {
         var _this = this;
         e.preventDefault();
         var pre = { x: e.pageX, y: e.pageY };
-        var move = function (e) {
-            var pageX = e.pageX, pageY = e.pageY;
+        var move = function (moveE) {
+            var pageX = moveE.pageX, pageY = moveE.pageY;
             var moveX = pageX - pre.x;
             var moveY = pageY - pre.y;
             _this.dispatch('component:resize', 'frameSelectorHeight', moveX, -moveY);
             pre = { x: pageX, y: pageY };
         };
-        var clear = function (e) {
+        var clear = function (clearE) {
             $(window).unbind('mouseup', clear);
             $(window).unbind('mousemove', move);
         };
@@ -71,14 +79,14 @@ var FrameSelectorCellComponent = (function (_super) {
     FrameSelectorCellComponent.prototype.componentWillReceiveProps = function (props) {
         this.setState({
             version: props.image.version,
-            image: props.image
+            image: props.image,
         });
     };
     Object.defineProperty(FrameSelectorCellComponent.prototype, "classes", {
         get: function () {
             return classSet({
                 'frame-cell': true,
-                'selected': this.props.selected
+                'selected': this.props.selected,
             });
         },
         enumerable: true,
@@ -91,7 +99,7 @@ var FrameSelectorCellComponent = (function (_super) {
             return;
         }
         return image.dataURLs.map(function (dataURL, layerNumber) {
-            return React.createElement(LayerSelectorCellComponent, React.__spread({}, { style: style, dataURL: dataURL, onClick: onClick, layerNumber: layerNumber, selected: layerNumber === selectedLayerIndex }));
+            return React.createElement(LayerSelectorCellComponent, __assign({}, { style: style, dataURL: dataURL, onClick: onClick, layerNumber: layerNumber, selected: layerNumber === selectedLayerIndex }));
         });
     };
     FrameSelectorCellComponent.prototype.render = function () {
@@ -110,7 +118,7 @@ var LayerSelectorCellComponent = (function (_super) {
         get: function () {
             return classSet({
                 'layer-cell': true,
-                'selected': this.props.selected
+                'selected': this.props.selected,
             });
         },
         enumerable: true,

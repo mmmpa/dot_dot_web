@@ -4,15 +4,11 @@ import * as ReactDOM from 'react-dom';
 import * as _ from 'lodash';
 
 interface IEventingShared {
-  emitter: EventEmitter
+  emitter: EventEmitter;
 }
 
-export const EventingShared = {
-  emitter: React.PropTypes.any
-};
-
 interface GoodProps {
-  emitter?:EventEmitter,
+  emitter?: EventEmitter;
 }
 
 interface GoodState {
@@ -20,35 +16,39 @@ interface GoodState {
 }
 
 interface ParcelProps {
-  children?,
-  route?
+  children?;
+  route?;
 }
 
 interface ParcelState {
 }
 
 interface EventStore {
-  eventName:string,
-  callback:Function
+  eventName: string;
+  callback: Function;
 }
 
+export const EventingShared = {
+  emitter: React.PropTypes.any,
+};
+
 export abstract class Good<P, S> extends React.Component<P & GoodProps, S & GoodState> {
-  emitter:EventEmitter;
-  context:IEventingShared;
+  emitter: EventEmitter;
+  context: IEventingShared;
 
-  static get contextTypes():React.ValidationMap<any> {
+  static get contextTypes(): React.ValidationMap<any> {
     return EventingShared;
   }
 
-  static get childContextTypes():React.ValidationMap<any> {
+  static get childContextTypes(): React.ValidationMap<any> {
     return EventingShared;
   }
 
-  getChildContext():IEventingShared {
+  getChildContext(): IEventingShared {
     return {emitter: this.emitter};
   }
 
-  eventStore:any[] = [];
+  eventStore: any[] = [];
 
   addEventSafety(target, ...args) {
     this.eventStore.push([target].concat(args));
@@ -56,36 +56,30 @@ export abstract class Good<P, S> extends React.Component<P & GoodProps, S & Good
   }
 
   removeEventAll() {
-    this.eventStore.forEach(([target, ...args])=> target.removeEventListener(...args));
+    this.eventStore.forEach(([target, ...args]) => target.removeEventListener(...args));
   }
 
-  dispatch(event:string, ...args:any[]):boolean {
+  dispatch(event: string, ...args: any[]): boolean {
     return (this.emitter || this.props.emitter).emit(event, ...args);
   }
 
-  private _emitter;
-  get emitter(){
-    return this.context.emitter || this._emitter || (this._emitter = new EventEmitter())
+  private emitter_;
+
+  get emitter() {
+    return this.context.emitter || this.emitter_ || (this.emitter_ = new EventEmitter());
   }
 
-  activate() {
+  private myName_: string;
 
-  }
-
-  deactivate() {
-
-  }
-
-  private _myName:string;
   get myName() {
-    if (this._myName) {
-      return this._myName;
+    if (this.myName_) {
+      return this.myName_;
     }
-    return this._myName = this.constructor.toString().match(/function[ ]+([a-zA-Z0-9_]+)/)[1]
+    return this.myName_ = this.constructor.toString().match(/function[ ]+([a-zA-Z0-9_]+)/)[1];
   }
 
   debug(...args) {
-    //console.log(this.myName, ...args)
+    // console.log(this.myName, ...args)
   }
 
   componentWillMount() {
@@ -98,62 +92,62 @@ export abstract class Good<P, S> extends React.Component<P & GoodProps, S & Good
   }
 
   componentWillReceiveProps(nextProps) {
-    //this.debug('componentWillReceiveProps');
+    // this.debug('componentWillReceiveProps');
   }
 
-  shouldComponentUpdate(nextProps, nextState):boolean {
-    //this.debug('shouldComponentUpdate');
-    return true
+  shouldComponentUpdate(nextProps, nextState): boolean {
+    // this.debug('shouldComponentUpdate');
+    return true;
   }
 
-  componentWillUpdate(nextProps, nextState):void {
-    //this.debug('componentWillUpdate');
+  componentWillUpdate(nextProps, nextState): void {
+    // this.debug('componentWillUpdate');
   }
 
-  componentDidUpdate(prevProps, prevState):void {
-    //this.debug('componentDidUpdate');
+  componentDidUpdate(prevProps, prevState): void {
+    // this.debug('componentDidUpdate');
   }
 
   componentWillUnmount() {
     this.debug('componentWillUnmount');
   }
 
-  relayingProps(){
-    let props:any = _.assign({emitter: this.emitter || this.props.emitter}, this.props, this.state);
+  relayingProps() {
+    let props: any = _.assign({emitter: this.emitter || this.props.emitter}, this.props, this.state);
     delete props.children;
     return props;
   }
 
   relay(children) {
-    let props:any = this.relayingProps();
+    let props: any = this.relayingProps();
 
-    return children.map((child, key)=> React.cloneElement(child, _.assign(props, {key})));
+    return children.map((child, key) => React.cloneElement(child, _.assign(props, {key})));
   }
 }
 
 export abstract class Parcel<P, S> extends Good<P & ParcelProps, S & ParcelState> {
   routeChildren;
-  addedOnStore:EventStore[] = [];
-  acceptable:any = {};
+  addedOnStore: EventStore[] = [];
+  acceptable: any            = {};
 
-  abstract listen(to:(key:string, eventName:string, callback:Function)=>void):void;
+  abstract listen(to: (key: string, eventName: string, callback: Function) => void): void;
 
 
   componentWillUnmount() {
-    let removed = this.addedOnStore.map(({eventName, callback}:EventStore)=> {
-      this.emitter.removeListener(eventName, callback);
-      return eventName;
+    let removed = this.addedOnStore.map((store: EventStore) => {
+      this.emitter.removeListener(store.eventName, store.callback);
+      return store.eventName;
     });
     super.componentWillUnmount();
   }
 
   componentWillMount() {
-    this.listen((key:string, eventName:string, callback:Function) => {
-      console.log(eventName)
+    this.listen((key: string, eventName: string, callback: Function) => {
+      console.log(eventName);
       this.addedOnStore.push({eventName, callback});
       this.acceptable[key] = true;
       if (key) {
-        this.emitter.on(eventName, (...args)=> {
+        this.emitter.on(eventName, (...args) => {
           this.acceptable[key] && callback(...args);
         });
       } else {
@@ -163,11 +157,11 @@ export abstract class Parcel<P, S> extends Good<P & ParcelProps, S & ParcelState
     super.componentWillMount();
   }
 
-  lock(key:string) {
+  lock(key: string) {
     this.acceptable[key] = false;
   }
 
-  unlock(key:string) {
+  unlock(key: string) {
     this.acceptable[key] = true;
   }
 
@@ -190,4 +184,3 @@ export abstract class Parcel<P, S> extends Good<P & ParcelProps, S & ParcelState
     </div>;
   }
 }
-

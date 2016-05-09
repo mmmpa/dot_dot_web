@@ -4,16 +4,16 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var id_man_1 = require("../libs/id-man");
-var mix_1 = require("../libs/mix");
-var drawer_mixin_1 = require("./image-editor-mixins/drawer-mixin");
-var selection_mixin_1 = require("./image-editor-mixins/selection-mixin");
-var display_mixin_1 = require("./image-editor-mixins/display-mixin");
-var editor_mixin_1 = require("./image-editor-mixins/editor-mixin");
-var state_mixin_1 = require("./image-editor-mixins/state-mixin");
-var clip_board_mixin_1 = require("./image-editor-mixins/clip-board-mixin");
-var data_url_1 = require("./data-url");
-var history_stack_1 = require("./history-stack");
+var id_man_1 = require('../libs/id-man');
+var mix_1 = require('../libs/mix');
+var drawer_mixin_1 = require('./image-editor-mixins/drawer-mixin');
+var selection_mixin_1 = require('./image-editor-mixins/selection-mixin');
+var display_mixin_1 = require('./image-editor-mixins/display-mixin');
+var editor_mixin_1 = require('./image-editor-mixins/editor-mixin');
+var state_mixin_1 = require('./image-editor-mixins/state-mixin');
+var clip_board_mixin_1 = require('./image-editor-mixins/clip-board-mixin');
+var data_url_1 = require('./data-url');
+var history_stack_1 = require('./history-stack');
 (function (ImageEditorState) {
     ImageEditorState[ImageEditorState["Drawing"] = 0] = "Drawing";
     ImageEditorState[ImageEditorState["Selected"] = 1] = "Selected";
@@ -59,11 +59,13 @@ var ImageEditor = (function (_super) {
     ImageEditor.initialize = function () {
         this.history = new history_stack_1.default();
     };
-    ImageEditor.undo = function () {
+    ImageEditor.undo = function (ie) {
         this.history.undo();
+        ie && ie.update();
     };
-    ImageEditor.redo = function () {
+    ImageEditor.redo = function (ie) {
         this.history.redo();
+        ie && ie.update();
     };
     ImageEditor.prototype.close = function () {
         this.fixFloater();
@@ -72,7 +74,7 @@ var ImageEditor = (function (_super) {
         this.stage.removeAllChildren();
     };
     ImageEditor.prototype.exportPng = function () {
-        return new data_url_1.default(this.canvasBitmapData.canvas.toDataURL("image/png"));
+        return new data_url_1.default(this.canvasBitmapData.canvas.toDataURL('image/png'));
     };
     ImageEditor.prototype.update = function () {
         this.selectionBitmapData.updateContext();
@@ -102,7 +104,7 @@ var ImageEditor = (function (_super) {
                     var x = _a.x, y = _a.y, oldColor = _a.oldColor;
                     return _this.setPixel(x, y, oldColor, false, false);
                 });
-            }
+            },
         });
     };
     ImageEditor.pToP = function (x, y, endX, endY) {
@@ -128,7 +130,7 @@ var ImageEditor = (function (_super) {
         return points;
     };
     return ImageEditor;
-}(mix_1.mix(id_man_1.default).with(drawer_mixin_1.Drawing, selection_mixin_1.Selection, display_mixin_1.Display, editor_mixin_1.Editor, state_mixin_1.State, clip_board_mixin_1.ClipBoardMixin)));
+}(mix_1.mix(id_man_1.default).mix(drawer_mixin_1.Drawing, selection_mixin_1.Selection, display_mixin_1.Display, editor_mixin_1.Editor, state_mixin_1.State, clip_board_mixin_1.ClipBoardMixin)));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ImageEditor;
 //# sourceMappingURL=image-editor.js.map

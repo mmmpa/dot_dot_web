@@ -4,26 +4,26 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var parcel_1 = require("../libs/parcel");
+var parcel_1 = require('../libs/parcel');
 var React = require('react');
-var argb_1 = require("../models/argb");
-var key_control_1 = require("../models/key-control");
-var color_set_1 = require("../models/color-set");
-var configuration_1 = require("../records/configuration");
-var canvas_setting_component_1 = require("../components/canvas-setting-component");
-var canvas_resize_component_1 = require("../components/canvas-resize-component");
-var mix_1 = require("../libs/mix");
-var file_mixin_1 = require("./editor-mixins/file-mixin");
-var color_mixin_1 = require("./editor-mixins/color-mixin");
-var gradation_mixin_1 = require("./editor-mixins/gradation-mixin");
-var canvas_mixin_1 = require("./editor-mixins/canvas-mixin");
-var drawing_mixin_1 = require("./editor-mixins/drawing-mixin");
-var floater_mixin_1 = require("./editor-mixins/floater-mixin");
-var frame_mixin_1 = require("./editor-mixins/frame-mixin");
-var frame_display_mixin_1 = require("./editor-mixins/frame-display-mixin");
-var layer_mixin_1 = require("./editor-mixins/layer-mixin");
-var work_mixin_1 = require("./editor-mixins/work-mixin");
-var component_size_1 = require("../models/component-size");
+var argb_1 = require('../models/argb');
+var key_control_1 = require('../models/key-control');
+var color_set_1 = require('../models/color-set');
+var configuration_1 = require('../records/configuration');
+var canvas_setting_component_1 = require('../components/canvas-setting-component');
+var canvas_resize_component_1 = require('../components/canvas-resize-component');
+var mix_1 = require('../libs/mix');
+var file_mixin_1 = require('./editor-mixins/file-mixin');
+var color_mixin_1 = require('./editor-mixins/color-mixin');
+var gradation_mixin_1 = require('./editor-mixins/gradation-mixin');
+var canvas_mixin_1 = require('./editor-mixins/canvas-mixin');
+var drawing_mixin_1 = require('./editor-mixins/drawing-mixin');
+var floater_mixin_1 = require('./editor-mixins/floater-mixin');
+var frame_mixin_1 = require('./editor-mixins/frame-mixin');
+var frame_display_mixin_1 = require('./editor-mixins/frame-display-mixin');
+var layer_mixin_1 = require('./editor-mixins/layer-mixin');
+var work_mixin_1 = require('./editor-mixins/work-mixin');
+var component_size_1 = require('../models/component-size');
 var layered_animation_1 = require('../models/layered-animation');
 var EditorContext = (function (_super) {
     __extends(EditorContext, _super);
@@ -49,7 +49,7 @@ var EditorContext = (function (_super) {
             fileName: 'noname',
             canvasWidth: 0,
             canvasHeight: 0,
-            frames: new layered_animation_1.default()
+            frames: new layered_animation_1.default(),
         }));
         this.keyControl.bind('onG', 'sc', function () { return _this.dispatch('canvas:grid:toggle'); });
         this.keyControl.bind('onDelete', 'sc', function () { return _this.dispatch('canvas:delete'); });
@@ -91,11 +91,11 @@ var EditorContext = (function (_super) {
         this.configuration = new configuration_1.default(this.version, {
             scale: 2,
             grid: true,
-            colors: [argb_1.default.number(0xff000000), argb_1.default.number(0xffffffff)],
+            colors: [argb_1.default.fromNumber(0xff000000), argb_1.default.fromNumber(0xffffffff)],
             selectedColorNumber: 0,
-            selectedColor: argb_1.default.number(0xff000000),
+            selectedColor: argb_1.default.fromNumber(0xff000000),
             colorSet: new color_set_1.default(),
-            gradations: []
+            gradations: [],
         });
     };
     EditorContext.prototype.call = function (name, e) {
@@ -120,7 +120,7 @@ var EditorContext = (function (_super) {
             'imageSmoothingEnabled',
             'mozImageSmoothingEnabled',
             'oImageSmoothingEnabled',
-            'msImageSmoothingEnabled'
+            'msImageSmoothingEnabled',
         ].forEach(function (n) { return context[n] = false; });
         this.stage = new createjs.Stage(canvas);
     };
@@ -136,7 +136,7 @@ var EditorContext = (function (_super) {
         to(null, 'component:canvas:mounted', function (canvas) { return _this.initializeStage(canvas); });
         to(null, 'component:canvas:resize', function (w, h) { return _this.setState({
             canvasComponentWidth: w,
-            canvasComponentHeight: h
+            canvasComponentHeight: h,
         }); });
         to(null, 'component:resize', function () {
             var args = [];
@@ -239,16 +239,16 @@ var EditorContext = (function (_super) {
         to('edit', 'file:start', function (fileName) { return _this.start(); });
         to('edit', 'modal:rise', function (modalComponent, modalProps) { return _this.setState({
             modalComponent: modalComponent,
-            modalProps: modalProps
+            modalProps: modalProps,
         }); });
         to('modal', 'modal:hide', function () { return _this.setState({
             modalComponent: null,
-            modalProps: null
+            modalProps: null,
         }); });
         to('modal', 'modal:canvas', function () { return null; });
     };
     return EditorContext;
-}(mix_1.mix(parcel_1.Parcel).with(file_mixin_1.FileMixin, canvas_mixin_1.CanvasMixin, drawing_mixin_1.DrawingMixin, color_mixin_1.ColorMixin, floater_mixin_1.FloaterMixin, gradation_mixin_1.GradationMixin, frame_mixin_1.FrameMixin, frame_display_mixin_1.FrameDisplayMixin, layer_mixin_1.LayerMixin, work_mixin_1.WorkMixin)));
+}(mix_1.mix(parcel_1.Parcel).mix(file_mixin_1.FileMixin, canvas_mixin_1.CanvasMixin, drawing_mixin_1.DrawingMixin, color_mixin_1.ColorMixin, floater_mixin_1.FloaterMixin, gradation_mixin_1.GradationMixin, frame_mixin_1.FrameMixin, frame_display_mixin_1.FrameDisplayMixin, layer_mixin_1.LayerMixin, work_mixin_1.WorkMixin)));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = EditorContext;
 //# sourceMappingURL=editor-context.js.map

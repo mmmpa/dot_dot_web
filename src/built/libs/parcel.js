@@ -8,7 +8,7 @@ var events_1 = require('events');
 var React = require('react');
 var _ = require('lodash');
 exports.EventingShared = {
-    emitter: React.PropTypes.any
+    emitter: React.PropTypes.any,
 };
 var Good = (function (_super) {
     __extends(Good, _super);
@@ -57,21 +57,17 @@ var Good = (function (_super) {
     };
     Object.defineProperty(Good.prototype, "emitter", {
         get: function () {
-            return this.context.emitter || this._emitter || (this._emitter = new events_1.EventEmitter());
+            return this.context.emitter || this.emitter_ || (this.emitter_ = new events_1.EventEmitter());
         },
         enumerable: true,
         configurable: true
     });
-    Good.prototype.activate = function () {
-    };
-    Good.prototype.deactivate = function () {
-    };
     Object.defineProperty(Good.prototype, "myName", {
         get: function () {
-            if (this._myName) {
-                return this._myName;
+            if (this.myName_) {
+                return this.myName_;
             }
-            return this._myName = this.constructor.toString().match(/function[ ]+([a-zA-Z0-9_]+)/)[1];
+            return this.myName_ = this.constructor.toString().match(/function[ ]+([a-zA-Z0-9_]+)/)[1];
         },
         enumerable: true,
         configurable: true
@@ -81,7 +77,7 @@ var Good = (function (_super) {
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i - 0] = arguments[_i];
         }
-        //console.log(this.myName, ...args)
+        // console.log(this.myName, ...args)
     };
     Good.prototype.componentWillMount = function () {
         this.debug('componentWillMount');
@@ -91,17 +87,17 @@ var Good = (function (_super) {
         this.debug('componentDidMount');
     };
     Good.prototype.componentWillReceiveProps = function (nextProps) {
-        //this.debug('componentWillReceiveProps');
+        // this.debug('componentWillReceiveProps');
     };
     Good.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        //this.debug('shouldComponentUpdate');
+        // this.debug('shouldComponentUpdate');
         return true;
     };
     Good.prototype.componentWillUpdate = function (nextProps, nextState) {
-        //this.debug('componentWillUpdate');
+        // this.debug('componentWillUpdate');
     };
     Good.prototype.componentDidUpdate = function (prevProps, prevState) {
-        //this.debug('componentDidUpdate');
+        // this.debug('componentDidUpdate');
     };
     Good.prototype.componentWillUnmount = function () {
         this.debug('componentWillUnmount');
@@ -127,10 +123,9 @@ var Parcel = (function (_super) {
     }
     Parcel.prototype.componentWillUnmount = function () {
         var _this = this;
-        var removed = this.addedOnStore.map(function (_a) {
-            var eventName = _a.eventName, callback = _a.callback;
-            _this.emitter.removeListener(eventName, callback);
-            return eventName;
+        var removed = this.addedOnStore.map(function (store) {
+            _this.emitter.removeListener(store.eventName, store.callback);
+            return store.eventName;
         });
         _super.prototype.componentWillUnmount.call(this);
     };

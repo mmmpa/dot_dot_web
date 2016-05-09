@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var image_editor_1 = require("../image-editor");
+var image_editor_1 = require('../image-editor');
 exports.Editor = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
     function class_1() {
@@ -81,29 +81,33 @@ exports.Editor = function (superclass) { return (function (_super) {
         if (!this.isFloating) {
             return;
         }
-        if (t)
-            return this.moveTop(t);
-        if (r)
-            return this.moveRight(r);
-        if (b)
-            return this.moveBottom(b);
-        if (l)
-            return this.moveLeft(l);
+        switch (true) {
+            case t !== 0:
+                return this.moveTop(t);
+            case r !== 0:
+                return this.moveRight(r);
+            case b !== 0:
+                return this.moveBottom(b);
+            case l !== 0:
+                return this.moveLeft(l);
+            default:
+                return;
+        }
     };
     class_1.prototype.moveTop = function (n) {
-        image_editor_1.default.floater.y -= 1;
+        image_editor_1.default.floater.y += n;
         this.update();
     };
     class_1.prototype.moveRight = function (n) {
-        image_editor_1.default.floater.x += 1;
+        image_editor_1.default.floater.x += n;
         this.update();
     };
     class_1.prototype.moveBottom = function (n) {
-        image_editor_1.default.floater.y += 1;
+        image_editor_1.default.floater.y += n;
         this.update();
     };
     class_1.prototype.moveLeft = function (n) {
-        image_editor_1.default.floater.x -= 1;
+        image_editor_1.default.floater.x += n;
         this.update();
     };
     return class_1;

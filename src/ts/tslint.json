@@ -23,14 +23,12 @@
     "no-switch-case-fall-through": true,
     "no-trailing-whitespace": true,
     "no-unreachable": true,
-    "no-unused-expression": true,
     "no-use-before-declare": true,
     "no-var-keyword": true,
     "radix": true,
     "switch-default": true,
     "use-isnan": true,
     "eofline": true,
-    "object-literal-sort-keys": true,
     "no-angle-bracket-type-assertion": true,
     "one-variable-per-declaration": true,
     "one-line": [
@@ -66,7 +64,8 @@
       true,
       "ban-keywords",
       "check-format",
-      "allow-trailing-underscore"
+      "allow-trailing-underscore",
+      "allow-pascal-case"
     ],
     "whitespace": [
       true,

@@ -1,9 +1,3 @@
-import ImageEditor from "../../models/image-editor";
-import LayeredImage from "../../models/layered-image";
-import DataURLEditor from "../../models/data-url-editor";
-
-const gen = DataURLEditor;
-
 export let LayerMixin = (superclass) => class extends superclass {
   addLayer() {
     this.state.frames.addLayer();

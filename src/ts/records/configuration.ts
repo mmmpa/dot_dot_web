@@ -1,16 +1,21 @@
-import Plate from "../libs/plate";
-import ARGB from "../models/argb";
-import ColorSet from "../models/color-set";
-import GradationColor from "../models/gradation-color";
+import Plate from '../libs/plate';
+import ARGB from '../models/argb';
+import ColorSet from '../models/color-set';
+import GradationColor from '../models/gradation-color';
 import * as _ from 'lodash';
 
+interface IGradationColors {
+  color1: ARGB;
+  color2: ARGB;
+}
+
 export default class Configuration extends Plate {
-  public saveTarget:string[];
+  public saveTarget: string[];
 
   constructor(public version = 0, params) {
     super('dot-dot-configuration');
 
-    this.saveTarget = _.map(params, (v, k)=> k);
+    this.saveTarget = _.map(params, (v, k) => k);
 
     if (this.read('initialized') !== this.version) {
       this.write('initialized', this.version);
@@ -18,15 +23,15 @@ export default class Configuration extends Plate {
     }
   }
 
-  readInitial(){
-    return _.reduce(this.saveTarget, (a, key)=> {
+  readInitial() {
+    return _.reduce(this.saveTarget, (a, key) => {
       a[key] = this.read(key);
       return a;
     }, {});
   }
 
   saveFrom(params) {
-    let picked = _.reduce(this.saveTarget, (a, key)=> {
+    let picked = _.reduce(this.saveTarget, (a, key) => {
       a[key] = params[key];
       return a;
     }, {});
@@ -44,29 +49,29 @@ export default class Configuration extends Plate {
   }
 
   set_colors(value) {
-    this.writeRaw('colors', value.map((c)=> c.toJson()));
+    this.writeRaw('colors', value.map((c) => c.toJson()));
   }
 
   get_colors() {
-    return this.readRaw('colors').map(({a, r, g, b})=> new ARGB(a, r, g, b));
+    return this.readRaw('colors').map(({a, r, g, b}) => new ARGB(a, r, g, b));
   }
 
-  set_gradations(value) {
-    this.writeRaw('gradations', value.map(({color1, color2})=> ({color1: color1.toJson(), color2: color2.toJson()})));
+  set_gradations(values: IGradationColors[]) {
+    this.writeRaw('gradations', values.map((value: IGradationColors) => ({color1: value.color1.toJson(), color2: value.color2.toJson()})));
   }
 
   get_gradations() {
-    return this.readRaw('gradations').map(({color1, color2})=> {
-      return new GradationColor(ARGB.fromJson(color1), ARGB.fromJson(color2))
+    return this.readRaw('gradations').map(({color1, color2}) => {
+      return new GradationColor(ARGB.fromJson(color1), ARGB.fromJson(color2));
     });
   }
 
   set_colorSet(value) {
-    this.writeRaw('colorSet', value.colors.map((c)=> c.toJson()));
+    this.writeRaw('colorSet', value.colors.map((c) => c.toJson()));
   }
 
   get_colorSet() {
-    let colors = this.readRaw('colorSet').map(({a, r, g, b})=> new ARGB(a, r, g, b));
+    let colors = this.readRaw('colorSet').map(({a, r, g, b}) => new ARGB(a, r, g, b));
     return new ColorSet(colors);
   }
 }

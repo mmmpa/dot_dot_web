@@ -4,9 +4,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var data_url_1 = require("./data-url");
-var id_man_1 = require("../libs/id-man");
-var data_url_editor_1 = require("./data-url-editor");
+var data_url_1 = require('./data-url');
+var id_man_1 = require('../libs/id-man');
+var data_url_editor_1 = require('./data-url-editor');
 var gen = data_url_editor_1.default;
 var LayeredImage = (function (_super) {
     __extends(LayeredImage, _super);
@@ -109,7 +109,7 @@ var LayeredImage = (function (_super) {
         if (n === void 0) { n = 4; }
         return {
             width: this.width * n,
-            height: this.height * n
+            height: this.height * n,
         };
     };
     LayeredImage.prototype.combine = function () {

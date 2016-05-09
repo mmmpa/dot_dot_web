@@ -4,7 +4,15 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+var React = require('react');
 var BlurButton = (function (_super) {
     __extends(BlurButton, _super);
     function BlurButton() {
@@ -15,13 +23,13 @@ var BlurButton = (function (_super) {
         var onMouseDown = function (e) {
             _this.props.onMouseDown && _this.props.onMouseDown(e);
             var button = e.currentTarget;
-            var up = function (e) {
+            var up = function () {
                 button.blur();
                 window.removeEventListener('mouseup', up);
             };
             window.addEventListener('mouseup', up);
         };
-        return React.createElement("button", React.__spread({}, this.props, { onMouseDown: onMouseDown }), this.props.children);
+        return React.createElement("button", __assign({}, this.props, { onMouseDown: onMouseDown }), this.props.children);
     };
     return BlurButton;
 }(React.Component));

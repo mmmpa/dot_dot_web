@@ -39,7 +39,7 @@ var HistoryStack = (function () {
             return;
         }
         this.stepBackward();
-        for (var i = this.now.length; i--;) {
+        for (var i = this.now.length; i--; null) {
             this.now[i].down();
         }
     };

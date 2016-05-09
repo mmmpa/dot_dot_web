@@ -4,10 +4,18 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
-var cell_component_1 = require("./cell-component");
-var color_cell_set_1 = require("./color-cell-set");
-var constants_1 = require("../constants/constants");
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+var React = require('react');
+var cell_component_1 = require('./cell-component');
+var color_cell_set_1 = require('./color-cell-set');
+var constants_1 = require('../constants/constants');
 var _ = require('lodash');
 var ColorSetComponent = (function (_super) {
     __extends(ColorSetComponent, _super);
@@ -16,7 +24,7 @@ var ColorSetComponent = (function (_super) {
     }
     ColorSetComponent.prototype.componentWillMount = function () {
         this.setState({
-            colorSetName: 'sfc'
+            colorSetName: 'sfc',
         });
     };
     ColorSetComponent.prototype.writeOption = function () {
@@ -31,7 +39,7 @@ var ColorSetComponent = (function (_super) {
     ColorSetComponent.prototype.render = function () {
         var _this = this;
         var colorSet = constants_1.colorPreset[this.state.colorSetName].colorSet;
-        return React.createElement("div", {className: "cell y color-palette", style: this.layoutStyle}, React.createElement("header", {className: "cell-header"}, "カラーセット"), this.writeSelector(), React.createElement("section", {className: "cell-body"}, React.createElement(color_cell_set_1.default, React.__spread({}, { colorSet: colorSet, onClick: function (color, index, isRight) { return _this.dispatch('color:select', color, isRight); } }))));
+        return React.createElement("div", {className: "cell y color-palette", style: this.layoutStyle}, React.createElement("header", {className: "cell-header"}, "カラーセット"), this.writeSelector(), React.createElement("section", {className: "cell-body"}, React.createElement(color_cell_set_1.default, __assign({}, { colorSet: colorSet, onClick: function (color, index, isRight) { return _this.dispatch('color:select', color, isRight); } }))));
     };
     return ColorSetComponent;
 }(cell_component_1.default));

@@ -4,9 +4,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
-var cell_component_1 = require("./cell-component");
-var blur_button_1 = require("./blur-button");
+var React = require('react');
+var cell_component_1 = require('./cell-component');
+var blur_button_1 = require('./blur-button');
 var ToolSelectorComponent = (function (_super) {
     __extends(ToolSelectorComponent, _super);
     function ToolSelectorComponent() {
@@ -18,7 +18,6 @@ var ToolSelectorComponent = (function (_super) {
         return React.createElement("li", null, React.createElement(blur_button_1.default, {key: key, className: key, onClick: function (e) { return _this.fire(e, key); }}, name));
     };
     ToolSelectorComponent.prototype.fire = function (e, key) {
-        //e.target.blur();
         switch (key) {
             case 'save':
                 return this.dispatch('file:save');
@@ -37,7 +36,7 @@ var ToolSelectorComponent = (function (_super) {
             case 'resize':
                 return this.dispatch('canvas:size');
             default:
-                this.dispatch(key);
+                return this.dispatch(key);
         }
     };
     ToolSelectorComponent.prototype.render = function () {

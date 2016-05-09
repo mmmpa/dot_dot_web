@@ -39,13 +39,13 @@ export default class GradationColor {
 
   compute() {
     console.log('compute')
-    let steps = _.reduce(['a', 'r', 'g', 'b'], (a, argb)=> {
+    let steps = _.reduce(['a', 'r', 'g', 'b'], (a, argb) => {
       a[argb] = (this._color2[argb] - this._color1[argb]) / (this.length - 1);
       return a;
     }, {});
 
-    this.colors = _.times(this.length - 1, (n)=> {
-      let {a, r, g, b} = _.reduce(['a', 'r', 'g', 'b'], (a, argb)=> {
+    this.colors = _.times(this.length - 1, (n) => {
+      let {a, r, g, b} = _.reduce(['a', 'r', 'g', 'b'], (a, argb) => {
         a[argb] = Math.round(this._color1[argb] + steps[argb] * n);
         return a;
       }, {});

@@ -5,7 +5,15 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+var React = require('react');
 var BlurButton = (function (_super) {
     __extends(BlurButton, _super);
     function BlurButton() {
@@ -16,13 +24,13 @@ var BlurButton = (function (_super) {
         var onMouseDown = function (e) {
             _this.props.onMouseDown && _this.props.onMouseDown(e);
             var button = e.currentTarget;
-            var up = function (e) {
+            var up = function () {
                 button.blur();
                 window.removeEventListener('mouseup', up);
             };
             window.addEventListener('mouseup', up);
         };
-        return React.createElement("button", React.__spread({}, this.props, { onMouseDown: onMouseDown }), this.props.children);
+        return React.createElement("button", __assign({}, this.props, { onMouseDown: onMouseDown }), this.props.children);
     };
     return BlurButton;
 }(React.Component));
@@ -36,8 +44,8 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
-var cell_component_1 = require("./cell-component");
+var React = require('react');
+var cell_component_1 = require('./cell-component');
 var CanvasComponent = (function (_super) {
     __extends(CanvasComponent, _super);
     function CanvasComponent() {
@@ -51,24 +59,24 @@ var CanvasComponent = (function (_super) {
         var _this = this;
         _super.prototype.componentDidMount.call(this);
         var _a = this.layoutStyle, width = _a.width, height = _a.height;
-        this.dispatch('component:canvas:resize', parseInt(width), parseInt(height));
-        this.dispatch('component:canvas:mounted', this.refs['canvas']);
+        this.dispatch('component:canvas:resize', parseInt(width, 10), parseInt(height, 10));
+        this.dispatch('component:canvas:mounted', this.refs.canvas);
         this.initializeCommand();
-        this.refs['container'].addEventListener('mousewheel', this.onMouseWheel.bind(this));
-        $(this.refs['container']).on('dblclick', function (e) { return _this.call('onDoubleClick')(e); });
+        this.refs.container.addEventListener('mousewheel', this.onMouseWheel.bind(this));
+        $(this.refs.container).on('dblclick', function (e) { return _this.call('onDoubleClick')(e); });
     };
     CanvasComponent.prototype.initializeCommand = function () {
         var _this = this;
-        this.commands['onMouseDownRight'] = function (x, y) { return _this.onPressRight(x, y); };
-        this.commands['onMouseDown'] = function (x, y) { return _this.onPress(x, y); };
-        this.commands['onMouseWheel'] = function (x, y, deltaX, deltaY) { return _this.onWheel(x, y, deltaY); };
-        this.commands['onDoubleClick'] = function (x, y) { return _this.onPressDouble(x, y); };
+        this.commands.onMouseDownRight = function (x, y) { return _this.onPressRight(x, y); };
+        this.commands.onMouseDown = function (x, y) { return _this.onPress(x, y); };
+        this.commands.onMouseWheel = function (x, y, deltaX, deltaY) { return _this.onWheel(x, y, deltaY); };
+        this.commands.onDoubleClick = function (x, y) { return _this.onPressDouble(x, y); };
     };
     CanvasComponent.prototype.componentWillReceiveProps = function (props) {
         var _a = this.pickLayout(props), width = _a.width, height = _a.height;
         if (this.state.width !== width || this.state.height !== height) {
             this.setState({ width: width, height: height });
-            this.dispatch('component:canvas:resize', parseInt(width), parseInt(height));
+            this.dispatch('component:canvas:resize', parseInt(width, 10), parseInt(height, 10));
         }
     };
     CanvasComponent.prototype.call = function (name) {
@@ -82,7 +90,7 @@ var CanvasComponent = (function (_super) {
     };
     Object.defineProperty(CanvasComponent.prototype, "canvas", {
         get: function () {
-            return this.refs['canvas'];
+            return this.refs.canvas;
         },
         enumerable: true,
         configurable: true
@@ -166,8 +174,8 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var parcel_1 = require("../libs/parcel");
-var React = require("react");
+var parcel_1 = require('../libs/parcel');
+var React = require('react');
 var CanvasSettingComponent = (function (_super) {
     __extends(CanvasSettingComponent, _super);
     function CanvasSettingComponent() {
@@ -183,7 +191,7 @@ var CanvasSettingComponent = (function (_super) {
             bottom: 0,
             canvasWidth: canvasWidth,
             canvasHeight: canvasHeight,
-            message: ''
+            message: '',
         });
     };
     CanvasSettingComponent.prototype.check = function () {
@@ -218,8 +226,8 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var parcel_1 = require("../libs/parcel");
-var React = require("react");
+var parcel_1 = require('../libs/parcel');
+var React = require('react');
 var CanvasSettingComponent = (function (_super) {
     __extends(CanvasSettingComponent, _super);
     function CanvasSettingComponent() {
@@ -248,7 +256,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var parcel_1 = require("../libs/parcel");
+var parcel_1 = require('../libs/parcel');
 var Cell = (function (_super) {
     __extends(Cell, _super);
     function Cell() {
@@ -276,8 +284,16 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
-var color_cell_1 = require("./color-cell");
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+var React = require('react');
+var color_cell_1 = require('./color-cell');
 var ColorCellSet = (function (_super) {
     __extends(ColorCellSet, _super);
     function ColorCellSet() {
@@ -285,7 +301,7 @@ var ColorCellSet = (function (_super) {
     }
     ColorCellSet.prototype.componentWillMount = function () {
         this.setState({
-            version: this.props.colorSet.version
+            version: this.props.colorSet.version,
         });
     };
     ColorCellSet.prototype.shouldComponentUpdate = function (props) {
@@ -298,7 +314,7 @@ var ColorCellSet = (function (_super) {
         var onClick = this.props.onClick;
         var colors = this.props.colorSet.colors;
         return colors.map(function (color, key) {
-            return React.createElement(color_cell_1.default, React.__spread({}, { key: key, color: color, onClick: onClick }));
+            return React.createElement(color_cell_1.default, __assign({}, { key: key, color: color, onClick: onClick }));
         });
     };
     ColorCellSet.prototype.render = function () {
@@ -316,7 +332,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
+var React = require('react');
 var ColorCell = (function (_super) {
     __extends(ColorCell, _super);
     function ColorCell() {
@@ -324,7 +340,10 @@ var ColorCell = (function (_super) {
     }
     ColorCell.prototype.render = function () {
         var _a = this.props, color = _a.color, index = _a.index, onClick = _a.onClick;
-        return React.createElement("li", {className: "color-cell", onClick: function () { return onClick(color); }, onContextMenu: function (e) { e.preventDefault(); onClick(color, null, true); }}, React.createElement("em", {style: { background: color.css }}, color.hex));
+        return React.createElement("li", {className: "color-cell", onClick: function () { return onClick(color); }, onContextMenu: function (e) {
+            e.preventDefault();
+            onClick(color, null, true);
+        }}, React.createElement("em", {style: { background: color.css }}, color.hex));
     };
     return ColorCell;
 }(React.Component));
@@ -338,8 +357,16 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
-var cell_component_1 = require("./cell-component");
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+var React = require('react');
+var cell_component_1 = require('./cell-component');
 var _ = require('lodash');
 var ColorControllerComponent = (function (_super) {
     __extends(ColorControllerComponent, _super);
@@ -352,8 +379,7 @@ var ColorControllerComponent = (function (_super) {
         this.setState({ a: a, r: r, g: g, b: b });
     };
     ColorControllerComponent.prototype.needUpdate = function (p, nextP) {
-        return this.selectedColor(p) !== this.selectedColor(nextP)
-            || p.layout !== nextP.layout;
+        return this.selectedColor(p) !== this.selectedColor(nextP) || p.layout !== nextP.layout;
     };
     ColorControllerComponent.prototype.componentWillReceiveProps = function (props) {
         _super.prototype.componentWillReceiveProps.call(this, props);
@@ -381,7 +407,7 @@ var ColorControllerComponent = (function (_super) {
         var _a = this.state, r = _a.r, g = _a.g, b = _a.b, a = _a.a;
         var _b = this.props, colors = _b.colors, selectedColorNumber = _b.selectedColorNumber;
         var that = this;
-        return React.createElement("div", {className: "cell y color-controller", style: this.layoutStyle}, React.createElement("header", {className: "cell-header"}, "選択カラー調整"), React.createElement("section", {className: "cell-body"}, React.createElement("section", {className: "selected"}, React.createElement(SelectedColor, React.__spread({}, { colors: colors, selectedColorNumber: selectedColorNumber }, {onSelect: function (n) { return that.dispatch('color:switch', n); }}))), React.createElement("section", {className: "slider"}, React.createElement(ColorSlider, {title: "R", value: r, onChange: function (e) { return that.changeARGB({ r: +e.target.value }); }}), React.createElement(ColorSlider, {title: "G", value: g, onChange: function (e) { return that.changeARGB({ g: +e.target.value }); }}), React.createElement(ColorSlider, {title: "B", value: b, onChange: function (e) { return that.changeARGB({ b: +e.target.value }); }}), React.createElement(ColorSlider, {title: "A", value: a, onChange: function (e) { return that.changeARGB({ a: +e.target.value }); }}))));
+        return React.createElement("div", {className: "cell y color-controller", style: this.layoutStyle}, React.createElement("header", {className: "cell-header"}, "選択カラー調整"), React.createElement("section", {className: "cell-body"}, React.createElement("section", {className: "selected"}, React.createElement(SelectedColor, __assign({}, { colors: colors, selectedColorNumber: selectedColorNumber }, {onSelect: function (n) { return that.dispatch('color:switch', n); }}))), React.createElement("section", {className: "slider"}, React.createElement(ColorSlider, {title: "R", value: r, onChange: function (e) { return that.changeARGB({ r: +e.target.value }); }}), React.createElement(ColorSlider, {title: "G", value: g, onChange: function (e) { return that.changeARGB({ g: +e.target.value }); }}), React.createElement(ColorSlider, {title: "B", value: b, onChange: function (e) { return that.changeARGB({ b: +e.target.value }); }}), React.createElement(ColorSlider, {title: "A", value: a, onChange: function (e) { return that.changeARGB({ a: +e.target.value }); }}))));
     };
     return ColorControllerComponent;
 }(cell_component_1.default));
@@ -398,7 +424,7 @@ var SelectedColor = (function (_super) {
     SelectedColor.prototype.render = function () {
         var _a = this.props, onSelect = _a.onSelect, colors = _a.colors;
         var color1 = colors[0], color2 = colors[1];
-        return React.createElement("div", {className: "selected-color"}, React.createElement("div", {className: "tip first" + this.selectedStyle(0)}, React.createElement("div", {className: "inner", onClick: function () { return onSelect(0); }}, React.createElement("em", {style: { background: color1.css }}, color1.hex))), React.createElement("div", {className: "tip second" + this.selectedStyle(1)}, React.createElement("div", {className: "inner", onClick: function () { return onSelect(1); }}, React.createElement("em", {style: { background: color2.css }}, color2.hex))));
+        return React.createElement("div", {className: "selected-color"}, React.createElement("div", {className: 'tip first' + this.selectedStyle(0)}, React.createElement("div", {className: "inner", onClick: function () { return onSelect(0); }}, React.createElement("em", {style: { background: color1.css }}, color1.hex))), React.createElement("div", {className: 'tip second' + this.selectedStyle(1)}, React.createElement("div", {className: "inner", onClick: function () { return onSelect(1); }}, React.createElement("em", {style: { background: color2.css }}, color2.hex))));
     };
     return SelectedColor;
 }(React.Component));
@@ -412,7 +438,7 @@ var ColorSlider = (function (_super) {
     };
     ColorSlider.prototype.render = function () {
         var _a = this.props, title = _a.title, value = _a.value, onChange = _a.onChange;
-        return React.createElement("div", {className: "color-slider"}, React.createElement("div", {className: "title"}, title), React.createElement("div", {className: "number"}, React.createElement("input", React.__spread({type: "number", min: "0", max: "255", step: "1"}, { value: value, onChange: onChange }))), React.createElement("div", {className: "slider"}, React.createElement("input", React.__spread({type: "range", min: "0", max: "255", step: "1"}, { value: value, onChange: onChange }))));
+        return React.createElement("div", {className: "color-slider"}, React.createElement("div", {className: "title"}, title), React.createElement("div", {className: "number"}, React.createElement("input", __assign({type: "number", min: "0", max: "255", step: "1"}, { value: value, onChange: onChange }))), React.createElement("div", {className: "slider"}, React.createElement("input", __assign({type: "range", min: "0", max: "255", step: "1"}, { value: value, onChange: onChange }))));
     };
     return ColorSlider;
 }(React.Component));
@@ -424,11 +450,19 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
-var fa_1 = require("../mods/fa");
-var cell_component_1 = require("./cell-component");
-var color_cell_set_1 = require("./color-cell-set");
-var blur_button_1 = require("./blur-button");
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+var React = require('react');
+var fa_1 = require('../mods/fa');
+var cell_component_1 = require('./cell-component');
+var color_cell_set_1 = require('./color-cell-set');
+var blur_button_1 = require('./blur-button');
 var ColorPaletteComponent = (function (_super) {
     __extends(ColorPaletteComponent, _super);
     function ColorPaletteComponent() {
@@ -437,7 +471,7 @@ var ColorPaletteComponent = (function (_super) {
     ColorPaletteComponent.prototype.render = function () {
         var _this = this;
         var colorSet = this.props.colorSet;
-        return React.createElement("div", {className: "cell y color-palette", style: this.layoutStyle}, React.createElement("header", {className: "cell-header"}, "カラーパレット"), React.createElement("section", {className: "cell-body"}, React.createElement(color_cell_set_1.default, React.__spread({}, { colorSet: colorSet, onClick: function (color, index, isRight) { return _this.dispatch('color:select', color, isRight); } })), React.createElement("div", {className: "controller"}, React.createElement(blur_button_1.default, {className: "add icon-button", onClick: function () { return _this.dispatch('color:add', _this.props.selectedColor); }}, React.createElement(fa_1.default, {icon: "plus-circle"})), React.createElement(blur_button_1.default, {className: "delete icon-button", onClick: function (e) { return _this.dispatch('floater:rise', e, function (color) { return _this.dispatch('color:remove', color); }); }}, React.createElement(fa_1.default, {icon: "trash"})))));
+        return React.createElement("div", {className: "cell y color-palette", style: this.layoutStyle}, React.createElement("header", {className: "cell-header"}, "カラーパレット"), React.createElement("section", {className: "cell-body"}, React.createElement(color_cell_set_1.default, __assign({}, { colorSet: colorSet, onClick: function (color, index, isRight) { return _this.dispatch('color:select', color, isRight); } })), React.createElement("div", {className: "controller"}, React.createElement(blur_button_1.default, {className: "add icon-button", onClick: function () { return _this.dispatch('color:add', _this.props.selectedColor); }}, React.createElement(fa_1.default, {icon: "plus-circle"})), React.createElement(blur_button_1.default, {className: "delete icon-button", onClick: function (e) { return _this.dispatch('floater:rise', e, function (color) { return _this.dispatch('color:remove', color); }); }}, React.createElement(fa_1.default, {icon: "trash"})))));
     };
     return ColorPaletteComponent;
 }(cell_component_1.default));
@@ -451,10 +485,18 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
-var cell_component_1 = require("./cell-component");
-var color_cell_set_1 = require("./color-cell-set");
-var constants_1 = require("../constants/constants");
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+var React = require('react');
+var cell_component_1 = require('./cell-component');
+var color_cell_set_1 = require('./color-cell-set');
+var constants_1 = require('../constants/constants');
 var _ = require('lodash');
 var ColorSetComponent = (function (_super) {
     __extends(ColorSetComponent, _super);
@@ -463,7 +505,7 @@ var ColorSetComponent = (function (_super) {
     }
     ColorSetComponent.prototype.componentWillMount = function () {
         this.setState({
-            colorSetName: 'sfc'
+            colorSetName: 'sfc',
         });
     };
     ColorSetComponent.prototype.writeOption = function () {
@@ -478,7 +520,7 @@ var ColorSetComponent = (function (_super) {
     ColorSetComponent.prototype.render = function () {
         var _this = this;
         var colorSet = constants_1.colorPreset[this.state.colorSetName].colorSet;
-        return React.createElement("div", {className: "cell y color-palette", style: this.layoutStyle}, React.createElement("header", {className: "cell-header"}, "カラーセット"), this.writeSelector(), React.createElement("section", {className: "cell-body"}, React.createElement(color_cell_set_1.default, React.__spread({}, { colorSet: colorSet, onClick: function (color, index, isRight) { return _this.dispatch('color:select', color, isRight); } }))));
+        return React.createElement("div", {className: "cell y color-palette", style: this.layoutStyle}, React.createElement("header", {className: "cell-header"}, "カラーセット"), this.writeSelector(), React.createElement("section", {className: "cell-body"}, React.createElement(color_cell_set_1.default, __assign({}, { colorSet: colorSet, onClick: function (color, index, isRight) { return _this.dispatch('color:select', color, isRight); } }))));
     };
     return ColorSetComponent;
 }(cell_component_1.default));
@@ -492,18 +534,18 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var parcel_1 = require("../libs/parcel");
-var React = require("react");
-var canvas_component_1 = require("./canvas-component");
-var tool_selector_component_1 = require("./tool-selector-component");
-var color_palette_component_1 = require("./color-palette-component");
-var color_controller_component_1 = require("./color-controller-component");
-var floating_color_palette_1 = require("./floating-color-palette");
-var frame_selector_component_1 = require("./frame-selector-component");
-var gradation_component_1 = require("./gradation-component");
-var modal_component_1 = require("./modal-component");
+var parcel_1 = require('../libs/parcel');
+var React = require('react');
+var canvas_component_1 = require('./canvas-component');
+var tool_selector_component_1 = require('./tool-selector-component');
+var color_palette_component_1 = require('./color-palette-component');
+var color_controller_component_1 = require('./color-controller-component');
+var floating_color_palette_1 = require('./floating-color-palette');
+var frame_selector_component_1 = require('./frame-selector-component');
+var gradation_component_1 = require('./gradation-component');
+var modal_component_1 = require('./modal-component');
 var color_set_component_1 = require('./color-set-component');
-require("zepto/zepto.min");
+require('zepto/zepto.min');
 var EditorComponent = (function (_super) {
     __extends(EditorComponent, _super);
     function EditorComponent() {
@@ -520,7 +562,7 @@ var EditorComponent = (function (_super) {
                 React.createElement(gradation_component_1.default, {name: "gradationSelector"}),
                 React.createElement(color_controller_component_1.default, {name: "colorController"}),
                 React.createElement(floating_color_palette_1.default, {name: "floaterColorPalette"}),
-                React.createElement(modal_component_1.default, {name: "modal"})
+                React.createElement(modal_component_1.default, {name: "modal"}),
             ];
         },
         enumerable: true,
@@ -530,7 +572,7 @@ var EditorComponent = (function (_super) {
         _super.prototype.componentWillMount.call(this);
         this.onWindowResize();
         this.setState({
-            componentSizeVersion: this.props.componentSize.version
+            componentSizeVersion: this.props.componentSize.version,
         });
     };
     EditorComponent.prototype.componentDidMount = function () {
@@ -540,13 +582,13 @@ var EditorComponent = (function (_super) {
     EditorComponent.prototype.componentWillReceiveProps = function (props) {
         if (props.componentSize.version !== this.state.componentSizeVersion) {
             this.setState({
-                layout: props.componentSize.compute($(window).width(), $(window).height())
+                layout: props.componentSize.compute($(window).width(), $(window).height()),
             });
         }
     };
     EditorComponent.prototype.onWindowResize = function (e) {
         this.setState({
-            layout: this.props.componentSize.compute($(window).width(), $(window).height())
+            layout: this.props.componentSize.compute($(window).width(), $(window).height()),
         });
     };
     EditorComponent.prototype.addEvent = function () {
@@ -567,10 +609,18 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var parcel_1 = require("../libs/parcel");
-var React = require("react");
-var color_cell_set_1 = require("./color-cell-set");
-require("zepto/zepto.min");
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+var parcel_1 = require('../libs/parcel');
+var React = require('react');
+var color_cell_set_1 = require('./color-cell-set');
+require('zepto/zepto.min');
 var FloatingColorPaletteComponent = (function (_super) {
     __extends(FloatingColorPaletteComponent, _super);
     function FloatingColorPaletteComponent() {
@@ -579,7 +629,7 @@ var FloatingColorPaletteComponent = (function (_super) {
     FloatingColorPaletteComponent.prototype.componentWillMount = function () {
         this.setState({
             visible: this.detectVisibility(this.props),
-            position: this.detectPosition(this.props)
+            position: this.detectPosition(this.props),
         });
     };
     FloatingColorPaletteComponent.prototype.detectPosition = function (props) {
@@ -597,7 +647,7 @@ var FloatingColorPaletteComponent = (function (_super) {
     FloatingColorPaletteComponent.prototype.componentWillReceiveProps = function (props) {
         this.setState({
             visible: this.detectVisibility(props),
-            position: this.detectPosition(props)
+            position: this.detectPosition(props),
         });
     };
     FloatingColorPaletteComponent.prototype.detectVisibility = function (props) {
@@ -610,7 +660,7 @@ var FloatingColorPaletteComponent = (function (_super) {
         }
         var _a = this.state.position, top = _a.top, left = _a.left;
         var _b = this.props, colorSet = _b.colorSet, floatingCallback = _b.floatingCallback;
-        return React.createElement("div", {className: "floating-color-palette", style: { top: top, left: left }}, React.createElement(color_cell_set_1.default, React.__spread({}, { colorSet: colorSet, onClick: function (color) { return _this.dispatch('floater:select', function () { return floatingCallback(color); }); } })));
+        return React.createElement("div", {className: "floating-color-palette", style: { top: top, left: left }}, React.createElement(color_cell_set_1.default, __assign({}, { colorSet: colorSet, onClick: function (color) { return _this.dispatch('floater:select', function () { return floatingCallback(color); }); } })));
     };
     return FloatingColorPaletteComponent;
 }(parcel_1.Good));
@@ -624,12 +674,20 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
-var fa_1 = require("../mods/fa");
-var cell_component_1 = require("./cell-component");
-var stepper_input_1 = require("./stepper-input");
-var ReactAddons = require("react-addons");
-var blur_button_1 = require("./blur-button");
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+var React = require('react');
+var fa_1 = require('../mods/fa');
+var cell_component_1 = require('./cell-component');
+var stepper_input_1 = require('./stepper-input');
+var ReactAddons = require('react-addons');
+var blur_button_1 = require('./blur-button');
 var classSet = ReactAddons.classSet;
 var FrameSelectorComponent = (function (_super) {
     __extends(FrameSelectorComponent, _super);
@@ -646,21 +704,21 @@ var FrameSelectorComponent = (function (_super) {
         var scale = framesScale;
         return frames.frames.map(function (image, frameNumber) {
             var onClick = function (layerNumber) { return _this.dispatch('frame:select', frameNumber, layerNumber); };
-            return React.createElement(FrameSelectorCellComponent, React.__spread({}, { scale: scale, image: image, onClick: onClick, selectedLayerIndex: selectedLayerIndex, selected: image === frames.selected }));
+            return React.createElement(FrameSelectorCellComponent, __assign({}, { scale: scale, image: image, onClick: onClick, selectedLayerIndex: selectedLayerIndex, selected: image === frames.selected }));
         });
     };
     FrameSelectorComponent.prototype.resize = function (e) {
         var _this = this;
         e.preventDefault();
         var pre = { x: e.pageX, y: e.pageY };
-        var move = function (e) {
-            var pageX = e.pageX, pageY = e.pageY;
+        var move = function (moveE) {
+            var pageX = moveE.pageX, pageY = moveE.pageY;
             var moveX = pageX - pre.x;
             var moveY = pageY - pre.y;
             _this.dispatch('component:resize', 'frameSelectorHeight', moveX, -moveY);
             pre = { x: pageX, y: pageY };
         };
-        var clear = function (e) {
+        var clear = function (clearE) {
             $(window).unbind('mouseup', clear);
             $(window).unbind('mousemove', move);
         };
@@ -691,14 +749,14 @@ var FrameSelectorCellComponent = (function (_super) {
     FrameSelectorCellComponent.prototype.componentWillReceiveProps = function (props) {
         this.setState({
             version: props.image.version,
-            image: props.image
+            image: props.image,
         });
     };
     Object.defineProperty(FrameSelectorCellComponent.prototype, "classes", {
         get: function () {
             return classSet({
                 'frame-cell': true,
-                'selected': this.props.selected
+                'selected': this.props.selected,
             });
         },
         enumerable: true,
@@ -711,7 +769,7 @@ var FrameSelectorCellComponent = (function (_super) {
             return;
         }
         return image.dataURLs.map(function (dataURL, layerNumber) {
-            return React.createElement(LayerSelectorCellComponent, React.__spread({}, { style: style, dataURL: dataURL, onClick: onClick, layerNumber: layerNumber, selected: layerNumber === selectedLayerIndex }));
+            return React.createElement(LayerSelectorCellComponent, __assign({}, { style: style, dataURL: dataURL, onClick: onClick, layerNumber: layerNumber, selected: layerNumber === selectedLayerIndex }));
         });
     };
     FrameSelectorCellComponent.prototype.render = function () {
@@ -730,7 +788,7 @@ var LayerSelectorCellComponent = (function (_super) {
         get: function () {
             return classSet({
                 'layer-cell': true,
-                'selected': this.props.selected
+                'selected': this.props.selected,
             });
         },
         enumerable: true,
@@ -750,11 +808,19 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
-var fa_1 = require("../mods/fa");
-var cell_component_1 = require("./cell-component");
-var color_cell_set_1 = require("./color-cell-set");
-var blur_button_1 = require("./blur-button");
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+var React = require('react');
+var fa_1 = require('../mods/fa');
+var cell_component_1 = require('./cell-component');
+var color_cell_set_1 = require('./color-cell-set');
+var blur_button_1 = require('./blur-button');
 var GradationSelectorComponent = (function (_super) {
     __extends(GradationSelectorComponent, _super);
     function GradationSelectorComponent() {
@@ -769,7 +835,7 @@ var GradationSelectorComponent = (function (_super) {
         var _this = this;
         var onClick = function (color) { return _this.dispatch('color:select', color); };
         return this.props.gradations.map(function (colorSet) {
-            return React.createElement("div", {className: "gradation-line", key: colorSet.id}, _this.writeDropper(1, colorSet), React.createElement("div", {className: "color-container"}, React.createElement(color_cell_set_1.default, React.__spread({}, { colorSet: colorSet, onClick: onClick }))), _this.writeDropper(2, colorSet), React.createElement(blur_button_1.default, {className: "delete icon-button", onClick: function (e) { return _this.dispatch('gradation:remove', colorSet); }}, React.createElement(fa_1.default, {icon: "trash"})));
+            return React.createElement("div", {className: "gradation-line", key: colorSet.id}, _this.writeDropper(1, colorSet), React.createElement("div", {className: "color-container"}, React.createElement(color_cell_set_1.default, __assign({}, { colorSet: colorSet, onClick: onClick }))), _this.writeDropper(2, colorSet), React.createElement(blur_button_1.default, {className: "delete icon-button", onClick: function (e) { return _this.dispatch('gradation:remove', colorSet); }}, React.createElement(fa_1.default, {icon: "trash"})));
         });
     };
     GradationSelectorComponent.prototype.render = function () {
@@ -788,8 +854,8 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
-var cell_component_1 = require("./cell-component");
+var React = require('react');
+var cell_component_1 = require('./cell-component');
 var ModalComponent = (function (_super) {
     __extends(ModalComponent, _super);
     function ModalComponent() {
@@ -804,12 +870,12 @@ var ModalComponent = (function (_super) {
         }
         var _a = this.layoutStyle, width = _a.width, height = _a.height;
         var _b = this.window, clientWidth = _b.clientWidth, clientHeight = _b.clientHeight;
-        this.window.style.top = (parseInt(height) - clientHeight) / 2 + 'px';
-        this.window.style.left = (parseInt(width) - clientWidth) / 2 + 'px';
+        this.window.style.top = (parseInt(height, 10) - clientHeight) / 2 + 'px';
+        this.window.style.left = (parseInt(width, 10) - clientWidth) / 2 + 'px';
     };
     Object.defineProperty(ModalComponent.prototype, "window", {
         get: function () {
-            return this.refs['window'];
+            return this.refs.window;
         },
         enumerable: true,
         configurable: true
@@ -833,7 +899,15 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+var React = require('react');
 var StepperInput = (function (_super) {
     __extends(StepperInput, _super);
     function StepperInput() {
@@ -841,7 +915,7 @@ var StepperInput = (function (_super) {
     }
     Object.defineProperty(StepperInput.prototype, "input", {
         get: function () {
-            return this.refs['input'];
+            return this.refs.input;
         },
         enumerable: true,
         configurable: true
@@ -862,7 +936,7 @@ var StepperInput = (function (_super) {
     };
     StepperInput.prototype.componentWillMount = function () {
         this.setState({
-            value: this.props.value || 1
+            value: this.props.value || 1,
         });
     };
     StepperInput.prototype.componentDidMount = function () {
@@ -874,7 +948,7 @@ var StepperInput = (function (_super) {
     };
     StepperInput.prototype.render = function () {
         var value = this.state.value;
-        return React.createElement("input", React.__spread({type: "number", min: "1", max: "10", step: "1"}, { value: isNaN(value) ? 4 : value }, {ref: "input"}));
+        return React.createElement("input", __assign({type: "number", min: "1", max: "10", step: "1"}, { value: isNaN(value) ? 4 : value }, {ref: "input"}));
     };
     return StepperInput;
 }(React.Component));
@@ -888,9 +962,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var React = require("react");
-var cell_component_1 = require("./cell-component");
-var blur_button_1 = require("./blur-button");
+var React = require('react');
+var cell_component_1 = require('./cell-component');
+var blur_button_1 = require('./blur-button');
 var ToolSelectorComponent = (function (_super) {
     __extends(ToolSelectorComponent, _super);
     function ToolSelectorComponent() {
@@ -902,7 +976,6 @@ var ToolSelectorComponent = (function (_super) {
         return React.createElement("li", null, React.createElement(blur_button_1.default, {key: key, className: key, onClick: function (e) { return _this.fire(e, key); }}, name));
     };
     ToolSelectorComponent.prototype.fire = function (e, key) {
-        //e.target.blur();
         switch (key) {
             case 'save':
                 return this.dispatch('file:save');
@@ -921,7 +994,7 @@ var ToolSelectorComponent = (function (_super) {
             case 'resize':
                 return this.dispatch('canvas:size');
             default:
-                this.dispatch(key);
+                return this.dispatch(key);
         }
     };
     ToolSelectorComponent.prototype.render = function () {
@@ -936,7 +1009,7 @@ exports.default = ToolSelectorComponent;
 },{"./blur-button":1,"./cell-component":5,"react":309}],18:[function(require,module,exports){
 "use strict";
 var _ = require('lodash');
-var argb_1 = require("../models/argb");
+var argb_1 = require('../models/argb');
 var color_set_1 = require('../models/color-set');
 (function (Route) {
     Route[Route["Selector"] = 0] = "Selector";
@@ -1027,17 +1100,17 @@ exports.nes = [
     new argb_1.default(255, 0, 252, 252),
     new argb_1.default(255, 216, 216, 216),
     new argb_1.default(255, 0, 0, 0),
-    new argb_1.default(255, 0, 0, 0)
+    new argb_1.default(255, 0, 0, 0),
 ];
 exports.colorPreset = {
     sfc: {
         title: 'SFC',
-        colorSet: new color_set_1.default(exports.nes)
+        colorSet: new color_set_1.default(exports.nes),
     },
     web: {
         title: 'Webセーフカラー',
-        colorSet: new color_set_1.default(exports.web)
-    }
+        colorSet: new color_set_1.default(exports.web),
+    },
 };
 
 },{"../models/argb":36,"../models/color-set":37,"lodash":85}],19:[function(require,module,exports){
@@ -1047,26 +1120,26 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var parcel_1 = require("../libs/parcel");
+var parcel_1 = require('../libs/parcel');
 var React = require('react');
-var argb_1 = require("../models/argb");
-var key_control_1 = require("../models/key-control");
-var color_set_1 = require("../models/color-set");
-var configuration_1 = require("../records/configuration");
-var canvas_setting_component_1 = require("../components/canvas-setting-component");
-var canvas_resize_component_1 = require("../components/canvas-resize-component");
-var mix_1 = require("../libs/mix");
-var file_mixin_1 = require("./editor-mixins/file-mixin");
-var color_mixin_1 = require("./editor-mixins/color-mixin");
-var gradation_mixin_1 = require("./editor-mixins/gradation-mixin");
-var canvas_mixin_1 = require("./editor-mixins/canvas-mixin");
-var drawing_mixin_1 = require("./editor-mixins/drawing-mixin");
-var floater_mixin_1 = require("./editor-mixins/floater-mixin");
-var frame_mixin_1 = require("./editor-mixins/frame-mixin");
-var frame_display_mixin_1 = require("./editor-mixins/frame-display-mixin");
-var layer_mixin_1 = require("./editor-mixins/layer-mixin");
-var work_mixin_1 = require("./editor-mixins/work-mixin");
-var component_size_1 = require("../models/component-size");
+var argb_1 = require('../models/argb');
+var key_control_1 = require('../models/key-control');
+var color_set_1 = require('../models/color-set');
+var configuration_1 = require('../records/configuration');
+var canvas_setting_component_1 = require('../components/canvas-setting-component');
+var canvas_resize_component_1 = require('../components/canvas-resize-component');
+var mix_1 = require('../libs/mix');
+var file_mixin_1 = require('./editor-mixins/file-mixin');
+var color_mixin_1 = require('./editor-mixins/color-mixin');
+var gradation_mixin_1 = require('./editor-mixins/gradation-mixin');
+var canvas_mixin_1 = require('./editor-mixins/canvas-mixin');
+var drawing_mixin_1 = require('./editor-mixins/drawing-mixin');
+var floater_mixin_1 = require('./editor-mixins/floater-mixin');
+var frame_mixin_1 = require('./editor-mixins/frame-mixin');
+var frame_display_mixin_1 = require('./editor-mixins/frame-display-mixin');
+var layer_mixin_1 = require('./editor-mixins/layer-mixin');
+var work_mixin_1 = require('./editor-mixins/work-mixin');
+var component_size_1 = require('../models/component-size');
 var layered_animation_1 = require('../models/layered-animation');
 var EditorContext = (function (_super) {
     __extends(EditorContext, _super);
@@ -1092,7 +1165,7 @@ var EditorContext = (function (_super) {
             fileName: 'noname',
             canvasWidth: 0,
             canvasHeight: 0,
-            frames: new layered_animation_1.default()
+            frames: new layered_animation_1.default(),
         }));
         this.keyControl.bind('onG', 'sc', function () { return _this.dispatch('canvas:grid:toggle'); });
         this.keyControl.bind('onDelete', 'sc', function () { return _this.dispatch('canvas:delete'); });
@@ -1134,11 +1207,11 @@ var EditorContext = (function (_super) {
         this.configuration = new configuration_1.default(this.version, {
             scale: 2,
             grid: true,
-            colors: [argb_1.default.number(0xff000000), argb_1.default.number(0xffffffff)],
+            colors: [argb_1.default.fromNumber(0xff000000), argb_1.default.fromNumber(0xffffffff)],
             selectedColorNumber: 0,
-            selectedColor: argb_1.default.number(0xff000000),
+            selectedColor: argb_1.default.fromNumber(0xff000000),
             colorSet: new color_set_1.default(),
-            gradations: []
+            gradations: [],
         });
     };
     EditorContext.prototype.call = function (name, e) {
@@ -1163,7 +1236,7 @@ var EditorContext = (function (_super) {
             'imageSmoothingEnabled',
             'mozImageSmoothingEnabled',
             'oImageSmoothingEnabled',
-            'msImageSmoothingEnabled'
+            'msImageSmoothingEnabled',
         ].forEach(function (n) { return context[n] = false; });
         this.stage = new createjs.Stage(canvas);
     };
@@ -1179,7 +1252,7 @@ var EditorContext = (function (_super) {
         to(null, 'component:canvas:mounted', function (canvas) { return _this.initializeStage(canvas); });
         to(null, 'component:canvas:resize', function (w, h) { return _this.setState({
             canvasComponentWidth: w,
-            canvasComponentHeight: h
+            canvasComponentHeight: h,
         }); });
         to(null, 'component:resize', function () {
             var args = [];
@@ -1282,16 +1355,16 @@ var EditorContext = (function (_super) {
         to('edit', 'file:start', function (fileName) { return _this.start(); });
         to('edit', 'modal:rise', function (modalComponent, modalProps) { return _this.setState({
             modalComponent: modalComponent,
-            modalProps: modalProps
+            modalProps: modalProps,
         }); });
         to('modal', 'modal:hide', function () { return _this.setState({
             modalComponent: null,
-            modalProps: null
+            modalProps: null,
         }); });
         to('modal', 'modal:canvas', function () { return null; });
     };
     return EditorContext;
-}(mix_1.mix(parcel_1.Parcel).with(file_mixin_1.FileMixin, canvas_mixin_1.CanvasMixin, drawing_mixin_1.DrawingMixin, color_mixin_1.ColorMixin, floater_mixin_1.FloaterMixin, gradation_mixin_1.GradationMixin, frame_mixin_1.FrameMixin, frame_display_mixin_1.FrameDisplayMixin, layer_mixin_1.LayerMixin, work_mixin_1.WorkMixin)));
+}(mix_1.mix(parcel_1.Parcel).mix(file_mixin_1.FileMixin, canvas_mixin_1.CanvasMixin, drawing_mixin_1.DrawingMixin, color_mixin_1.ColorMixin, floater_mixin_1.FloaterMixin, gradation_mixin_1.GradationMixin, frame_mixin_1.FrameMixin, frame_display_mixin_1.FrameDisplayMixin, layer_mixin_1.LayerMixin, work_mixin_1.WorkMixin)));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = EditorContext;
 
@@ -1302,7 +1375,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var layered_image_1 = require("../../models/layered-image");
+var layered_image_1 = require('../../models/layered-image');
 var data_url_editor_1 = require('../../models/data-url-editor');
 exports.CanvasMixin = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
@@ -1320,7 +1393,7 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
             },
             onCancel: function () {
                 _this.dispatch('modal:hide');
-            }
+            },
         };
         this.dispatch('modal:rise', component, modalProps);
     };
@@ -1334,7 +1407,7 @@ exports.CanvasMixin = function (superclass) { return (function (_super) {
         });
         this.setState({
             canvasWidth: width,
-            canvasHeight: height
+            canvasHeight: height,
         }, function () { return _this.dispatch('frame:replace', newFrames); });
     };
     return class_1;
@@ -1347,7 +1420,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var argb_1 = require("../../models/argb");
+var argb_1 = require('../../models/argb');
 exports.ColorMixin = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
     function class_1() {
@@ -1408,7 +1481,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var argb_1 = require("../../models/argb");
+var argb_1 = require('../../models/argb');
 var constants_1 = require('../../constants/constants');
 exports.DrawingMixin = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
@@ -1425,7 +1498,7 @@ exports.DrawingMixin = function (superclass) { return (function (_super) {
     };
     class_1.prototype.spuitCanvas = function (x, y, isRight) {
         if (isRight === void 0) { isRight = false; }
-        var color = argb_1.default.number(this.ie.getPixel(x, y));
+        var color = argb_1.default.fromNumber(this.ie.getPixel(x, y));
         this.dispatch('color:select', color, isRight);
     };
     class_1.prototype.copyCanvas = function () {
@@ -1572,7 +1645,7 @@ exports.DrawingMixin = function (superclass) { return (function (_super) {
     };
     class_1.prototype.center = function () {
         var _a = this.state, canvasComponentWidth = _a.canvasComponentWidth, canvasComponentHeight = _a.canvasComponentHeight;
-        return this.ie.center(parseInt(canvasComponentWidth), parseInt(canvasComponentHeight));
+        return this.ie.center(parseInt(canvasComponentWidth, 10), parseInt(canvasComponentHeight, 10));
     };
     class_1.prototype.toggleGrid = function () {
         this.ie.switchGrid(!this.state.grid);
@@ -1588,9 +1661,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var file_information_1 = require("../../models/file-information");
-var layered_image_1 = require("../../models/layered-image");
-var image_editor_1 = require("../../models/image-editor");
+var file_information_1 = require('../../models/file-information');
+var layered_image_1 = require('../../models/layered-image');
+var image_editor_1 = require('../../models/image-editor');
 var layered_animation_1 = require('../../models/layered-animation');
 var data_url_editor_1 = require('../../models/data-url-editor');
 exports.FileMixin = function (superclass) { return (function (_super) {
@@ -1625,7 +1698,7 @@ exports.FileMixin = function (superclass) { return (function (_super) {
             frames: frames,
             canvasWidth: width,
             canvasHeight: height,
-            fileName: ''
+            fileName: '',
         }, function () { return _this.dispatch('file:start'); });
     };
     class_1.prototype.createBlankCanvasFromModal = function (component) {
@@ -1639,7 +1712,7 @@ exports.FileMixin = function (superclass) { return (function (_super) {
             },
             onCancel: function () {
                 _this.dispatch('modal:hide');
-            }
+            },
         };
         this.dispatch('modal:rise', component, modalProps);
     };
@@ -1649,8 +1722,8 @@ exports.FileMixin = function (superclass) { return (function (_super) {
     };
     class_1.prototype.save = function () {
         $('<a>')
-            .attr("href", this.dataURL)
-            .attr("download", this.fileName)
+            .attr('href', this.dataURL)
+            .attr('download', this.fileName)
             .trigger('click');
     };
     class_1.prototype.open = function () {
@@ -1691,7 +1764,7 @@ exports.FileMixin = function (superclass) { return (function (_super) {
                 canvasWidth: baseWidth,
                 canvasHeight: baseHeight,
                 selectedFrameNumber: 0,
-                fileName: information.name
+                fileName: information.name,
             }, function () { return _this.dispatch('file:start'); });
         };
     };
@@ -1737,7 +1810,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var data_url_editor_1 = require("../../models/data-url-editor");
+var data_url_editor_1 = require('../../models/data-url-editor');
 var gen = data_url_editor_1.default;
 exports.FrameDisplayMixin = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
@@ -1773,8 +1846,8 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var image_editor_1 = require("../../models/image-editor");
-var data_url_editor_1 = require("../../models/data-url-editor");
+var image_editor_1 = require('../../models/image-editor');
+var data_url_editor_1 = require('../../models/data-url-editor');
 var gen = data_url_editor_1.default;
 exports.FrameMixin = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
@@ -1837,7 +1910,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var gradation_color_1 = require("../../models/gradation-color");
+var gradation_color_1 = require('../../models/gradation-color');
 exports.GradationMixin = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
     function class_1() {
@@ -1867,8 +1940,6 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var data_url_editor_1 = require("../../models/data-url-editor");
-var gen = data_url_editor_1.default;
 exports.LayerMixin = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
     function class_1() {
@@ -1893,27 +1964,25 @@ exports.LayerMixin = function (superclass) { return (function (_super) {
     return class_1;
 }(superclass)); };
 
-},{"../../models/data-url-editor":39}],29:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var image_editor_1 = require("../../models/image-editor");
+var image_editor_1 = require('../../models/image-editor');
 exports.WorkMixin = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
     function class_1() {
         _super.apply(this, arguments);
     }
     class_1.prototype.undo = function () {
-        image_editor_1.default.undo();
-        this.ie.update();
+        image_editor_1.default.undo(this.ie);
         this.dispatch('frame:update');
     };
     class_1.prototype.redo = function () {
-        image_editor_1.default.redo();
-        this.ie.update();
+        image_editor_1.default.redo(this.ie);
         this.dispatch('frame:update');
     };
     return class_1;
@@ -1926,17 +1995,18 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var parcel_1 = require("../libs/parcel");
+var parcel_1 = require('../libs/parcel');
 var MainContext = (function (_super) {
     __extends(MainContext, _super);
     function MainContext() {
         _super.apply(this, arguments);
     }
     MainContext.prototype.listen = function (to) {
+        // nothing
     };
     MainContext.prototype.route = function (state) {
         this.routeChildren = this.props.children.filter(function (child) {
-            return _.isUndefined(child.props.route) || child.props.route == state.route;
+            return _.isUndefined(child.props.route) || child.props.route === state.route;
         });
     };
     MainContext.prototype.componentWillUpdate = function (props, state) {
@@ -1949,6 +2019,7 @@ exports.default = MainContext;
 
 },{"../libs/parcel":34}],31:[function(require,module,exports){
 /// <reference path="./typings/browser.d.ts" />
+/// <reference path="./d.ts/BitmapData.d.ts" />
 "use strict";
 var React = require('react');
 var ReactDOM = require('react-dom');
@@ -1995,7 +2066,7 @@ var MixinBuilder = (function () {
     function MixinBuilder(superclass) {
         this.superclass = superclass;
     }
-    MixinBuilder.prototype.with = function () {
+    MixinBuilder.prototype.mix = function () {
         var mixins = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             mixins[_i - 0] = arguments[_i];
@@ -2016,7 +2087,7 @@ var events_1 = require('events');
 var React = require('react');
 var _ = require('lodash');
 exports.EventingShared = {
-    emitter: React.PropTypes.any
+    emitter: React.PropTypes.any,
 };
 var Good = (function (_super) {
     __extends(Good, _super);
@@ -2065,21 +2136,17 @@ var Good = (function (_super) {
     };
     Object.defineProperty(Good.prototype, "emitter", {
         get: function () {
-            return this.context.emitter || this._emitter || (this._emitter = new events_1.EventEmitter());
+            return this.context.emitter || this.emitter_ || (this.emitter_ = new events_1.EventEmitter());
         },
         enumerable: true,
         configurable: true
     });
-    Good.prototype.activate = function () {
-    };
-    Good.prototype.deactivate = function () {
-    };
     Object.defineProperty(Good.prototype, "myName", {
         get: function () {
-            if (this._myName) {
-                return this._myName;
+            if (this.myName_) {
+                return this.myName_;
             }
-            return this._myName = this.constructor.toString().match(/function[ ]+([a-zA-Z0-9_]+)/)[1];
+            return this.myName_ = this.constructor.toString().match(/function[ ]+([a-zA-Z0-9_]+)/)[1];
         },
         enumerable: true,
         configurable: true
@@ -2089,7 +2156,7 @@ var Good = (function (_super) {
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i - 0] = arguments[_i];
         }
-        //console.log(this.myName, ...args)
+        // console.log(this.myName, ...args)
     };
     Good.prototype.componentWillMount = function () {
         this.debug('componentWillMount');
@@ -2099,17 +2166,17 @@ var Good = (function (_super) {
         this.debug('componentDidMount');
     };
     Good.prototype.componentWillReceiveProps = function (nextProps) {
-        //this.debug('componentWillReceiveProps');
+        // this.debug('componentWillReceiveProps');
     };
     Good.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        //this.debug('shouldComponentUpdate');
+        // this.debug('shouldComponentUpdate');
         return true;
     };
     Good.prototype.componentWillUpdate = function (nextProps, nextState) {
-        //this.debug('componentWillUpdate');
+        // this.debug('componentWillUpdate');
     };
     Good.prototype.componentDidUpdate = function (prevProps, prevState) {
-        //this.debug('componentDidUpdate');
+        // this.debug('componentDidUpdate');
     };
     Good.prototype.componentWillUnmount = function () {
         this.debug('componentWillUnmount');
@@ -2135,10 +2202,9 @@ var Parcel = (function (_super) {
     }
     Parcel.prototype.componentWillUnmount = function () {
         var _this = this;
-        var removed = this.addedOnStore.map(function (_a) {
-            var eventName = _a.eventName, callback = _a.callback;
-            _this.emitter.removeListener(eventName, callback);
-            return eventName;
+        var removed = this.addedOnStore.map(function (store) {
+            _this.emitter.removeListener(store.eventName, store.callback);
+            return store.eventName;
         });
         _super.prototype.componentWillUnmount.call(this);
     };
@@ -2191,19 +2257,19 @@ exports.Parcel = Parcel;
 "use strict";
 var _ = require('lodash');
 var Plate = (function () {
-    function Plate(_name) {
-        this._name = _name;
+    function Plate(name_) {
+        this.name_ = name_;
         this._initialize();
     }
     Plate.prototype._initialize = function () {
-        var raw = window.localStorage.getItem(this._name);
-        this._raw = raw ? JSON.parse(raw) : {};
+        var raw = window.localStorage.getItem(this.name_);
+        this.raw_ = raw ? JSON.parse(raw) : {};
     };
     Plate.prototype.reload = function () {
         this._initialize();
     };
     Plate.prototype.save = function () {
-        window.localStorage.setItem(this._name, JSON.stringify(this._raw));
+        window.localStorage.setItem(this.name_, JSON.stringify(this.raw_));
     };
     Plate.prototype.read = function (key) {
         if (this['get_' + key]) {
@@ -2214,7 +2280,7 @@ var Plate = (function () {
         }
     };
     Plate.prototype.readRaw = function (key) {
-        return this._raw[key];
+        return this.raw_[key];
     };
     Plate.prototype.write = function (key, value, save) {
         if (save === void 0) { save = true; }
@@ -2227,7 +2293,7 @@ var Plate = (function () {
     };
     Plate.prototype.writeRaw = function (key, value, save) {
         if (save === void 0) { save = true; }
-        this._raw[key] = value;
+        this.raw_[key] = value;
         save && this.save();
     };
     Plate.prototype.writeOnce = function (keyValue) {
@@ -2262,31 +2328,21 @@ var ARGB = (function () {
         this.g = g;
         this.b = b;
     }
-    ARGB.prototype.hexSupport = function (c) {
-        var hex = c.toString(16);
-        return hex.length == 1 ? "0" + hex : hex;
-    };
-    ARGB.number = function (argb) {
+    ARGB.fromNumber = function (argb) {
         var a = (argb >> 24) & 0xff;
         var r = (argb >> 16) & 0xff;
         var g = (argb >> 8) & 0xff;
         var b = (argb >> 0) & 0xff;
         return new ARGB(a, r, g, b);
     };
-    Object.defineProperty(ARGB.prototype, "number", {
-        get: function () {
-            return ((this.a << 24) + (this.r << 16) + (this.g << 8) + this.b) >>> 0;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ARGB.prototype, "hex", {
-        get: function () {
-            return "#" + this.hexSupport(this.r) + this.hexSupport(this.g) + this.hexSupport(this.b);
-        },
-        enumerable: true,
-        configurable: true
-    });
+    ARGB.fromJson = function (json) {
+        var r = json.r, b = json.b, g = json.g, a = json.a;
+        return new ARGB(a, r, g, b);
+    };
+    ARGB.hexSupport = function (c) {
+        var hex = c.toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+    };
     Object.defineProperty(ARGB.prototype, "css", {
         get: function () {
             var _a = this, a = _a.a, r = _a.r, g = _a.g, b = _a.b;
@@ -2296,16 +2352,26 @@ var ARGB = (function () {
         enumerable: true,
         configurable: true
     });
-    ARGB.prototype.toJson = function () {
-        var _a = this, r = _a.r, b = _a.b, g = _a.g, a = _a.a;
-        return { r: r, g: g, b: b, a: a };
-    };
+    Object.defineProperty(ARGB.prototype, "hex", {
+        get: function () {
+            return '#' + ARGB.hexSupport(this.r) + ARGB.hexSupport(this.g) + ARGB.hexSupport(this.b);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ARGB.prototype, "number", {
+        get: function () {
+            return ((this.a << 24) + (this.r << 16) + (this.g << 8) + this.b) >>> 0;
+        },
+        enumerable: true,
+        configurable: true
+    });
     ARGB.prototype.clone = function () {
         return ARGB.fromJson(this.toJson());
     };
-    ARGB.fromJson = function (json) {
-        var r = json.r, b = json.b, g = json.g, a = json.a;
-        return new ARGB(a, r, g, b);
+    ARGB.prototype.toJson = function () {
+        var _a = this, r = _a.r, b = _a.b, g = _a.g, a = _a.a;
+        return { r: r, g: g, b: b, a: a };
     };
     return ARGB;
 }());
@@ -2345,7 +2411,7 @@ exports.default = ColorSet;
 
 },{"../libs/id-man":32,"lodash":85}],38:[function(require,module,exports){
 "use strict";
-var style_stylist_1 = require("./style-stylist");
+var style_stylist_1 = require('./style-stylist');
 var ComponentSize = (function () {
     function ComponentSize(_a) {
         var toolWidth = _a.toolWidth, frameSelectorHeight = _a.frameSelectorHeight;
@@ -2370,13 +2436,13 @@ var ComponentSize = (function () {
             canvas: new style_stylist_1.default(0, 0, canvasWidth, canvasHeight).css,
             frameSelector: new style_stylist_1.default(0, canvasHeight, canvasWidth, frameSelectorHeight).css,
             // right column
-            toolSelector: new style_stylist_1.default(toolX, 0, toolWidth, split).css,
-            colorSet: new style_stylist_1.default(toolX, split * 1, toolWidth, split).css,
-            colorPalette: new style_stylist_1.default(toolX, split * 2, toolWidth, split).css,
-            gradationSelector: new style_stylist_1.default(toolX, split * 3, toolWidth, split).css,
             colorController: new style_stylist_1.default(toolX, split * 4, toolWidth, 200).css,
+            colorPalette: new style_stylist_1.default(toolX, split * 2, toolWidth, split).css,
+            colorSet: new style_stylist_1.default(toolX, split, toolWidth, split).css,
+            gradationSelector: new style_stylist_1.default(toolX, split * 3, toolWidth, split).css,
+            toolSelector: new style_stylist_1.default(toolX, 0, toolWidth, split).css,
             // modal
-            modal: new style_stylist_1.default(0, 0, windowWidth, windowHeight).css
+            modal: new style_stylist_1.default(0, 0, windowWidth, windowHeight).css,
         };
     };
     return ComponentSize;
@@ -2386,36 +2452,36 @@ exports.default = ComponentSize;
 
 },{"./style-stylist":54}],39:[function(require,module,exports){
 "use strict";
-var data_url_1 = require("./data-url");
+var data_url_1 = require('./data-url');
 var DataURLEditor = (function () {
     function DataURLEditor() {
     }
     Object.defineProperty(DataURLEditor, "img", {
         get: function () {
-            if (!this._img) {
-                this._img = document.createElement('img');
+            if (!this.img_) {
+                this.img_ = document.createElement('img');
             }
-            return this._img;
+            return this.img_;
         },
         enumerable: true,
         configurable: true
     });
     Object.defineProperty(DataURLEditor, "canvas", {
         get: function () {
-            if (!this._canvas) {
-                this._canvas = document.createElement('canvas');
+            if (!this.canvas_) {
+                this.canvas_ = document.createElement('canvas');
             }
-            return this._canvas;
+            return this.canvas_;
         },
         enumerable: true,
         configurable: true
     });
     Object.defineProperty(DataURLEditor, "context", {
         get: function () {
-            if (!this._context) {
-                this._context = this.canvas.getContext("2d");
+            if (!this.context_) {
+                this.context_ = this.canvas.getContext('2d');
             }
-            return this._context;
+            return this.context_;
         },
         enumerable: true,
         configurable: true
@@ -2445,6 +2511,7 @@ var DataURLEditor = (function () {
         this.canvas.height = h;
         this.context.clearRect(0, 0, w, h);
         this.context.drawImage(image, trimX, trimY, w, h, offsetX, offsetY, w, h);
+        return this.canvas;
     };
     DataURLEditor.fromImage = function (image, w, h, top, left) {
         if (top === void 0) { top = 0; }
@@ -2527,7 +2594,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var id_man_1 = require("../libs/id-man");
+var id_man_1 = require('../libs/id-man');
 var DataURL = (function (_super) {
     __extends(DataURL, _super);
     function DataURL(data, version) {
@@ -2681,7 +2748,7 @@ var HistoryStack = (function () {
             return;
         }
         this.stepBackward();
-        for (var i = this.now.length; i--;) {
+        for (var i = this.now.length; i--; null) {
             this.now[i].down();
         }
     };
@@ -2778,7 +2845,7 @@ exports.ClipBoardMixin = function (superclass) { return (function (_super) {
         }
         this.floaterBitmapData.updateContext();
         this.floater = new createjs.Bitmap(this.floaterBitmapData.canvas);
-        this.floater.shadow = new createjs.Shadow("#ff0000", 2, 2, 0);
+        this.floater.shadow = new createjs.Shadow('#ff0000', 2, 2, 0);
         return this.floater;
     };
     return class_1;
@@ -2882,7 +2949,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var image_editor_1 = require("../image-editor");
+var image_editor_1 = require('../image-editor');
 exports.Drawing = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
     function class_1() {
@@ -2902,16 +2969,16 @@ exports.Drawing = function (superclass) { return (function (_super) {
         var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;
         return this.setPixel(x, y, color, update);
     };
-    class_1.prototype.drawPixelToPixel = function (rawX, rawY, endRawX, endRawY, color, update, stock) {
+    class_1.prototype.drawPixelToPixel = function (rawX, rawY, endRawX, endRawY, setColor, update, stock) {
         var _this = this;
         if (update === void 0) { update = false; }
         if (stock === void 0) { stock = true; }
-        var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;
-        var end = this.normalizePixel(endRawX, endRawY);
-        var points = image_editor_1.default.pToP(x, y, end.x, end.y);
+        var _a = this.normalizePixel(rawX, rawY), beginX = _a.x, beginY = _a.y;
+        var _b = this.normalizePixel(endRawX, endRawY), endX = _b.x, endY = _b.y;
+        var points = image_editor_1.default.pToP(beginX, beginY, endX, endY);
         var updated = points.map(function (_a) {
             var x = _a.x, y = _a.y;
-            return _this.setPixel(x, y, color, false, false);
+            return _this.setPixel(x, y, setColor, false, false);
         }).reverse();
         update && this.update();
         if (stock) {
@@ -2927,7 +2994,7 @@ exports.Drawing = function (superclass) { return (function (_super) {
                         var x = _a.x, y = _a.y, oldColor = _a.oldColor;
                         return _this.setPixel(x, y, oldColor, false, false);
                     });
-                }
+                },
             });
         }
     };
@@ -2961,7 +3028,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var image_editor_1 = require("../image-editor");
+var image_editor_1 = require('../image-editor');
 exports.Editor = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
     function class_1() {
@@ -3038,29 +3105,33 @@ exports.Editor = function (superclass) { return (function (_super) {
         if (!this.isFloating) {
             return;
         }
-        if (t)
-            return this.moveTop(t);
-        if (r)
-            return this.moveRight(r);
-        if (b)
-            return this.moveBottom(b);
-        if (l)
-            return this.moveLeft(l);
+        switch (true) {
+            case t !== 0:
+                return this.moveTop(t);
+            case r !== 0:
+                return this.moveRight(r);
+            case b !== 0:
+                return this.moveBottom(b);
+            case l !== 0:
+                return this.moveLeft(l);
+            default:
+                return;
+        }
     };
     class_1.prototype.moveTop = function (n) {
-        image_editor_1.default.floater.y -= 1;
+        image_editor_1.default.floater.y += n;
         this.update();
     };
     class_1.prototype.moveRight = function (n) {
-        image_editor_1.default.floater.x += 1;
+        image_editor_1.default.floater.x += n;
         this.update();
     };
     class_1.prototype.moveBottom = function (n) {
-        image_editor_1.default.floater.y += 1;
+        image_editor_1.default.floater.y += n;
         this.update();
     };
     class_1.prototype.moveLeft = function (n) {
-        image_editor_1.default.floater.x -= 1;
+        image_editor_1.default.floater.x += n;
         this.update();
     };
     return class_1;
@@ -3073,7 +3144,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var image_editor_1 = require("../image-editor");
+var image_editor_1 = require('../image-editor');
 exports.Selection = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
     function class_1() {
@@ -3170,9 +3241,9 @@ exports.Selection = function (superclass) { return (function (_super) {
     class_1.prototype.setSelectionPixelToPixel = function (rawX, rawY, endRawX, endRawY, add, update) {
         var _this = this;
         if (add === void 0) { add = true; }
-        var _a = this.normalizePixel(rawX, rawY), x = _a.x, y = _a.y;
-        var end = this.normalizePixel(endRawX, endRawY);
-        image_editor_1.default.pToP(x, y, end.x, end.y).map(function (_a) {
+        var _a = this.normalizePixel(rawX, rawY), beginX = _a.x, beginY = _a.y;
+        var _b = this.normalizePixel(endRawX, endRawY), endX = _b.x, endY = _b.y;
+        image_editor_1.default.pToP(beginX, beginY, endX, endY).map(function (_a) {
             var x = _a.x, y = _a.y;
             return _this.addSelection(x, y, add);
         });
@@ -3188,7 +3259,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var image_editor_1 = require("../image-editor");
+var image_editor_1 = require('../image-editor');
 exports.State = function (superclass) { return (function (_super) {
     __extends(class_1, _super);
     function class_1() {
@@ -3234,16 +3305,16 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var id_man_1 = require("../libs/id-man");
-var mix_1 = require("../libs/mix");
-var drawer_mixin_1 = require("./image-editor-mixins/drawer-mixin");
-var selection_mixin_1 = require("./image-editor-mixins/selection-mixin");
-var display_mixin_1 = require("./image-editor-mixins/display-mixin");
-var editor_mixin_1 = require("./image-editor-mixins/editor-mixin");
-var state_mixin_1 = require("./image-editor-mixins/state-mixin");
-var clip_board_mixin_1 = require("./image-editor-mixins/clip-board-mixin");
-var data_url_1 = require("./data-url");
-var history_stack_1 = require("./history-stack");
+var id_man_1 = require('../libs/id-man');
+var mix_1 = require('../libs/mix');
+var drawer_mixin_1 = require('./image-editor-mixins/drawer-mixin');
+var selection_mixin_1 = require('./image-editor-mixins/selection-mixin');
+var display_mixin_1 = require('./image-editor-mixins/display-mixin');
+var editor_mixin_1 = require('./image-editor-mixins/editor-mixin');
+var state_mixin_1 = require('./image-editor-mixins/state-mixin');
+var clip_board_mixin_1 = require('./image-editor-mixins/clip-board-mixin');
+var data_url_1 = require('./data-url');
+var history_stack_1 = require('./history-stack');
 (function (ImageEditorState) {
     ImageEditorState[ImageEditorState["Drawing"] = 0] = "Drawing";
     ImageEditorState[ImageEditorState["Selected"] = 1] = "Selected";
@@ -3289,11 +3360,13 @@ var ImageEditor = (function (_super) {
     ImageEditor.initialize = function () {
         this.history = new history_stack_1.default();
     };
-    ImageEditor.undo = function () {
+    ImageEditor.undo = function (ie) {
         this.history.undo();
+        ie && ie.update();
     };
-    ImageEditor.redo = function () {
+    ImageEditor.redo = function (ie) {
         this.history.redo();
+        ie && ie.update();
     };
     ImageEditor.prototype.close = function () {
         this.fixFloater();
@@ -3302,7 +3375,7 @@ var ImageEditor = (function (_super) {
         this.stage.removeAllChildren();
     };
     ImageEditor.prototype.exportPng = function () {
-        return new data_url_1.default(this.canvasBitmapData.canvas.toDataURL("image/png"));
+        return new data_url_1.default(this.canvasBitmapData.canvas.toDataURL('image/png'));
     };
     ImageEditor.prototype.update = function () {
         this.selectionBitmapData.updateContext();
@@ -3332,7 +3405,7 @@ var ImageEditor = (function (_super) {
                     var x = _a.x, y = _a.y, oldColor = _a.oldColor;
                     return _this.setPixel(x, y, oldColor, false, false);
                 });
-            }
+            },
         });
     };
     ImageEditor.pToP = function (x, y, endX, endY) {
@@ -3358,7 +3431,7 @@ var ImageEditor = (function (_super) {
         return points;
     };
     return ImageEditor;
-}(mix_1.mix(id_man_1.default).with(drawer_mixin_1.Drawing, selection_mixin_1.Selection, display_mixin_1.Display, editor_mixin_1.Editor, state_mixin_1.State, clip_board_mixin_1.ClipBoardMixin)));
+}(mix_1.mix(id_man_1.default).mix(drawer_mixin_1.Drawing, selection_mixin_1.Selection, display_mixin_1.Display, editor_mixin_1.Editor, state_mixin_1.State, clip_board_mixin_1.ClipBoardMixin)));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ImageEditor;
 
@@ -3406,18 +3479,18 @@ var KeyControl = (function () {
         return this.downStore[code];
     };
     KeyControl.prototype.check = function (e) {
-        var string = 'on';
+        var name = 'on';
         if (e.altKey) {
-            string += 'Alt';
+            name += 'Alt';
         }
         if (e.ctrlKey) {
-            string += 'Control';
+            name += 'Control';
         }
         if (e.shiftKey) {
-            string += 'Shift';
+            name += 'Shift';
         }
-        string += e.code.replace('Key', '');
-        this.strike(string, e);
+        name += e.code.replace('Key', '');
+        this.strike(name, e);
     };
     KeyControl.prototype.strike = function (name, e) {
         if (this.binding[name]) {
@@ -3536,9 +3609,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var data_url_1 = require("./data-url");
-var id_man_1 = require("../libs/id-man");
-var data_url_editor_1 = require("./data-url-editor");
+var data_url_1 = require('./data-url');
+var id_man_1 = require('../libs/id-man');
+var data_url_editor_1 = require('./data-url-editor');
 var gen = data_url_editor_1.default;
 var LayeredImage = (function (_super) {
     __extends(LayeredImage, _super);
@@ -3641,7 +3714,7 @@ var LayeredImage = (function (_super) {
         if (n === void 0) { n = 4; }
         return {
             width: this.width * n,
-            height: this.height * n
+            height: this.height * n,
         };
     };
     LayeredImage.prototype.combine = function () {
@@ -3700,15 +3773,15 @@ var Fa = (function (_super) {
     Fa.prototype.render = function () {
         var p = this.props;
         var classes = ['fa'];
-        classes.push("fa-" + p.icon);
-        p.scale && classes.push("fa-" + p.scale + "x");
+        classes.push('fa-' + p.icon);
+        p.scale && classes.push('fa-' + p.scale + 'x');
         (p.fixedWidth === undefined || p.fixedWidth === true) && classes.push('fa-fw');
         p.list && classes.push('fa-li');
         p.border && classes.push('fa-border');
-        p.pull && classes.push("fa-pull-" + p.pull);
-        p.animation && classes.push("fa-" + p.animation);
-        p.rotate && classes.push("fa-rotate-" + p.rotate);
-        p.flip && classes.push("fa-flip-" + p.flip);
+        p.pull && classes.push('fa-pull-' + p.pull);
+        p.animation && classes.push('fa-' + p.animation);
+        p.rotate && classes.push('fa-rotate-' + p.rotate);
+        p.flip && classes.push('fa-flip-' + p.flip);
         return React.createElement("i", {className: classes.join(' ')});
     };
     return Fa;
@@ -3723,10 +3796,10 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var plate_1 = require("../libs/plate");
-var argb_1 = require("../models/argb");
-var color_set_1 = require("../models/color-set");
-var gradation_color_1 = require("../models/gradation-color");
+var plate_1 = require('../libs/plate');
+var argb_1 = require('../models/argb');
+var color_set_1 = require('../models/color-set');
+var gradation_color_1 = require('../models/gradation-color');
 var _ = require('lodash');
 var Configuration = (function (_super) {
     __extends(Configuration, _super);
@@ -3770,11 +3843,8 @@ var Configuration = (function (_super) {
             return new argb_1.default(a, r, g, b);
         });
     };
-    Configuration.prototype.set_gradations = function (value) {
-        this.writeRaw('gradations', value.map(function (_a) {
-            var color1 = _a.color1, color2 = _a.color2;
-            return ({ color1: color1.toJson(), color2: color2.toJson() });
-        }));
+    Configuration.prototype.set_gradations = function (values) {
+        this.writeRaw('gradations', values.map(function (value) { return ({ color1: value.color1.toJson(), color2: value.color2.toJson() }); }));
     };
     Configuration.prototype.get_gradations = function () {
         return this.readRaw('gradations').map(function (_a) {

@@ -1,4 +1,5 @@
 /// <reference path="./typings/browser.d.ts" />
+/// <reference path="./d.ts/BitmapData.d.ts" />
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
@@ -23,3 +24,6 @@ class DotDot {
 }
 
 DotDot.run(document.getElementById('editor'));
+
+
+

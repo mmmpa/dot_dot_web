@@ -2,19 +2,19 @@ import LayeredImage from './layered-image';
 import DataURL from './data-url';
 
 export default class LayeredAnimationFrame {
-  constructor(public frames:LayeredImage[] = [], public selectedIndex = 0, public selectedLayerIndex = 0) {
+  constructor(public frames: LayeredImage[] = [], public selectedIndex = 0, public selectedLayerIndex = 0) {
 
   }
 
-  get length():number {
+  get length(): number {
     return this.frames.length;
   }
 
-  get selected():LayeredImage {
+  get selected(): LayeredImage {
     return this.frames[this.selectedIndex];
   }
 
-  get selectedLayer():DataURL {
+  get selectedLayer(): DataURL {
     return this.frames[this.selectedIndex][this.selectedLayerIndex];
   }
 
@@ -22,7 +22,7 @@ export default class LayeredAnimationFrame {
     return this.frames[0].layerCount;
   }
 
-  select(index:number) {
+  select(index: number) {
     if (!this.frames[index]) {
       return;
     }
@@ -50,21 +50,21 @@ export default class LayeredAnimationFrame {
   }
 
   addLayer() {
-    this.frames.map((layeredImage)=> layeredImage.add(this.selectedLayerIndex));
+    this.frames.map((layeredImage) => layeredImage.add(this.selectedLayerIndex));
   }
 
   removeLayer() {
-    this.frames.map((layeredImage)=> layeredImage.remove(this.selectedLayerIndex));
+    this.frames.map((layeredImage) => layeredImage.remove(this.selectedLayerIndex));
   }
 
-  moveLayerUpward(){
-    this.selected.moveUpward(this.selectedLayerIndex, (movedLayerNumber)=> {
+  moveLayerUpward() {
+    this.selected.moveUpward(this.selectedLayerIndex, (movedLayerNumber) => {
       this.selectedLayerIndex = movedLayerNumber;
     });
   }
 
-  moveLayerDownward(){
-    this.selected.moveDownward(this.selectedLayerIndex, (movedLayerNumber)=> {
+  moveLayerDownward() {
+    this.selected.moveDownward(this.selectedLayerIndex, (movedLayerNumber) => {
       this.selectedLayerIndex = movedLayerNumber;
     });
   }
